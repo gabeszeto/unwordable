@@ -8,12 +8,15 @@ import { useGold } from '../../contexts/gold/GoldContext.jsx';
 import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
 import { useLevel } from '../../contexts/level/LevelContext';
 
+import { usePerks } from '../../contexts/perks/PerksContext';
+import { perkRegistry } from '../perks/perkRegistry.js';
+
 import './gameScreenStyles.css';
 
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
 import DivineInsight from '../perks/components/DivineInsight.jsx';
-import ComponentsPerk from '../perks/components/Components.jsx';
+import ComponentsPerk from '../perks/components/ComponentsPerk.jsx';
 
 
 export default function GameScreen() {
@@ -26,7 +29,7 @@ export default function GameScreen() {
   const [goldEarned, setGoldEarned] = useState(0);
 
   const round = stage / 2 + 1;
-  const [perks, setPerks] = useState([]);
+  const { perks, usePerk } = usePerks();
 
   // Perk states
   const [componentsUsed, setComponentsUsed] = useState(false);
@@ -54,6 +57,8 @@ export default function GameScreen() {
       </div>
     );
   }
+
+  console.log(`[GAME] Perks in context:`, perks);
 
   return (
     <div className="game-screen">
@@ -113,23 +118,32 @@ export default function GameScreen() {
         </div>
         <div className="gold-counter">🪙 {gold}</div>
         <div className="active-perks">
-          {perks.map((perk, i) => (
-            <span className="perk-tag" key={i}>{perk.name}</span>
+          {Object.entries(perks).map(([key, quantity]) => (
+            quantity > 0 && (
+              <span className="perk-tag" key={key}>
+                {perkRegistry[key]?.name || key} ×{quantity}
+              </span>
+            )
           ))}
         </div>
-        <DivineInsight
-          targetWord={targetWord}
-          revealedIndices={revealedIndices}
-          setRevealedIndices={setRevealedIndices}
-          used={divineUsed}
-          setUsed={setDivineUsed}
-        />
 
-        <ComponentsPerk
-          targetWord={targetWord}
-          used={componentsUsed}
-          setUsed={setComponentsUsed}
-        />
+        {Object.entries(perks).map(([key, quantity]) => {
+          if (quantity <= 0) return null;
+          const { component: PerkComponent } = perkRegistry[key] || {};
+          if (!PerkComponent) return null;
+
+          return (
+            <PerkComponent
+              key={key}
+              targetWord={targetWord}
+              revealedIndices={revealedIndices}
+              setRevealedIndices={setRevealedIndices}
+              used={key === 'divineInsight' ? divineUsed : componentsUsed}
+              setUsed={key === 'divineInsight' ? setDivineUsed : setComponentsUsed}
+              onUse={() => usePerk(key)}
+            />
+          );
+        })}
       </div>
       <div className="keyboard">
         <Keyboard usedKeys={usedKeys} onKeyPress={handleKeyPress} />
