@@ -1,5 +1,5 @@
 import React from 'react';
-import './perks.css'
+import '../perks.css'
 
 export default function DivineInsight({ targetWord, revealedIndices, setRevealedIndices, used, setUsed }) {
   const handleClick = () => {

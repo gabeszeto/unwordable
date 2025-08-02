@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './boardStyles.css';
-import combinedWordList from '../assets/combined_wordlist.txt?raw';
+import combinedWordList from '../../../assets/combined_wordlist.txt?raw';
 
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
@@ -179,7 +179,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      <div className="devWord">{targetWord}</div>
+      {/* <div className="devWord">{targetWord}</div> */}
       <div className="status-message">
         {statusMessage || 'Type to guess...'}
       </div>

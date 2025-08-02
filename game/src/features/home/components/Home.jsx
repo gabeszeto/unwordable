@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import './homeStyles.css';
-import './styles.css';
-import PlayMenu from './components/home/PlayMenu';
-import HowToPlayMenu from './components/home/HowToPlayMenu';
+import '../homeStyles.css';
+import PlayMenu from './PlayMenu';
+import HowToPlayMenu from './HowToPlayMenu';
 
 function Home() {
   const [currentMenu, setCurrentMenu] = useState(null); // 'play', 'howto', 'options', or null

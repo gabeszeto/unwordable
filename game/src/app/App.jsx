@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './Home';
-import GameScreen from './GameScreen';
-import { GoldProvider } from './gold/GoldContext';
+import Home from '../features/home/components/Home';
+import GameScreen from '../features/game/GameScreen';
+import { GoldProvider } from '../contexts/gold/GoldContext';
 
-import './styles.css'
+import '../styles.css'
 
 export default function App() {
   return (

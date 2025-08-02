@@ -1,19 +1,18 @@
 // GameScreen.jsx
 import React, { useState } from 'react';
-import Board from './components/Board';
+import Board from './components/Board.jsx';
 import Keyboard from './components/Keyboard.jsx';
 import { useNavigate } from 'react-router-dom';
 
-import { useGold } from './gold/GoldContext';
-import { calculateRoundGold } from './gold/goldUtils';
+import { useGold } from '../../contexts/gold/GoldContext.jsx';
+import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
 
 import './gameScreenStyles.css';
-import './styles.css'
 
-import shuffledWordles from './assets/shuffled_real_wordles.txt?raw';
+import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
-import DivineInsight from './components/perks/DivineInsight';
-import ComponentsPerk from './components/perks/Components';
+import DivineInsight from '../perks/components/DivineInsight.jsx';
+import ComponentsPerk from '../perks/components/Components.jsx';
 
 
 export default function GameScreen() {

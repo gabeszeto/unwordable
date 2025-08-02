@@ -1,5 +1,5 @@
 import React from 'react';
-import './perks.css';
+import '../perks.css';
 
 export default function Components({ targetWord, used, setUsed }) {
   const handleClick = () => setUsed(true);
