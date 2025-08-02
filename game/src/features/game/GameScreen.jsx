@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useGold } from '../../contexts/gold/GoldContext.jsx';
 import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
+import { useLevel } from '../../contexts/level/LevelContext';
 
 import './gameScreenStyles.css';
 
@@ -16,13 +17,15 @@ import ComponentsPerk from '../perks/components/Components.jsx';
 
 
 export default function GameScreen() {
+  const { stage, advanceStage } = useLevel();
+
   const navigate = useNavigate()
   const [usedKeys, setUsedKeys] = useState({});
 
   const { gold, addGold } = useGold();
   const [goldEarned, setGoldEarned] = useState(0);
 
-  const [round, setRound] = useState(1);
+  const round = stage / 2 + 1;
   const [perks, setPerks] = useState([]);
 
   // Perk states
@@ -78,9 +81,8 @@ export default function GameScreen() {
               });
               addGold(earned);
               setGoldEarned(earned);
-
               await new Promise((resolve) => setTimeout(resolve, 1000)); // 1s pause
-              setRound(r => r + 1);
+              advanceStage();
               setRevealedIndices([]);
               setDivineUsed(false);
               setUsedKeys({});
