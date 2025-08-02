@@ -1,0 +1,84 @@
+.homeContainer {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fefefe;
+    padding: 20px;
+}
+
+.mainTitle {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 40px;
+    text-align: center;
+    color: #333;
+}
+
+.homeButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.homeButton {
+    background-color: #222;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.3s ease;
+}
+
+.homeButton:hover {
+    background-color: #444;
+    transform: scale(1.02);
+}
+
+.homeButton.disabled {
+    background-color: #999;
+    color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Submenu wrapper */
+.playMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Back button that always exists to avoid layout shift */
+.backButton.persistent {
+    margin-top: 24px;
+    font-size: 0.9rem;
+    text-align: center;
+    text-decoration: underline;
+    cursor: pointer;
+    color: #222;
+    transition: color 0.2s ease, opacity 0.2s ease;
+    min-height: 24px;
+}
+
+.backButton.persistent:hover {
+    color: #444;
+}
+
+/* htp css */
+.howToText {
+    font-size: 1rem;
+    color: #333;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 300px;
+}
