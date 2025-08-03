@@ -105,3 +105,28 @@
     bottom: 0;
     z-index: 5;
 }
+
+.perksDisplay {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.perkSection {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.perkSection h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.perkGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}

@@ -5,12 +5,13 @@ export default function Revelation({
   targetWord,
   revealedIndices,
   setRevealedIndices,
-  used,
-  setUsed,
+  usedPerks,
+  markAsUsed,
   onUse,
 }) {
   const { perks } = usePerks();
   const quantity = perks[perkKey] || 0;
+  const used = usedPerks.includes(perkKey);
 
   const handleClick = () => {
     if (used || quantity <= 0) return;
@@ -23,8 +24,9 @@ export default function Revelation({
 
     const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
     setRevealedIndices([...revealedIndices, randomIndex]);
-    setUsed(true);
-    onUse(); // decrements count
+
+    markAsUsed(perkKey); // updates usedPerks array
+    onUse(); // decrements quantity
   };
 
   return (

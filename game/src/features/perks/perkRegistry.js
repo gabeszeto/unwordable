@@ -5,15 +5,15 @@ import Revelation from './components/Revelation';
 import Anatomy from './components/Anatomy';
 
 export const perkRegistry = {
-  revelation: {
-    name: "revelation",
+  Revelation: {
+    name: "Revelation",
     description: "Reveals 1 correct letter in the right position.",
     rarity: "rare",
     component: Revelation,
     props: ['targetWord', 'revealedIndices', 'setRevealedIndices', 'used', 'setUsed', 'onUse']
   },
-  anatomy: {
-    name: "anatomy",
+  Anatomy: {
+    name: "Anatomy",
     description: "Tells you how many vowels and consonants are in the word.",
     rarity: "basic",
     component: Anatomy,
@@ -54,7 +54,7 @@ export const perkRegistry = {
 //         description: "Shows simulated top 3 penultimate guesses.",
 //         rarity: "basic",
 //     },
-//     anatomy: {
+//     Anatomy: {
 //         name: "Anatomy",
 //         description: "Tells you how many vowels and consonants are in the word.",
 //         rarity: "basic",

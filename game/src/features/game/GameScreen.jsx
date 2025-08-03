@@ -9,7 +9,7 @@ import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
 import { useLevel } from '../../contexts/level/LevelContext';
 
 import { usePerks } from '../../contexts/perks/PerksContext';
-import { perkRegistry } from '../perks/perkRegistry.js';
+import PerkDisplay from './components/PerkDisplay.jsx';
 
 import './gameScreenStyles.css';
 
@@ -27,10 +27,16 @@ export default function GameScreen() {
   const round = stage / 2 + 1;
 
   // Perk states
-  const [componentsUsed, setComponentsUsed] = useState(false);
   const [revealedIndices, setRevealedIndices] = useState([]);
-  const [divineUsed, setDivineUsed] = useState(false);
-  // fix this doodoo and put into array later
+  const [usedPerks, setUsedPerks] = useState([]);
+
+  const markPerkAsUsed = (key) => {
+    setUsedPerks((prev) => (prev.includes(key) ? prev : [...prev, key]));
+  };
+
+  const resetUsedPerks = () => {
+    setUsedPerks([]);
+  };
 
   // KB stuff
   const [keyzoneType, setKeyzoneType] = useState(null); // 'row' | 'segment' | 'grid' | null
@@ -42,6 +48,14 @@ export default function GameScreen() {
   );
 
   const targetWord = targetWords[round - 1];
+
+  // perk stuff
+  const sharedProps = {
+    targetWord,
+    onKBActivate: setKeyzoneType,
+    revealedIndices,
+    setRevealedIndices
+  };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
   const handleKeyPress = (key) => {
@@ -86,17 +100,18 @@ export default function GameScreen() {
               });
               addGold(earned);
               setGoldEarned(earned);
-              await new Promise((resolve) => setTimeout(resolve, 1000)); // 1s pause
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               advanceStage();
+
+              // reset everything including perks
+              resetUsedPerks();
               setRevealedIndices([]);
-              setDivineUsed(false);
               setUsedKeys({});
-              setComponentsUsed(false);
               setKeyzoneType(null);
               setKeyzoneOverlayVisible(false);
             } else {
-              await new Promise((resolve) => setTimeout(resolve, 1500)); // short pause
-              navigate('/'); // send to home screen
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+              navigate('/');
             }
           }}
           setUsedKeys={setUsedKeys}
@@ -110,36 +125,16 @@ export default function GameScreen() {
       </div>
 
       <div className="hud">
-        <div className="round-meter">
-          {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              className={`round-dot ${i + 1 === round ? 'active' : i + 1 < round ? 'complete' : ''}`}
-            />
-          ))}
-        </div>
         <div className="gold-counter">🪙 {gold}</div>
-        <div className="perksDisplay">
-          {Object.entries(perks).map(([key, quantity]) => {
-            if (quantity <= 0) return null;
-            const { component: PerkComponent } = perkRegistry[key] || {};
-            if (!PerkComponent) return null;
+        <PerkDisplay
+          perks={perks}
+          usedPerks={usedPerks}
+          markAsUsed={markPerkAsUsed}
+          usePerk={usePerk}
+          sharedProps={sharedProps}
+        />
 
-            return (
-              <PerkComponent
-                key={key}
-                perkKey={key}
-                targetWord={targetWord}
-                onKBActivate={setKeyzoneType}
-                revealedIndices={revealedIndices}
-                setRevealedIndices={setRevealedIndices}
-                used={key === 'Revelation' ? divineUsed : componentsUsed}
-                setUsed={key === 'Revelation' ? setDivineUsed : setComponentsUsed}
-                onUse={() => usePerk(key)}
-              />
-            );
-          })}
-        </div>
+
       </div>
 
 
