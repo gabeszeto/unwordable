@@ -18,8 +18,10 @@ export default function Board({
 }) {
   const [guesses, setGuesses] = useState([]);
   const [currentGuess, setCurrentGuess] = useState(Array(WORD_LENGTH).fill(''));
+
+  const [shakeRow, setShakeRow] = useState(false);
+
   const [isGameOver, setIsGameOver] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
     setCurrentGuess(prev => {
@@ -37,7 +39,8 @@ export default function Board({
       const guessStr = currentGuess.join('');
       if (guessStr.length === WORD_LENGTH && !currentGuess.includes('')) {
         if (!validWords.includes(guessStr)) {
-          setStatusMessage('Not a valid word.');
+          setShakeRow(true);
+          setTimeout(() => setShakeRow(false), 400); // allow animation to run
           return;
         }
         submitGuess(guessStr);
@@ -60,7 +63,6 @@ export default function Board({
         }
       }
       setCurrentGuess(updated);
-      setStatusMessage('');
     }
   }, [isGameOver, currentGuess, revealedIndices, targetWord, usedKeys]);
 
@@ -85,11 +87,9 @@ export default function Board({
 
     if (guessStr === targetWord) {
       setIsGameOver(true);
-      setStatusMessage('Correct!');
       onRoundComplete(true, newGuesses);
     } else if (newGuesses.length >= MAX_GUESSES) {
       setIsGameOver(true);
-      setStatusMessage(`Out of guesses! The word was ${targetWord}`);
       onRoundComplete(false, newGuesses);
     }
 
@@ -136,8 +136,14 @@ export default function Board({
       );
     });
 
-    return <div className="guess-row" key={rowIndex}>{letters}</div>;
-  };
+    return (
+      <div
+        className={`guess-row ${!isSubmitted && rowIndex === guesses.length && shakeRow ? 'shake' : ''}`}
+        key={rowIndex}
+      >
+        {letters}
+      </div>
+    );  };
 
   const renderEmptyRow = (rowIndex) => {
     const emptyCells = Array.from({ length: WORD_LENGTH }, (_, i) => (
@@ -145,8 +151,6 @@ export default function Board({
     ));
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
-
-  const shouldRenderInputRow = !isGameOver;
 
   const rows = useMemo(() => {
     const renderedRows = [
@@ -166,7 +170,7 @@ export default function Board({
     }
 
     return renderedRows;
-  }, [guesses, currentGuess, isGameOver, revealedIndices]);
+  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow]);
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {
@@ -179,10 +183,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      <div className="devWord">{targetWord}</div>
-      <div className="status-message">
-        {statusMessage || 'Type to guess...'}
-      </div>
+      {/* <div className="devWord">{targetWord}</div> */}
     </div>
   );
 }

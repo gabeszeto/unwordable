@@ -4,11 +4,11 @@ const PerksContext = createContext();
 
 export const PerksProvider = ({ children }) => {
     const [perks, setPerks] = useState({
-        Revelation: 2,
-        Anatomy: 2,
-        keyzoneRow: 2,
-        keyzoneSegment: 2,
-        keyzoneGrid: 2,
+        Revelation: 3,
+        Anatomy: 4,
+        KeyzoneRow: 3,
+        KeyzoneSegment: 3,
+        KeyzoneGrid: 3,
     });
     console.log(perks)
 
@@ -22,11 +22,15 @@ export const PerksProvider = ({ children }) => {
 
 
     const usePerk = (perkName) => {
-        setPerks(prev => ({
+        setPerks(prev => {
+          const current = prev[perkName] || 0;
+          console.log(`[usePerk] ${perkName} before: ${current}, after: ${Math.max(current - 1, 0)}`);
+          return {
             ...prev,
-            [perkName]: Math.max((prev[perkName] || 0) - 1, 0)
-        }));
-    };
+            [perkName]: Math.max(current - 1, 0),
+          };
+        });
+      };
 
 
     return (

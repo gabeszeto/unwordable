@@ -1,0 +1,30 @@
+.perksDisplay {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0rem 0.5rem;
+}
+
+.perkSection {
+    border: 1px solid #ccc;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.perkSection h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #333;
+}
+
+.perkGrid {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.topPerksSection {
+    display: flex;
+    justify-content: space-between;
+}

@@ -1,24 +1,38 @@
 import { perkRegistry } from '../../perks/perkRegistry.js';
+import { usePerks } from '../../../contexts/perks/PerksContext';
+import { useGold } from '../../../contexts/gold/GoldContext.jsx';
+
+import './perksDisplayStyles.css'
 
 export default function PerkDisplay({
-    perks,
     usedPerks,
     markAsUsed,
-    usePerk,
     sharedProps
 }) {
+    const { perks } = usePerks();
+    const { gold } = useGold();
+
+
     return (
         <div className="perksDisplay">
             <div className="perkSection">
-                <h3>Inventory</h3>
+                <div className="topPerksSection">
+                    <h3>Inventory</h3>
+                    <div className="gold-counter">🪙 {gold}</div>
+                </div>
                 <div className="perkGrid">
                     {Object.entries(perks).map(([key, quantity]) => {
                         const { component: PerkComponent } = perkRegistry[key] || {};
                         if (!PerkComponent) return null;
 
                         const timesUsed = usedPerks.filter(p => p === key).length;
+                        // console.log(`[DEBUG] Perk: ${key}, quantity: ${quantity}, timesUsed: ${timesUsed}`);
+
                         const remaining = quantity - timesUsed;
-                        if (remaining < 0) return null;
+
+                        // console.log(`remaining is ${remaining}`)
+
+                        if (remaining <= 0) return null;
 
                         return (
                             <PerkComponent
@@ -26,17 +40,14 @@ export default function PerkDisplay({
                                 perkKey={key}
                                 usedPerks={usedPerks}
                                 markAsUsed={markAsUsed}
-                                onUse={() => {
-                                    usePerk(key);
-                                    markAsUsed(key);
-                                }}
+                                remaining={remaining}
                                 {...sharedProps}
                             />
                         );
                     })}
                 </div>
             </div>
-
+            {/* this part doodoo fix it */}
             <div className="perkSection">
                 <h3>Used Perks</h3>
                 <div className="perkGrid">
@@ -50,6 +61,7 @@ export default function PerkDisplay({
                                 perkKey={key}
                                 usedPerks={usedPerks}
                                 markAsUsed={markAsUsed}
+                                remaining={1}
                                 onUse={() => { }}
                                 {...sharedProps}
                             />

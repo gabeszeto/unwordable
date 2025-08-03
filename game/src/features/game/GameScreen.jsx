@@ -8,7 +8,6 @@ import { useGold } from '../../contexts/gold/GoldContext.jsx';
 import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
 import { useLevel } from '../../contexts/level/LevelContext';
 
-import { usePerks } from '../../contexts/perks/PerksContext';
 import PerkDisplay from './components/PerkDisplay.jsx';
 
 import './gameScreenStyles.css';
@@ -18,7 +17,6 @@ import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 export default function GameScreen() {
   const { stage, advanceStage } = useLevel();
   const { gold, addGold } = useGold();
-  const { perks, usePerk } = usePerks();
 
   const navigate = useNavigate()
 
@@ -72,8 +70,6 @@ export default function GameScreen() {
     );
   }
 
-  console.log(`[GAME] Perks in context:`, perks);
-
   return (
     <div className="game-screen">
 
@@ -125,16 +121,11 @@ export default function GameScreen() {
       </div>
 
       <div className="hud">
-        <div className="gold-counter">🪙 {gold}</div>
         <PerkDisplay
-          perks={perks}
           usedPerks={usedPerks}
           markAsUsed={markPerkAsUsed}
-          usePerk={usePerk}
           sharedProps={sharedProps}
         />
-
-
       </div>
 
 

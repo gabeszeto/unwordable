@@ -19,22 +19,22 @@ export const perkRegistry = {
     component: Anatomy,
     props: ['targetWord', 'used', 'setUsed', 'onUse']
   },
-  keyzoneRow: {
-    name: "keyzoneRow",
+  KeyzoneRow: {
+    name: "KeyzoneRow",
     description: "Splits keyboard into rows and shows letter counts per row.",
     rarity: "basic",
     component: KeyzoneRow,
     props: ['targetWord', 'onKBActivate']
   },
-  keyzoneSegment: {
-    name: "keyzoneSegment",
+  KeyzoneSegment: {
+    name: "KeyzoneSegment",
     description: "Splits keyboard into vertical thirds and shows letter counts.",
     rarity: "basic",
     component: KeyzoneSegment,
     props: ['targetWord', 'onKBActivate']
   },
-  keyzoneGrid: {
-    name: "keyzoneGrid",
+  KeyzoneGrid: {
+    name: "KeyzoneGrid",
     description: "Splits keyboard into 9 zones and shows letter counts per zone.",
     rarity: "epic",
     component: KeyzoneGrid,

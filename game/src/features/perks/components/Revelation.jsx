@@ -7,7 +7,7 @@ export default function Revelation({
   setRevealedIndices,
   usedPerks,
   markAsUsed,
-  onUse,
+  remaining
 }) {
   const { perks } = usePerks();
   const quantity = perks[perkKey] || 0;
@@ -26,12 +26,11 @@ export default function Revelation({
     setRevealedIndices([...revealedIndices, randomIndex]);
 
     markAsUsed(perkKey); // updates usedPerks array
-    onUse(); // decrements quantity
   };
 
   return (
     <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
-      🔮 Revelation ×{quantity}
+      🔮 Revelation ×{remaining}
     </button>
   );
 }

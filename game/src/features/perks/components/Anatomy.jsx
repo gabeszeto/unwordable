@@ -4,9 +4,9 @@ import { usePerks } from '../../../contexts/perks/PerksContext';
 export default function Anatomy({
   targetWord,
   perkKey = 'Anatomy',
-  usedPerks = [],
-  markAsUsed = () => {},
-  onUse = () => {},
+  usedPerks,
+  markAsUsed,
+  remaining
 }) {
   const { perks } = usePerks();
   const quantity = perks[perkKey] || 0;
@@ -22,12 +22,11 @@ export default function Anatomy({
     if (used || quantity <= 0) return;
 
     markAsUsed(perkKey);
-    onUse(); // decrement quantity
   };
 
   return (
     <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
-      🧪 Anatomy ×{quantity}
+      🧪 Anatomy ×{remaining}
       {used && (
         <div className="perk-result">
           Vowels: {vowelCount}, Consonants: {consonantCount}
