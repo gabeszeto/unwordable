@@ -2,6 +2,7 @@ import React from 'react';
 import GameScreen from './game/GameScreen';
 import ShopScreen from './shop/ShopScreen';
 import { useLevel } from '../contexts/level/LevelContext';
+import '../styles.css'
 
 const FINAL_STAGE = 18;
 

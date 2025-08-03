@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 
-export default function ComponentsPerk({ targetWord }) {
+export default function Anatomy({ targetWord, perkKey }) {
   const { perks, usePerk } = usePerks();
   const [used, setUsed] = useState(false);
+  const quantity = perks[perkKey] || 0;
 
   const countVowels = (word) =>
     word.split('').filter((ch) => 'AEIOU'.includes(ch)).length;
@@ -13,14 +14,14 @@ export default function ComponentsPerk({ targetWord }) {
   const consonantCount = targetWord.length - vowelCount;
 
   const handleClick = () => {
-    if ((perks.components || 0) === 0 || used) return;
+    if (used || quantity === 0) return;
     setUsed(true);
-    usePerk('components')
+    usePerk(perkKey);
   };
 
   return (
-    <button className="perk-button" onClick={handleClick} disabled={used || (perks.components || 0) === 0}>
-      Components 🧪
+    <button className="perk-button" onClick={handleClick} disabled={used || quantity === 0}>
+      🧪 Anatomy ×{quantity}
       {used && (
         <div className="perk-result">
           Vowels: {vowelCount}, Consonants: {consonantCount}

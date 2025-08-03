@@ -179,7 +179,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      <div className="devWord">{targetWord}</div>
+      {/* <div className="devWord">{targetWord}</div> */}
       <div className="status-message">
         {statusMessage || 'Type to guess...'}
       </div>

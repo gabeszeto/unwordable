@@ -15,26 +15,26 @@ import './gameScreenStyles.css';
 
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
-import DivineInsight from '../perks/components/DivineInsight.jsx';
-import ComponentsPerk from '../perks/components/ComponentsPerk.jsx';
-
-
 export default function GameScreen() {
   const { stage, advanceStage } = useLevel();
+  const { gold, addGold } = useGold();
+  const { perks, usePerk } = usePerks();
 
   const navigate = useNavigate()
+
   const [usedKeys, setUsedKeys] = useState({});
-
-  const { gold, addGold } = useGold();
   const [goldEarned, setGoldEarned] = useState(0);
-
   const round = stage / 2 + 1;
-  const { perks, usePerk } = usePerks();
 
   // Perk states
   const [componentsUsed, setComponentsUsed] = useState(false);
   const [revealedIndices, setRevealedIndices] = useState([]);
   const [divineUsed, setDivineUsed] = useState(false);
+  // fix this doodoo and put into array later
+
+  // KB stuff
+  const [keyzoneType, setKeyzoneType] = useState(null); // 'row' | 'segment' | 'grid' | null
+  const [keyzoneOverlayVisible, setKeyzoneOverlayVisible] = useState(false);
 
   const allWords = shuffledWordles.split('\n').map(w => w.trim().toUpperCase());
   const [targetWords] = useState(() =>
@@ -92,6 +92,8 @@ export default function GameScreen() {
               setDivineUsed(false);
               setUsedKeys({});
               setComponentsUsed(false);
+              setKeyzoneType(null);
+              setKeyzoneOverlayVisible(false);
             } else {
               await new Promise((resolve) => setTimeout(resolve, 1500)); // short pause
               navigate('/'); // send to home screen
@@ -117,36 +119,47 @@ export default function GameScreen() {
           ))}
         </div>
         <div className="gold-counter">🪙 {gold}</div>
-        <div className="active-perks">
-          {Object.entries(perks).map(([key, quantity]) => (
-            quantity > 0 && (
-              <span className="perk-tag" key={key}>
-                {perkRegistry[key]?.name || key} ×{quantity}
-              </span>
-            )
-          ))}
+        <div className="perksDisplay">
+          {Object.entries(perks).map(([key, quantity]) => {
+            if (quantity <= 0) return null;
+            const { component: PerkComponent } = perkRegistry[key] || {};
+            if (!PerkComponent) return null;
+
+            return (
+              <PerkComponent
+                key={key}
+                perkKey={key}
+                targetWord={targetWord}
+                onKBActivate={setKeyzoneType}
+                revealedIndices={revealedIndices}
+                setRevealedIndices={setRevealedIndices}
+                used={key === 'Revelation' ? divineUsed : componentsUsed}
+                setUsed={key === 'Revelation' ? setDivineUsed : setComponentsUsed}
+                onUse={() => usePerk(key)}
+              />
+            );
+          })}
         </div>
+      </div>
 
-        {Object.entries(perks).map(([key, quantity]) => {
-          if (quantity <= 0) return null;
-          const { component: PerkComponent } = perkRegistry[key] || {};
-          if (!PerkComponent) return null;
 
-          return (
-            <PerkComponent
-              key={key}
-              targetWord={targetWord}
-              revealedIndices={revealedIndices}
-              setRevealedIndices={setRevealedIndices}
-              used={key === 'divineInsight' ? divineUsed : componentsUsed}
-              setUsed={key === 'divineInsight' ? setDivineUsed : setComponentsUsed}
-              onUse={() => usePerk(key)}
-            />
-          );
-        })}
+      <div className="gameButtons">
+        {keyzoneType && (
+          <button
+            className="toggle-overlay-button"
+            onClick={() => setKeyzoneOverlayVisible((v) => !v)}
+          >
+            {keyzoneOverlayVisible ? 'Hide Overlay' : 'Show Overlay'}
+          </button>
+        )}
       </div>
       <div className="keyboard">
-        <Keyboard usedKeys={usedKeys} onKeyPress={handleKeyPress} />
+        <Keyboard
+          usedKeys={usedKeys}
+          onKeyPress={handleKeyPress}
+          keyzoneType={keyzoneOverlayVisible ? keyzoneType : null}
+          targetWord={targetWord}
+        />
       </div>
 
     </div>

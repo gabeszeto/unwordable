@@ -1,12 +1,19 @@
-import React from 'react';
-import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 
-export default function DivineInsight({ targetWord, revealedIndices, setRevealedIndices }) {
-  const { perks, usePerk } = usePerks();
+export default function Revelation({
+  perkKey = 'Revelation',
+  targetWord,
+  revealedIndices,
+  setRevealedIndices,
+  used,
+  setUsed,
+  onUse,
+}) {
+  const { perks } = usePerks();
+  const quantity = perks[perkKey] || 0;
 
   const handleClick = () => {
-    if ((perks.divineInsight || 0) === 0) return;
+    if (used || quantity <= 0) return;
 
     const unrevealed = [...targetWord]
       .map((_, i) => (revealedIndices.includes(i) ? null : i))
@@ -16,12 +23,13 @@ export default function DivineInsight({ targetWord, revealedIndices, setRevealed
 
     const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
     setRevealedIndices([...revealedIndices, randomIndex]);
-    usePerk('divineInsight');
+    setUsed(true);
+    onUse(); // decrements count
   };
 
   return (
-    <button className="perk-button" onClick={handleClick} disabled={(perks.divineInsight || 0) === 0}>
-      Divine Insight 🔮
+    <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
+      🔮 Revelation ×{quantity}
     </button>
   );
 }

@@ -11,8 +11,8 @@ export default function ShopScreen() {
   const { perks, addPerk } = usePerks();
 
   const perksForSale = [
-    { id: 'divineInsight', name: '🔮 Divine Insight', cost: 1 },
-    { id: 'components', name: '🧪 Components', cost: 1 },
+    { id: 'revelation', name: '🔮 Divine Insight', cost: 1 },
+    { id: 'anatomy', name: '🧪 Components', cost: 1 },
     { id: 'placeholder3', name: '🚧 Perk 3 (coming soon)', cost: 999 },
     { id: 'placeholder4', name: '🚧 Perk 4 (coming soon)', cost: 999 },
   ];

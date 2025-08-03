@@ -1,22 +1,29 @@
-/* keyboardStyles.css */
-
 .keyboard {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-top: 1.5rem;
-    gap: 0.4rem;
     font-family: 'Zilla Slab';
 }
 
 .keyboard-row {
     display: flex;
     justify-content: center;
-    gap: 0.3rem;
+    padding: 0.3rem 0.4rem;
+}
+
+.keyboard-row .key {
+    margin-right: 0.3rem;
+}
+
+.keyboard-row .key:last-child {
+    margin-right: 0;
 }
 
 .key {
-    padding: 0.6rem 0.8rem;
+    width: 40px;
+    height: 40px;
+    padding: 0;
     border: none;
     border-radius: 4px;
     font-size: 1rem;
@@ -24,9 +31,12 @@
     background-color: #d3d6da;
     color: black;
     cursor: pointer;
-    min-width: 2.4rem;
     transition: background-color 0.2s;
-    font-family: 'Zilla Slab';
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .key.correct {
@@ -45,5 +55,108 @@
 }
 
 .key.special {
+    width: auto;
+    padding: 0 16px;
     background-color: #a4a4a4;
+    font-weight: bold;
+}
+
+/* Keyzone styling */
+.keyzone {
+    opacity: 0.4;
+}
+
+.keyzone-row-0,
+.keyzone-segment-0,
+.keyzone-grid-0,
+.keyzone-row-1,
+.keyzone-segment-1,
+.keyzone-grid-1,
+.keyzone-row-2,
+.keyzone-segment-2,
+.keyzone-grid-2,
+.keyzone-grid-3,
+.keyzone-grid-4,
+.keyzone-grid-5 {
+    opacity: 1;
+}
+
+.key .zone-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+
+    background-color: black;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+/* Row-based coloring */
+.keyzone-row-0 {
+    background-color: #f3e5f5;
+    /* light purple */
+}
+
+.keyzone-row-1 {
+    background-color: #e0f7fa;
+    /* light cyan */
+}
+
+.keyzone-row-2 {
+    background-color: #ffe0b2;
+    /* light orange */
+}
+
+/* Segment-based coloring */
+.keyzone-segment-0 {
+    background-color: #dcedc8;
+    /* light green */
+}
+
+.keyzone-segment-1 {
+    background-color: #ffcdd2;
+    /* light red */
+}
+
+/* Grid-based blended coloring (row + segment) */
+.keyzone-grid-0 {
+    background-color: #e6f1db;
+    /* blend of light purple + light green */
+}
+
+.keyzone-grid-1 {
+    background-color: #f9d9e8;
+    /* blend of light purple + light red */
+}
+
+.keyzone-grid-2 {
+    background-color: #d9f6e9;
+    /* blend of light cyan + light green */
+}
+
+.keyzone-grid-3 {
+    background-color: #f5eef6;
+    /* blend of light cyan + light red */
+}
+
+.keyzone-grid-4 {
+    background-color: #f4f1d5;
+    /* blend of light orange + light green */
+}
+
+.keyzone-grid-5 {
+    background-color: #ffe2da;
+    /* blend of light orange + light red */
 }
