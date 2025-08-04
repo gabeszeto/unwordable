@@ -83,18 +83,6 @@ export default function GameScreen() {
   return (
     <div className="game-screen">
 
-      <div className="round-visual">
-        <span className="round-label">Round {round} of 10</span>
-        <div className="round-progress-bar">
-          {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              className={`round-step ${i + 1 < round ? 'complete' : ''} ${i + 1 === round ? 'active' : ''}`}
-            />
-          ))}
-        </div>
-      </div>
-
       <div>
         <Board
           key={round}

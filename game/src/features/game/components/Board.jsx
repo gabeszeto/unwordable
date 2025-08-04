@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './boardStyles.css';
 import combinedWordList from '../../../assets/combined_wordlist.txt?raw';
+import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
 
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
@@ -25,6 +26,12 @@ export default function Board({
 
   const [isGameOver, setIsGameOver] = useState(false);
 
+  // Debuff board logic
+  const { activeDebuffs } = useDebuffs();
+
+  // Blurred vision checker
+  const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
+
   useEffect(() => {
     setCurrentGuess(prev => {
       const updated = [...prev];
@@ -40,11 +47,11 @@ export default function Board({
     if (key === 'ENTER') {
       const guessStr = currentGuess.join('');
       if (guessStr.length === WORD_LENGTH && !currentGuess.includes('')) {
-        if (!validWords.includes(guessStr)) {
-          setShakeRow(true);
-          setTimeout(() => setShakeRow(false), 400); // allow animation to run
-          return;
-        }
+        // if (!validWords.includes(guessStr)) {
+        //   setShakeRow(true);
+        //   setTimeout(() => setShakeRow(false), 400); // allow animation to run
+        //   return;
+        // }
         submitGuess(guessStr);
       }
     } else if (key === 'BACKSPACE') {
@@ -107,11 +114,29 @@ export default function Board({
 
   const getLetterClass = (letter, index, isCurrentRow) => {
     if (!letter) return '';
-    if (isCurrentRow && revealedIndices.includes(index)) return 'correct';
-    if (!targetWord.includes(letter)) return 'absent';
-    if (targetWord[index] === letter) return 'correct';
-    return 'present';
+  
+    // 1. Perk override — revealed letter
+    if (revealedIndices.includes(index)) return 'correct';
+  
+    const targetChar = targetWord[index];
+    const isExact = letter === targetChar;
+    const isBlurredGreen =
+      isBlurredVisionActive &&
+      !isCurrentRow &&
+      [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
+        .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
+        .includes(letter);
+  
+    if (isExact || isBlurredGreen) return 'correct';
+  
+    // 2. Yellow (only exact match elsewhere in wrong position)
+    if (targetWord.includes(letter)) return 'present';
+  
+    return 'absent';
   };
+  
+
+
 
   const renderRow = (guessArray, rowIndex, isSubmitted) => {
     const cursorIndex = guessArray.findIndex(
@@ -146,8 +171,8 @@ export default function Board({
           key={i}
           style={
             bouncingIndices.includes(i) &&
-            isSubmitted &&
-            rowIndex === guesses.length - 1
+              isSubmitted &&
+              rowIndex === guesses.length - 1
               ? { animationDelay: `${i * 0.1}s` }
               : {}
           }        >
@@ -204,7 +229,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      <div className="devWord">{targetWord}</div>
+      {/* <div className="devWord">{targetWord}</div> */}
     </div>
   );
 }
