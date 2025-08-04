@@ -4,17 +4,16 @@ import { usePerks } from '../../../contexts/perks/PerksContext';
 export default function KeyzoneSegment({
   perkKey = 'KeyzoneSegment',
   onKBActivate,
-  usedPerks,
+  isKeyzoneUsed,
   markAsUsed,
   remaining,
 }) {
   const { perks } = usePerks();
-  const used = usedPerks.includes(perkKey);
+  const used = isKeyzoneUsed
   const quantity = perks[perkKey] || 0;
 
   const handleClick = () => {
     if (used || quantity <= 0) return;
-    if ((perks.KeyzoneSegment || 0) === 0) return;
 
     onKBActivate?.('segment');
     markAsUsed(perkKey);

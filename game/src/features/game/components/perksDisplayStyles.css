@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0rem 0.5rem;
+    padding: 0rem 2rem;
 }
 
 .perkSection {
@@ -10,6 +10,7 @@
     padding: 0.75rem 1rem;
     border-radius: 8px;
     background-color: #f9f9f9;
+    height: 70px;
 }
 
 .perkSection h3 {
@@ -20,7 +21,7 @@
 
 .perkGrid {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     flex-wrap: wrap;
 }
 

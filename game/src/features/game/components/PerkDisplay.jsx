@@ -7,7 +7,7 @@ import './perksDisplayStyles.css'
 export default function PerkDisplay({
     usedPerks,
     markAsUsed,
-    sharedProps
+    sharedProps,
 }) {
     const { perks } = usePerks();
     const { gold } = useGold();
@@ -41,6 +41,7 @@ export default function PerkDisplay({
                                 usedPerks={usedPerks}
                                 markAsUsed={markAsUsed}
                                 remaining={remaining}
+                                isKeyzoneUsed={key.toLowerCase().includes('keyzone') && usedPerks.some(k => k.toLowerCase().includes('keyzone'))}
                                 {...sharedProps}
                             />
                         );
@@ -62,7 +63,7 @@ export default function PerkDisplay({
                                 usedPerks={usedPerks}
                                 markAsUsed={markAsUsed}
                                 remaining={1}
-                                onUse={() => { }}
+                                isKeyzoneUsed={key.toLowerCase().includes('keyzone') && usedPerks.some(k => k.toLowerCase().includes('keyzone'))}
                                 {...sharedProps}
                             />
                         );

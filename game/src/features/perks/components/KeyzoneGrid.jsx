@@ -4,17 +4,16 @@ import { usePerks } from '../../../contexts/perks/PerksContext';
 export default function KeyzoneGrid({
   perkKey = 'KeyzoneGrid',
   onKBActivate,
-  usedPerks,
+  isKeyzoneUsed,
   markAsUsed,
   remaining,
 }) {
   const { perks } = usePerks();
-  const used = usedPerks.includes(perkKey);
+  const used = isKeyzoneUsed;
   const quantity = perks[perkKey] || 0;
 
   const handleClick = () => {
     if (used || quantity <= 0) return;
-    if ((perks.KeyzoneGrid || 0) === 0) return;
 
     onKBActivate?.('grid');
     markAsUsed(perkKey);

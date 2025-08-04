@@ -11,6 +11,9 @@ import { useLevel } from '../../contexts/level/LevelContext';
 import PerkDisplay from './components/PerkDisplay.jsx';
 
 import './gameScreenStyles.css';
+import './popups/popupScreenStyles.css'
+
+import HintInfoScreen from './popups/HintInfoScreen.jsx'
 
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
@@ -28,6 +31,8 @@ export default function GameScreen() {
   const [revealedIndices, setRevealedIndices] = useState([]);
   const [usedPerks, setUsedPerks] = useState([]);
 
+  const isKeyzoneUsed = usedPerks.some((key) => key.startsWith('keyzone'));
+
   const markPerkAsUsed = (key) => {
     setUsedPerks((prev) => (prev.includes(key) ? prev : [...prev, key]));
   };
@@ -39,6 +44,10 @@ export default function GameScreen() {
   // KB stuff
   const [keyzoneType, setKeyzoneType] = useState(null); // 'row' | 'segment' | 'grid' | null
   const [keyzoneOverlayVisible, setKeyzoneOverlayVisible] = useState(false);
+
+  // Perk Info stuff
+  const [infoPerkKey, setInfoPerkKey] = useState(null); // e.g. "Anatomy"
+  const [showInfoPanel, setShowInfoPanel] = useState(false);
 
   const allWords = shuffledWordles.split('\n').map(w => w.trim().toUpperCase());
   const [targetWords] = useState(() =>
@@ -52,7 +61,8 @@ export default function GameScreen() {
     targetWord,
     onKBActivate: setKeyzoneType,
     revealedIndices,
-    setRevealedIndices
+    setRevealedIndices,
+    setInfoPerkKey
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
@@ -125,6 +135,8 @@ export default function GameScreen() {
           usedPerks={usedPerks}
           markAsUsed={markPerkAsUsed}
           sharedProps={sharedProps}
+          isKeyzoneUsed={isKeyzoneUsed}
+
         />
       </div>
 
@@ -138,15 +150,46 @@ export default function GameScreen() {
             {keyzoneOverlayVisible ? 'Hide Overlay' : 'Show Overlay'}
           </button>
         )}
+        {infoPerkKey && (
+          <button
+            className="toggle-overlay-button"
+            onClick={() => setShowInfoPanel((prev) => !prev)}
+          >
+            {showInfoPanel ? 'Hide Info' : 'Show Info'}
+          </button>
+        )}
       </div>
-      <div className="keyboard">
-        <Keyboard
-          usedKeys={usedKeys}
-          onKeyPress={handleKeyPress}
-          keyzoneType={keyzoneOverlayVisible ? keyzoneType : null}
-          targetWord={targetWord}
-        />
-      </div>
+      <Keyboard
+        usedKeys={usedKeys}
+        onKeyPress={handleKeyPress}
+        keyzoneType={keyzoneOverlayVisible ? keyzoneType : null}
+        targetWord={targetWord}
+      />
+
+      {/* popups */}
+      {showInfoPanel && (
+        <div
+          className="popup-overlay"
+          onClick={() => {
+            setShowInfoPanel(false);
+          }}
+        >
+          <div
+            className="popup-content"
+            onClick={(e) => e.stopPropagation()} // Prevent closing if clicking inside
+          >
+            <button
+              className="popup-close"
+              onClick={() => {
+                setShowInfoPanel(false);
+              }}
+            >
+              &times;
+            </button>
+            <HintInfoScreen perkKey={infoPerkKey} targetWord={targetWord} />
+          </div>
+        </div>
+      )}
 
     </div>
   );

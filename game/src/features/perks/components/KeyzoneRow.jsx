@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 
-export default function KeyzoneRow({ perkKey = 'KeyzoneRow', onKBActivate, usedPerks, markAsUsed, remaining }) {
-  const { perks, usePerk } = usePerks();
-  const used = usedPerks.includes(perkKey);
+export default function KeyzoneRow({ perkKey = 'KeyzoneRow', onKBActivate, isKeyzoneUsed, markAsUsed, remaining }) {
+  const { perks } = usePerks();
+  const used = isKeyzoneUsed
   const quantity = perks[perkKey] || 0;
-
 
   const handleClick = () => {
     if (used || quantity <= 0) return;
-    if ((perks.KeyzoneRow || 0) === 0) return;
     onKBActivate?.('row'); // Pass which segmentation to highlight
     markAsUsed(perkKey)
   };

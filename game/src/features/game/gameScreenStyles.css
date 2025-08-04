@@ -60,7 +60,7 @@
     flex-direction: column;
     align-items: center;
     margin-top: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     width: 100%;
 }
 
@@ -90,12 +90,9 @@
     margin-bottom: 1rem;
 }
 
-/* Keyboard */
-.keyboard {
-    margin-top: auto;
-    width: 100%;
-    padding-bottom: 1rem;
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
+/* buttons for perks */
+.gameButtons {
+    padding: 0;
+    margin: 0;
+    height: 20px;
 }
