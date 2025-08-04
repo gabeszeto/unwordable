@@ -18,7 +18,7 @@ export default function PerkDisplay({
             <div className="perkSection">
                 <div className="topPerksSection">
                     <h3>Inventory</h3>
-                    <div className="gold-counter">🪙 {gold}</div>
+                    <div className="gold-counter">💰 {gold}</div>
                 </div>
                 <div className="perkGrid">
                     {Object.entries(perks).map(([key, quantity]) => {

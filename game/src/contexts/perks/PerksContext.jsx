@@ -4,11 +4,11 @@ const PerksContext = createContext();
 
 export const PerksProvider = ({ children }) => {
     const [perks, setPerks] = useState({
-        Revelation: 3,
-        Anatomy: 4,
-        KeyzoneRow: 3,
-        KeyzoneSegment: 3,
-        KeyzoneGrid: 3,
+        Revelation: 0,
+        Anatomy: 0,
+        KeyzoneRow: 0,
+        KeyzoneSegment: 0,
+        KeyzoneGrid: 0,
     });
     console.log(perks)
 

@@ -6,14 +6,14 @@ import Anatomy from './components/Anatomy';
 
 export const perkRegistry = {
   Revelation: {
-    name: "Revelation",
+    name: "🔮 Revelation",
     description: "Reveals 1 correct letter in the right position.",
     rarity: "rare",
     component: Revelation,
     props: ['targetWord', 'revealedIndices', 'setRevealedIndices', 'used', 'setUsed', 'onUse']
   },
   Anatomy: {
-    name: "Anatomy",
+    name: "🧪 Anatomy",
     description: "Tells you how many vowels and consonants are in the word.",
     rarity: "basic",
     component: Anatomy,
@@ -41,6 +41,12 @@ export const perkRegistry = {
     props: ['targetWord', 'onKBActivate']
   }
 };
+
+export const rarityWeights = {
+  basic: 5,
+  rare: 2,
+  epic: 1,
+}
 
 // export const allPerks = {
 //     // 🧠 Info

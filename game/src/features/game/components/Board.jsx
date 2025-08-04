@@ -81,15 +81,27 @@ export default function Board({
     setCurrentGuess(Array(WORD_LENGTH).fill(''));
 
     const newUsed = { ...usedKeys };
+    let hasColor = false;
+
     for (let i = 0; i < WORD_LENGTH; i++) {
       const letter = guessStr[i];
       if (!targetWord.includes(letter)) {
         if (!newUsed[letter]) newUsed[letter] = 'absent';
       } else if (targetWord[i] === letter) {
         newUsed[letter] = 'correct';
-      } else if (newUsed[letter] !== 'correct') {
-        newUsed[letter] = 'present';
+        hasColor = true;
+      } else {
+        if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
+        hasColor = true;
       }
+    }
+
+    // GrayReaper instant loss logic
+    if (activeDebuffs.includes('GrayReaper') && !hasColor) {
+      setUsedKeys(newUsed);
+      setIsGameOver(true);
+      onRoundComplete(false, newGuesses, 'GrayReaper'); // optional third param to tag reason
+      return;
     }
 
     setUsedKeys(newUsed);
@@ -107,6 +119,7 @@ export default function Board({
     setRevealedIndices([]);
   };
 
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -114,10 +127,10 @@ export default function Board({
 
   const getLetterClass = (letter, index, isCurrentRow) => {
     if (!letter) return '';
-  
+
     // 1. Perk override — revealed letter
-    if (revealedIndices.includes(index)) return 'correct';
-  
+    if (revealedIndices.includes(index) && isCurrentRow) return 'correct';
+
     const targetChar = targetWord[index];
     const isExact = letter === targetChar;
     const isBlurredGreen =
@@ -126,16 +139,14 @@ export default function Board({
       [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
         .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
         .includes(letter);
-  
+
     if (isExact || isBlurredGreen) return 'correct';
-  
+
     // 2. Yellow (only exact match elsewhere in wrong position)
     if (targetWord.includes(letter)) return 'present';
-  
+
     return 'absent';
   };
-  
-
 
 
   const renderRow = (guessArray, rowIndex, isSubmitted) => {
@@ -229,7 +240,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      {/* <div className="devWord">{targetWord}</div> */}
+      <div className="devWord">{targetWord}</div>
     </div>
   );
 }

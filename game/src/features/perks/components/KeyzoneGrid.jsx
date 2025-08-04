@@ -21,7 +21,7 @@ export default function KeyzoneGrid({
 
   return (
     <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
-      🎯 Keyzones (Grid) ×{remaining}
+      #️⃣ Keyzones (Grid) ×{remaining}
     </button>
   );
 }

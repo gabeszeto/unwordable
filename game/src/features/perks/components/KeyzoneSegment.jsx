@@ -21,7 +21,7 @@ export default function KeyzoneSegment({
 
   return (
     <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
-      🎯 Keyzones (Segment) ×{remaining}
+      ↕️ Keyzones (Segments) ×{remaining}
     </button>
   );
 }

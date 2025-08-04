@@ -1,3 +1,3 @@
 export default function BlurredVision() {
-    return <div className="debuff-indicator">🌀 Blurred Vision Active</div>;
+    return <div className="debuff-indicator">🌀 Blurred Vision</div>;
 }

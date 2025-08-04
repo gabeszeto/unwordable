@@ -1,9 +1,3 @@
-import React from 'react'
-
-function GrayReaper() {
-  return (
-    <div>GrayReaper</div>
-  )
+export default function GrayReaper() {
+    return <div className="debuff-indicator">🏴‍☠️ Gray Reaper</div>;
 }
-
-export default GrayReaper

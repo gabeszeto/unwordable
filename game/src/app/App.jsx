@@ -9,22 +9,25 @@ import { DebuffsProvider } from '../contexts/debuffs/DebuffsContext';
 
 import '../styles.css'
 import GameStageManager from '../features/GameStageManager';
+import { DeathProvider } from '../contexts/death/DeathContext';
 
 export default function App() {
   return (
     <LevelProvider>
-      <DebuffsProvider>
-        <PerksProvider>
-          <GoldProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/play" element={<GameStageManager />} />
-              </Routes>
-            </BrowserRouter>
-          </GoldProvider>
-        </PerksProvider>
-      </DebuffsProvider>
+      <DeathProvider>
+        <DebuffsProvider>
+          <PerksProvider>
+            <GoldProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/play" element={<GameStageManager />} />
+                </Routes>
+              </BrowserRouter>
+            </GoldProvider>
+          </PerksProvider>
+        </DebuffsProvider>
+      </DeathProvider>
     </LevelProvider>
 
   )

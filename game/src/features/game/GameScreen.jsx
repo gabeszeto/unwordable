@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import Board from './components/Board.jsx';
 import Keyboard from './components/Keyboard.jsx';
-import { useNavigate } from 'react-router-dom';
 
 import { useGold } from '../../contexts/gold/GoldContext.jsx';
 import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
 import { useLevel } from '../../contexts/level/LevelContext';
+import { useDeath } from '../../contexts/death/DeathContext'
+import { useDebuffs } from '../../contexts/debuffs/DebuffsContext.jsx';
 
 import PerkDisplay from './components/PerkDisplay.jsx';
 
@@ -18,10 +19,12 @@ import HintInfoScreen from './popups/HintInfoScreen.jsx'
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
 export default function GameScreen() {
-  const { stage, advanceStage } = useLevel();
+  const { stage, setStage, advanceStage } = useLevel();
+  const { setDeathInfo } = useDeath();
   const { gold, addGold } = useGold();
+  const { activeDebuffs } = useDebuffs();
 
-  const navigate = useNavigate()
+  const BOSS_STAGES = [4, 10, 16, 18];
 
   const [usedKeys, setUsedKeys] = useState({});
   const [goldEarned, setGoldEarned] = useState(0);
@@ -83,40 +86,62 @@ export default function GameScreen() {
   return (
     <div className="game-screen">
 
-      <div>
-        <Board
-          key={round}
-          onRoundComplete={async (success, guesses) => {
-            if (success) {
-              const earned = calculateRoundGold({
-                guessesUsed: guesses.length,
-                isBoss: round % 3 === 0
-              });
-              addGold(earned);
-              setGoldEarned(earned);
-              await new Promise((resolve) => setTimeout(resolve, 2000));
-              advanceStage();
+      {/* passives and debuffs display */}
+      <div className="modifiersDisplay">
+        <div className="mod-left">
+          {BOSS_STAGES.includes(stage) ? 'Boss Level' : 'Normal Level'}
+        </div>
 
-              // reset everything including perks
-              resetUsedPerks();
-              setRevealedIndices([]);
-              setUsedKeys({});
-              setKeyzoneType(null);
-              setKeyzoneOverlayVisible(false);
-            } else {
-              await new Promise((resolve) => setTimeout(resolve, 1500));
-              navigate('/');
-            }
-          }}
-          setUsedKeys={setUsedKeys}
-          usedKeys={usedKeys}
-          targetWord={targetWord}
-          revealedIndices={revealedIndices}
-          setRevealedIndices={setRevealedIndices}
-          onVirtualKey={setVirtualKeyHandler}
-          goldEarned={goldEarned}
-        />
+        <div className="mod-right">
+          {activeDebuffs.length === 0 ? (
+            <span className="mod-none">No modifiers</span>
+          ) : (
+            activeDebuffs.map((debuffKey) => (
+              <span className="mod-debuff" key={debuffKey}>
+                {debuffKey}
+              </span>
+            ))
+          )}
+        </div>
       </div>
+
+      <Board
+        key={round}
+        onRoundComplete={async (success, guesses, deathReason) => {
+          if (success) {
+            const earned = calculateRoundGold({
+              guessesUsed: guesses.length,
+              isBoss: round % 3 === 0
+            });
+            addGold(earned);
+            setGoldEarned(earned);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            advanceStage();
+
+            // Reset things
+            resetUsedPerks();
+            setRevealedIndices([]);
+            setUsedKeys({});
+            setKeyzoneType(null);
+            setKeyzoneOverlayVisible(false);
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            setDeathInfo({
+              deathRound: round,
+              reason: deathReason || 'Out of guesses',
+            });
+            setStage(100);
+          }
+        }}
+
+        setUsedKeys={setUsedKeys}
+        usedKeys={usedKeys}
+        targetWord={targetWord}
+        revealedIndices={revealedIndices}
+        setRevealedIndices={setRevealedIndices}
+        onVirtualKey={setVirtualKeyHandler}
+        goldEarned={goldEarned}
+      />
 
       <div className="hud">
         <PerkDisplay
@@ -147,6 +172,7 @@ export default function GameScreen() {
           </button>
         )}
       </div>
+
       <Keyboard
         usedKeys={usedKeys}
         onKeyPress={handleKeyPress}

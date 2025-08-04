@@ -14,7 +14,7 @@ export default function KeyzoneRow({ perkKey = 'KeyzoneRow', onKBActivate, isKey
 
   return (
     <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
-      🎲 Keyzones (Row) ×{remaining}
+      ↔️ Keyzones (Row) ×{remaining}
     </button>
   );
 }

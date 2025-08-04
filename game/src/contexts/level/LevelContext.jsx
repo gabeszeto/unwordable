@@ -10,10 +10,13 @@ export function LevelProvider({ children }) {
   const isBossStage = stage => [4, 10, 16, 18].includes(stage);
   const isGameStage = stage => stage % 2 === 0;
   const getRoundNumber = stage => Math.floor(stage / 2) + 1;
+  const resetLevel = () => setStage(0)
 
   return (
     <LevelContext.Provider value={{
       stage,
+      setStage,
+      resetLevel,
       advanceStage,
       isBossStage,
       isGameStage,

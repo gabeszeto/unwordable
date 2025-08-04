@@ -1,41 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGold } from '../../contexts/gold/GoldContext';
 import { useLevel } from '../../contexts/level/LevelContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
 
+import { pickUniquePerks } from './shopUtils';
+
 import './shopStyles.css';
+
+const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
 
 export default function ShopScreen() {
   const { gold, spendGold } = useGold();
-  const { advanceStage } = useLevel();
+  const { stage, advanceStage } = useLevel();
   const { perks, addPerk } = usePerks();
 
-  const perksForSale = [
-    { id: 'Revelation', name: '🔮 Divine Insight', cost: 1 },
-    { id: 'Anatomy', name: '🧪 Components', cost: 1 },
-    { id: 'placeholder3', name: '🚧 Perk 3 (coming soon)', cost: 999 },
-    { id: 'placeholder4', name: '🚧 Perk 4 (coming soon)', cost: 999 },
-  ];
+  const [perksForSale, setPerksForSale] = useState([]);
+
+  useEffect(() => {
+    setPerksForSale(pickUniquePerks());
+  }, [stage]);
 
   const handleBuy = (perkId, cost) => {
-    if (gold >= cost) {
-      console.log(`[SHOP] Buying perk: ${perkId}`);
-      spendGold(cost);
+    if (gold < cost) return;
+
+    if (perkId === 'KeyzoneRoulette') {
+      // Randomly select one Keyzone perk
+      const randomId = keyzonePerkIds[Math.floor(Math.random() * keyzonePerkIds.length)];
+      console.log(`[SHOP] You spun the roulette and got: ${randomId}`);
+      addPerk(randomId);
+    } else {
       addPerk(perkId);
-      console.log(`[SHOP] Current perks:`, perks);
     }
+
+    spendGold(cost);
+    console.log(`[SHOP] Bought: ${perkId}`);
   };
 
   return (
     <div className="shop-container">
       <h2>🛒 Shop</h2>
-      <p>Gold: 🪙 {gold}</p>
+      <p>Cash: 💰 {gold}</p>
 
       <div className="perk-options">
-        {perksForSale.map(({ id, name, cost }) => (
+        {perksForSale.map(({ id, name, cost, isVirtual, description }) => (
           <div key={id} className="perk-card">
-            <span className="perk-name">{name}</span>
-            <span className="perk-cost">🪙 {cost}</span>
+            <div className="perk-name">{name}</div>
+            <div className="perk-cost">💰 {cost}</div>
+            {description && <p className="perk-description">{description}</p>}
             <button
               className="buy-button"
               disabled={gold < cost}

@@ -3,17 +3,22 @@ import GameScreen from './game/GameScreen';
 import ShopScreen from './shop/ShopScreen';
 import { useLevel } from '../contexts/level/LevelContext';
 import { useDebuffs } from '../contexts/debuffs/DebuffsContext';
+import { useDeath } from '../contexts/death/DeathContext';
+
 import { debuffRegistry } from './debuffs/debuffRegistry';
 import { pickWeightedDebuff } from './debuffs/pickWeightedDebuff'; // ⬅️ Make this if not yet made
+import DeathScreen from './game/DeathScreen';
 
 import './gameStageManagerStyles.css'
 
 const FINAL_STAGE = 18;
-const BOSS_STAGES = [0, 2, 10, 16, 18];
+const BOSS_STAGES = [4, 10, 16, 18];
 
 export default function GameStageManager() {
   const { stage } = useLevel();
   const { addDebuff, clearDebuffs } = useDebuffs();
+  const { deathRound, reason } = useDeath();
+
   const round = stage / 2 + 1;
 
   useEffect(() => {
@@ -28,43 +33,57 @@ export default function GameStageManager() {
     }
   }, [stage]);
 
-  if (stage > FINAL_STAGE) {
-    return (
-      <div className="end-screen">
-        <h1>🏁 Game Over</h1>
-        <p>You survived. Congrats.</p>
-      </div>
-    );
-  }
-
   const isGameLevel = stage % 2 === 0;
+  const isDeath = stage === 100;
+  const isFinished = stage > FINAL_STAGE;
+
+  const roundToUse = isDeath ? deathRound : round;
 
   return (
     <>
       <div className="round-visual">
-        <span className="round-label">Round {round} of 10</span>
+        <span className="round-label">
+          {`Round ${roundToUse} of 10`}
+        </span>
         <div className="round-progress-bar">
           {Array.from({ length: 10 }, (_, i) => {
             const step = i + 1;
-            const isBoss = [3, 6, 9].includes(step); // Final level (step 10) is also a boss
+            const isBoss = [3, 6, 9].includes(step);
             const isFinalBoss = step === 10;
-            const isComplete = step < round;
+            const isComplete = step < roundToUse
             const isActive = step === round;
+            const isDeathRound = step === deathRound
 
             return (
               <div
                 key={i}
-                className={`round-step
+                className={`
+                round-step
                 ${isFinalBoss ? 'finalBoss' : ''}
                 ${isBoss ? 'boss' : ''}
                 ${isComplete ? 'complete' : ''}
-                ${isActive ? 'active' : ''}`}
+                ${isActive ? 'active' : ''}
+                ${isDeathRound ? 'died' : ''}
+                `}
               />
             );
           })}
         </div>
       </div>
-      {isGameLevel ? <GameScreen /> : <ShopScreen />}
+
+      {/* Render appropriate screen */}
+      {isDeath ? (
+        <DeathScreen />
+      ) : isFinished ? (
+        <div className="end-screen">
+          <h1>🏁 Game Over</h1>
+          <p>You survived. Congrats.</p>
+        </div>
+      ) : isGameLevel ? (
+        <GameScreen />
+      ) : (
+        <ShopScreen />
+      )}
     </>
   );
 }
