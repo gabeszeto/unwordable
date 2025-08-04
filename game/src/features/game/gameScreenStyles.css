@@ -3,12 +3,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100%;
+    flex: 1;
     max-width: 444px;
     margin: 0 auto;
     font-family: 'Zilla Slab', serif;
-    position: relative;
-    /* box-sizing: border-box; */
+    width: 100%;
 }
 
 /* modifiers display */

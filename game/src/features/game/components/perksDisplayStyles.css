@@ -1,32 +1,28 @@
-.perksDisplay {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 0.5rem;
-    padding: 0rem 2rem;
-}
-
-.perkSection {
+.perkDisplay {
     border: 1px solid #ccc;
-    padding: 0.75rem 1rem;
+    max-width: 100%;
+    padding: 0.5rem 1rem;
     border-radius: 8px;
     background-color: #f9f9f9;
-    height: 70px;
+    display: flex;
+    flex-direction: column;
 }
 
-.perkSection h3 {
-    margin: 0 0 0.5rem;
+.topPerksSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.5rem;
+}
+
+.inventoryTitle {
     font-size: 1rem;
     color: #333;
+    font-weight: 600;
 }
 
 .perkGrid {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-}
-
-.topPerksSection {
-    display: flex;
-    justify-content: space-between;
 }

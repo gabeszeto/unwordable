@@ -40,7 +40,7 @@ export default function GameStageManager() {
   const roundToUse = isDeath ? deathRound : round;
 
   return (
-    <>
+    <div className="gameContainer">
       <div className="round-visual">
         <span className="round-label">
           {`Round ${roundToUse} of 10`}
@@ -84,6 +84,6 @@ export default function GameStageManager() {
       ) : (
         <ShopScreen />
       )}
-    </>
+    </div>
   );
 }

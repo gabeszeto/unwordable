@@ -1,11 +1,12 @@
+.gameContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+}
+
 /* Round tracker at the top */
 .round-visual {
-    position: sticky;
-    top: 0;
-    padding-top: 0.5rem;
-    background: white;
-    padding-bottom: 0.5rem;
-    z-index: 10;
+    padding: 0.5rem 0rem;
     text-align: center;
     width: 100%;
     border-bottom: 1px solid #eee;
