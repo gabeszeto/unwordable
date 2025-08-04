@@ -1,14 +1,21 @@
 .shop-container {
-    padding: 32px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 444px;
+    margin: 0 auto;
+    font-family: 'Zilla Slab', serif;
+    width: 100%;
 }
 
 .perk-options {
     display: flex;
+    flex-direction: column;
+    width: 100%;
     gap: 16px;
     justify-content: center;
-    margin: 24px 0;
-    flex-wrap: wrap;
+    align-items: center;
 }
 
 .perk-card {
@@ -16,17 +23,39 @@
     color: white;
     padding: 20px;
     border-radius: 8px;
-    width: 120px;
+    width: 80%;
     font-size: 1rem;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
 
-.next-button {
+.perk-card:hover {
+    cursor: pointer;
+    background: #333333;
+    transform: scale(1.03);
+}
+
+.choiceTopPart {
+    display: flex;
+    justify-content: space-between;
+}
+
+.perk-description {
+    margin-top: 0.5rem;
+}
+
+.nextButton {
     margin-top: 20px;
     padding: 12px 24px;
     font-size: 1rem;
-    background: #333;
+    background: #222;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.nextButton:hover {
     cursor: pointer;
+    background: #333333;
+    transform: scale(1.03);
 }

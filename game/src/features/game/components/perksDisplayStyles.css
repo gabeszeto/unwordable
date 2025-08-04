@@ -1,12 +1,13 @@
 .perkDisplay {
-    border: 1px solid #ccc;
-    max-width: 100%;
+    box-sizing: border-box;
+    width: 100%;
     padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
     border-radius: 8px;
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
-}
+  }
 
 .topPerksSection {
     display: flex;

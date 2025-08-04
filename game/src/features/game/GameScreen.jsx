@@ -149,7 +149,7 @@ export default function GameScreen() {
           markAsUsed={markPerkAsUsed}
           sharedProps={sharedProps}
           isKeyzoneUsed={isKeyzoneUsed}
-
+          
         />
       </div>
 

@@ -43,22 +43,17 @@ export default function ShopScreen() {
 
       <div className="perk-options">
         {perksForSale.map(({ id, name, cost, isVirtual, description }) => (
-          <div key={id} className="perk-card">
-            <div className="perk-name">{name}</div>
-            <div className="perk-cost">💰 {cost}</div>
-            {description && <p className="perk-description">{description}</p>}
-            <button
-              className="buy-button"
-              disabled={gold < cost}
-              onClick={() => handleBuy(id, cost)}
-            >
-              Buy
-            </button>
+          <div key={id} className="perk-card" onClick={() => handleBuy(id, cost)}>
+            <div className="choiceTopPart">
+              <div className="perk-name">{name}</div>
+              <div className="perk-cost">💰 {cost}</div>
+            </div>
+            {description && <div className="perk-description">{description}</div>}
           </div>
         ))}
       </div>
 
-      <button className="next-button" onClick={advanceStage}>
+      <button className="nextButton" onClick={advanceStage}>
         Next →
       </button>
     </div>
