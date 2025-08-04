@@ -19,7 +19,9 @@ export default function Board({
   const [guesses, setGuesses] = useState([]);
   const [currentGuess, setCurrentGuess] = useState(Array(WORD_LENGTH).fill(''));
 
+  // Animations
   const [shakeRow, setShakeRow] = useState(false);
+  const [bouncingIndices, setBouncingIndices] = useState([]);
 
   const [isGameOver, setIsGameOver] = useState(false);
 
@@ -86,6 +88,8 @@ export default function Board({
     setUsedKeys(newUsed);
 
     if (guessStr === targetWord) {
+      setBouncingIndices([0, 1, 2, 3, 4]); // mark all
+      setTimeout(() => setBouncingIndices([]), 1000);
       setIsGameOver(true);
       onRoundComplete(true, newGuesses);
     } else if (newGuesses.length >= MAX_GUESSES) {
@@ -121,16 +125,32 @@ export default function Board({
         : letter;
 
       const shouldApplyFeedback = isSubmitted || revealedIndices.includes(i);
-      const letterClass = shouldApplyFeedback
+
+      let letterClass = shouldApplyFeedback
         ? getLetterClass(letter, i, isSubmitted === false)
         : '';
+
+      if (
+        bouncingIndices.includes(i) &&
+        isSubmitted &&
+        rowIndex === guesses.length - 1
+      ) {
+        letterClass += ' bounce';
+      }
+
       const isCurrent = !isSubmitted && i === cursorIndex;
 
       return (
         <div
           className={`letter ${letterClass} ${isCurrent ? 'current-input' : ''}`}
           key={i}
-        >
+          style={
+            bouncingIndices.includes(i) &&
+            isSubmitted &&
+            rowIndex === guesses.length - 1
+              ? { animationDelay: `${i * 0.1}s` }
+              : {}
+          }        >
           {displayLetter}
         </div>
       );
@@ -143,7 +163,8 @@ export default function Board({
       >
         {letters}
       </div>
-    );  };
+    );
+  };
 
   const renderEmptyRow = (rowIndex) => {
     const emptyCells = Array.from({ length: WORD_LENGTH }, (_, i) => (
@@ -183,7 +204,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      {/* <div className="devWord">{targetWord}</div> */}
+      <div className="devWord">{targetWord}</div>
     </div>
   );
 }

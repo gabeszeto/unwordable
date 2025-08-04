@@ -106,7 +106,7 @@ export default function GameScreen() {
               });
               addGold(earned);
               setGoldEarned(earned);
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+              await new Promise((resolve) => setTimeout(resolve, 2000));
               advanceStage();
 
               // reset everything including perks
