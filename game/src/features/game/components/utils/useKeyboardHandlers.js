@@ -1,5 +1,4 @@
-// useKeyboardHandlers.js
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { usePerks } from '../../../../contexts/perks/PerksContext';
 
 export default function useKeyboardHandlers({
@@ -9,7 +8,6 @@ export default function useKeyboardHandlers({
     setGuesses,
     targetWord,
     MAX_ROW_LENGTH,
-    WORD_LENGTH,
     paddedTargetWord,
     setShakeRow,
     setBouncingIndices,
@@ -21,50 +19,86 @@ export default function useKeyboardHandlers({
     usedKeys,
     getRowActiveIndices,
     validWords,
-    activeDebuffs
+    activeDebuffs,
+    feedbackShownUpToRow,
+    setFeedbackShownUpToRow,
+    FEEDBACK_DELAY_THRESHOLD,
 }) {
     const { jybrishActive, consumeJybrish } = usePerks();
+    const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
+
+    // Determine if we should delay feedback
+    const delayFeedback = activeDebuffs.includes('DelayedFeedback');
+    const feedbackSuppressed = delayFeedback && guesses.length < FEEDBACK_DELAY_THRESHOLD;
+
+    const getPriority = (status) => {
+        switch (status) {
+            case 'correct':
+                return 3;
+            case 'present':
+                return 2;
+            case 'absent':
+                return 1;
+            default:
+                return 0;
+        }
+    };
+
+    // Apply delayed feedback when threshold is passed
+    useEffect(() => {
+        if (feedbackShownUpToRow >= 1 && pendingUsedKeys) {
+            setUsedKeys(prev => ({ ...prev, ...pendingUsedKeys }));
+            setPendingUsedKeys(null);
+        }
+    }, [feedbackShownUpToRow, pendingUsedKeys, setUsedKeys]);
 
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
         setCurrentGuess(Array(MAX_ROW_LENGTH).fill(''));
 
+        // Reveal previously delayed feedback now
+        if (delayFeedback && newGuesses.length === FEEDBACK_DELAY_THRESHOLD) {
+            setFeedbackShownUpToRow(1); // reveal feedback for row 0 and 1
+        }
+
         const newUsed = { ...usedKeys };
         const correctWord = targetWord.toUpperCase();
         const isCorrect = guessStr === correctWord;
         let hasColor = false;
 
+        // Handle correct guess
         if (isCorrect) {
-            for (const letter of guessStr) {
+            guessStr.split('').forEach(letter => {
                 newUsed[letter] = 'correct';
-            }
+            });
             hasColor = true;
         } else {
+            // Apply key feedback unless suppressed
             rowActiveIndices.forEach((idx, i) => {
                 const letter = guessStr[i];
                 const targetChar = paddedTargetWord[idx];
-              
+
                 const isExact = letter === targetChar;
                 const isBlurredGreen =
-                  activeDebuffs.includes('BlurredVision') &&
-                  [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
-                    .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
-                    .includes(letter);
-              
+                    activeDebuffs.includes('BlurredVision') &&
+                    [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
+                        .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
+                        .includes(letter);
+
                 if (isExact || isBlurredGreen) {
-                  newUsed[letter] = 'correct';
-                  hasColor = true;
+                    newUsed[letter] = 'correct';
+                    hasColor = true;
                 } else if (paddedTargetWord.includes(letter)) {
-                  if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
-                  hasColor = true;
+                    if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
+                    hasColor = true;
                 } else {
-                  if (!newUsed[letter]) newUsed[letter] = 'absent';
+                    if (!newUsed[letter]) newUsed[letter] = 'absent';
                 }
-              });
-              
+            });
         }
 
+        // Handle Gray Reaper instant death
         if (activeDebuffs.includes('GrayReaper') && !hasColor) {
             setUsedKeys(newUsed);
             setIsGameOver(true);
@@ -72,9 +106,27 @@ export default function useKeyboardHandlers({
             return;
         }
 
-        console.log(newUsed)
-        setUsedKeys(newUsed);
+        // Set key states — either now or after delay
+        if (feedbackSuppressed) {
+            setPendingUsedKeys(prev => {
+                const merged = { ...(prev || {}) };
 
+                for (const [letter, status] of Object.entries(newUsed)) {
+                    const existing = merged[letter];
+
+                    // If not set yet, or new status is stronger, update
+                    if (!existing || getPriority(status) > getPriority(existing)) {
+                        merged[letter] = status;
+                    }
+                }
+
+                return merged;
+            });
+        } else {
+            setUsedKeys(newUsed);
+        }
+
+        // Handle win/loss
         if (isCorrect) {
             setBouncingIndices([...rowActiveIndices]);
             setTimeout(() => setBouncingIndices([]), 1000);
@@ -88,6 +140,9 @@ export default function useKeyboardHandlers({
         setRevealedIndices([]);
     };
 
+    useEffect(() => {
+        console.log(pendingUsedKeys)
+    }, [pendingUsedKeys])
 
     const handleKeyDown = useCallback(
         (e) => {

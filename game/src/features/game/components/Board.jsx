@@ -26,7 +26,9 @@ export default function Board({
   targetWord,
   revealedIndices,
   setRevealedIndices,
-  onVirtualKey
+  onVirtualKey,
+  feedbackShownUpToRow,
+  setFeedbackShownUpToRow
 }) {
   const [guesses, setGuesses] = useState([]);
   const [currentGuess, setCurrentGuess] = useState(Array(MAX_ROW_LENGTH).fill(''));
@@ -37,6 +39,11 @@ export default function Board({
   // Local debuffs
   const { activeDebuffs, passiveDebuffs } = useDebuffs();
   const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
+  const isGrellowActive = activeDebuffs.includes('Grellow');
+
+  // Delayed feedback
+  const isFeedbackDelayActive = activeDebuffs.includes('DelayedFeedback');
+  const FEEDBACK_DELAY_THRESHOLD = 2; // First 2 guesses are delayed
 
   // ShiftedGuess debuff logic
   const isShiftedGuessActive = passiveDebuffs['ShiftedGuess'] > 0;
@@ -140,7 +147,10 @@ export default function Board({
     usedKeys,
     getRowActiveIndices,
     validWords,
-    activeDebuffs
+    activeDebuffs,
+    feedbackShownUpToRow,
+    setFeedbackShownUpToRow,
+    FEEDBACK_DELAY_THRESHOLD
   });
 
   // Revelation logic
@@ -196,7 +206,12 @@ export default function Board({
         ? paddedTargetWord[i]
         : letter;
 
-      const shouldApplyFeedback = isSubmitted || revealedIndices.includes(i);
+      const feedbackSuppressed =
+        isFeedbackDelayActive &&
+        rowIndex <= 1 &&
+        rowIndex > feedbackShownUpToRow;
+
+      const shouldApplyFeedback = (isSubmitted || revealedIndices.includes(i)) && !feedbackSuppressed;
 
       let letterClass = '';
 

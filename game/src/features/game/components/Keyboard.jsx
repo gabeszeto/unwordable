@@ -15,7 +15,6 @@ export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord
   const zoneCounts = {};
   const zoneKeys = {};
 
-  // Assign keys to zones and count matching letters
   keyLayout.forEach((row, rowIdx) => {
     row.forEach((key, colIdx) => {
       let zone = null;
@@ -38,11 +37,10 @@ export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord
     });
   });
 
-  // Decide which key should show the label (top-right of each zone)
   const labelKeyMap = {};
   for (const zone in zoneKeys) {
     const keys = zoneKeys[zone];
-    keys.sort((a, b) => a.row - b.row || b.col - a.col); // top-most, then right-most
+    keys.sort((a, b) => a.row - b.row || b.col - a.col); // top-most, right-most
     labelKeyMap[keys[0].key] = zone;
   }
 
@@ -59,7 +57,8 @@ export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord
           {row.map((key) => {
             const zone = zoneMap[key];
             const zoneKeyClass = zone ? `keyzone keyzone-${zone}` : '';
-            const keyClass = `key ${getKeyClass(key)} ${zoneKeyClass}`; const label = labelKeyMap[key] ? zoneCounts[zoneMap[key]] : null;
+            const keyClass = `key ${getKeyClass(key)} ${zoneKeyClass}`;
+            const label = labelKeyMap[key] ? zoneCounts[zoneMap[key]] : null;
 
             return (
               <button

@@ -12,9 +12,9 @@ export const debuffRegistry = {
     description: "Correct letters in the wrong place won't show up yellow.",
     weight: 1,
   },
-  FeedbackDelay: {
+  DelayedFeedback: {
     type: 'active',
-    name: 'Feedback Delay',
+    name: 'Delayed Feedback',
     description: 'No feedback until after your first 2 guesses.',
     weight: 1,
   },
@@ -24,12 +24,12 @@ export const debuffRegistry = {
     description: 'Letters ±1 away from the correct letter show as green too.',
     weight: 1,
   },
-  GoldenLie: {
-    type: 'active',
-    name: 'Golden Lie',
-    description: 'Each guess will have an extra fake yellow tile.',
-    weight: 1,
-  },
+  // GoldenLie: {
+  //   type: 'active',
+  //   name: 'Golden Lie',
+  //   description: 'Each guess will have an extra fake yellow tile.',
+  //   weight: 1,
+  // },
 
   // 💤 PASSIVE DEBUFFS — applied randomly to spice up non-boss levels
   GrayReaper: {

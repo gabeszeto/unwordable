@@ -34,7 +34,7 @@ export default function GameStageManager() {
       // const plan = generateDebuffPlan();
       const plan = generateDebugDebuffPlan({
         forcePassive: 'CutShort',
-        forceActive: 'BlurredVision'
+        forceActive: 'DelayedFeedback'
       });
       setDebuffPlan(plan);
       console.log(plan)

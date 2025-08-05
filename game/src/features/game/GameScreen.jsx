@@ -44,6 +44,9 @@ export default function GameScreen() {
     setUsedPerks([]);
   };
 
+  // KB and board logic for delayed feedback
+  const [feedbackShownUpToRow, setFeedbackShownUpToRow] = useState(-1);
+
   // KB stuff
   const [keyzoneType, setKeyzoneType] = useState(null); // 'row' | 'segment' | 'grid' | null
   const [keyzoneOverlayVisible, setKeyzoneOverlayVisible] = useState(false);
@@ -148,6 +151,8 @@ export default function GameScreen() {
         setRevealedIndices={setRevealedIndices}
         onVirtualKey={setVirtualKeyHandler}
         goldEarned={goldEarned}
+        feedbackShownUpToRow={feedbackShownUpToRow}
+        setFeedbackShownUpToRow={setFeedbackShownUpToRow}
       />
 
       <div className="hud">
@@ -185,6 +190,7 @@ export default function GameScreen() {
         onKeyPress={handleKeyPress}
         keyzoneType={keyzoneOverlayVisible ? keyzoneType : null}
         targetWord={targetWord}
+        feedbackShownUpToRow={feedbackShownUpToRow}
       />
 
       {/* popups */}
