@@ -106,58 +106,58 @@
 
 /* Row-based coloring */
 .keyzone-row-0 {
-    background-color: #f3e5f5;
-    /* light purple */
+    background-color: #f3e5f5 !important; /* light purple */
+    color: black !important;
 }
 
 .keyzone-row-1 {
-    background-color: #e0f7fa;
-    /* light cyan */
+    background-color: #e0f7fa !important; /* light cyan */
+    color: black !important;
 }
 
 .keyzone-row-2 {
-    background-color: #ffe0b2;
-    /* light orange */
+    background-color: #ffe0b2 !important; /* light orange */
+    color: black !important;
 }
 
 /* Segment-based coloring */
 .keyzone-segment-0 {
-    background-color: #dcedc8;
-    /* light green */
+    background-color: #dcedc8 !important; /* light green */
+    color: black !important;
 }
 
 .keyzone-segment-1 {
-    background-color: #ffcdd2;
-    /* light red */
+    background-color: #ffcdd2 !important; /* light red */
+    color: black !important;
 }
 
 /* Grid-based blended coloring (row + segment) */
 .keyzone-grid-0 {
-    background-color: #e6f1db;
-    /* blend of light purple + light green */
+    background-color: #e6f1db !important; /* blend of light purple + light green */
+    color: black !important;
 }
 
 .keyzone-grid-1 {
-    background-color: #f9d9e8;
-    /* blend of light purple + light red */
+    background-color: #f9d9e8 !important; /* blend of light purple + light red */
+    color: black !important;
 }
 
 .keyzone-grid-2 {
-    background-color: #d9f6e9;
-    /* blend of light cyan + light green */
+    background-color: #d9f6e9 !important; /* blend of light cyan + light green */
+    color: black !important;
 }
 
 .keyzone-grid-3 {
-    background-color: #f5eef6;
-    /* blend of light cyan + light red */
+    background-color: #f5eef6 !important; /* blend of light cyan + light red */
+    color: black !important;
 }
 
 .keyzone-grid-4 {
-    background-color: #f4f1d5;
-    /* blend of light orange + light green */
+    background-color: #f4f1d5 !important; /* blend of light orange + light green */
+    color: black !important;
 }
 
 .keyzone-grid-5 {
-    background-color: #ffe2da;
-    /* blend of light orange + light red */
+    background-color: #ffe2da !important; /* blend of light orange + light red */
+    color: black !important;
 }

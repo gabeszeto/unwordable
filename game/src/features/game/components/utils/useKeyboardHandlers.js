@@ -44,17 +44,25 @@ export default function useKeyboardHandlers({
             rowActiveIndices.forEach((idx, i) => {
                 const letter = guessStr[i];
                 const targetChar = paddedTargetWord[idx];
-
-                if (!paddedTargetWord.includes(letter)) {
-                    if (!newUsed[letter]) newUsed[letter] = 'absent';
-                } else if (letter === targetChar) {
-                    newUsed[letter] = 'correct';
-                    hasColor = true;
+              
+                const isExact = letter === targetChar;
+                const isBlurredGreen =
+                  activeDebuffs.includes('BlurredVision') &&
+                  [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
+                    .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
+                    .includes(letter);
+              
+                if (isExact || isBlurredGreen) {
+                  newUsed[letter] = 'correct';
+                  hasColor = true;
+                } else if (paddedTargetWord.includes(letter)) {
+                  if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
+                  hasColor = true;
                 } else {
-                    if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
-                    hasColor = true;
+                  if (!newUsed[letter]) newUsed[letter] = 'absent';
                 }
-            });
+              });
+              
         }
 
         if (activeDebuffs.includes('GrayReaper') && !hasColor) {
@@ -64,6 +72,7 @@ export default function useKeyboardHandlers({
             return;
         }
 
+        console.log(newUsed)
         setUsedKeys(newUsed);
 
         if (isCorrect) {

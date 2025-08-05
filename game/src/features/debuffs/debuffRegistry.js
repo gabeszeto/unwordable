@@ -9,7 +9,7 @@ export const debuffRegistry = {
   Yellowless: {
     type: 'active',
     name: 'Yellow-less',
-    description: 'Correct letters in the wrong place won’t show up yellow.',
+    description: "Correct letters in the wrong place won't show up yellow.",
     weight: 1,
   },
   FeedbackDelay: {
@@ -24,9 +24,9 @@ export const debuffRegistry = {
     description: 'Letters ±1 away from the correct letter show as green too.',
     weight: 1,
   },
-  OopsYellow: {
+  GoldenLie: {
     type: 'active',
-    name: 'Oops, Yellow!',
+    name: 'Golden Lie',
     description: 'Each guess will have an extra fake yellow tile.',
     weight: 1,
   },
@@ -62,9 +62,9 @@ export const debuffRegistry = {
     description: 'Your first guess must be a 3-letter word. Brutal.',
     hidden: true, // optional: don’t show in perk selection if it's an upgrade
   },
-  OneLessGuess: {
+  CutShort: {
     type: 'passive',
-    name: 'Fewer Guesses',
+    name: 'Cut Short',
     description: 'You have 1 less guess.',
     weight: 1,
     maxStacks: 3

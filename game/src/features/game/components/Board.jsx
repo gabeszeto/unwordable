@@ -5,7 +5,7 @@ import { usePerks } from '../../../contexts/perks/PerksContext';
 
 const WORD_LENGTH = 5;
 const MAX_ROW_LENGTH = 7;
-const MAX_GUESSES = 6;
+const BASE_GUESSES = 6;
 
 import useKeyboardHandlers from './utils/useKeyboardHandlers';
 
@@ -70,6 +70,10 @@ export default function Board({
 
   // Local Perks
   const { jybrishActive } = usePerks();
+
+  // Cut Short logic
+  const cutShortStacks = passiveDebuffs['CutShort'] || 0;
+  const MAX_GUESSES = Math.max(1, BASE_GUESSES - cutShortStacks);
 
   const getActiveIndices = (len) => {
     const offset = Math.floor((MAX_ROW_LENGTH - len) / 2);
@@ -193,7 +197,7 @@ export default function Board({
         : letter;
 
       const shouldApplyFeedback = isSubmitted || revealedIndices.includes(i);
-      
+
       let letterClass = '';
 
       if (shouldApplyFeedback) {
@@ -284,7 +288,7 @@ export default function Board({
     }
 
     return renderedRows;
-  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shiftInitialized]);
+  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shiftInitialized, MAX_GUESSES]);
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {
