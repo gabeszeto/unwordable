@@ -5,7 +5,7 @@ import { useLevel } from '../contexts/level/LevelContext';
 import { useDebuffs } from '../contexts/debuffs/DebuffsContext';
 import { useDeath } from '../contexts/death/DeathContext';
 
-import { generateDebuffPlan } from './debuffs/generateDebuffPlan';
+import { generateDebuffPlan, generateDebugDebuffPlan } from './debuffs/generateDebuffPlan';
 
 import DeathScreen from './game/DeathScreen';
 
@@ -31,7 +31,11 @@ export default function GameStageManager() {
   useEffect(() => {
     // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      const plan = generateDebuffPlan();
+      // const plan = generateDebuffPlan();
+      const plan = generateDebugDebuffPlan({
+        forcePassive: 'ShiftedGuess',
+        forceActive: 'BlurredVision'
+      });
       setDebuffPlan(plan);
       console.log(plan)
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './boardStyles.css';
 import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
 import { usePerks } from '../../../contexts/perks/PerksContext';
@@ -35,8 +35,27 @@ export default function Board({
   const [isGameOver, setIsGameOver] = useState(false);
 
   // Local debuffs
-  const { activeDebuffs } = useDebuffs();
+  const { activeDebuffs, passiveDebuffs } = useDebuffs();
   const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
+
+  // ShiftedGuess debuff logic
+  const isShiftedGuessActive = passiveDebuffs['ShiftedGuess'] > 0;
+  const shiftedGuessRowRef = useRef(null); // Which row to shift (0–2)
+  const shiftDirectionRef = useRef(null);
+  const [shiftInitialized, setShiftInitialized] = useState(false);
+
+  // Shift init here
+  useEffect(() => {
+    if (
+      isShiftedGuessActive &&
+      shiftedGuessRowRef.current === null &&
+      shiftDirectionRef.current === null
+    ) {
+      shiftedGuessRowRef.current = Math.floor(Math.random() * 3); // 0–2
+      shiftDirectionRef.current = Math.random() < 0.5 ? -1 : 1;
+      setShiftInitialized(true); // force re-render
+    }
+  }, [isShiftedGuessActive]);
 
   // Local Perks
   const { jybrishActive } = usePerks();
@@ -48,10 +67,23 @@ export default function Board({
 
   const getRowActiveIndices = (rowIndex) => {
     const base = getActiveIndices(WORD_LENGTH);
+
+    // Check for FourSight shortening
     const shouldShorten = rowIndex === 0 && activeDebuffs.includes('FourSight');
     const blocked = shortenedBlockIndexRef.current;
-    return shouldShorten && blocked !== null ? base.filter(i => i !== blocked) : base;
+
+    let final = base;
+
+    // Apply shifted guess
+    if (isShiftedGuessActive && rowIndex === shiftedGuessRowRef.current) {
+      final = base.map(i => i + shiftDirectionRef.current).filter(i => i >= 0 && i < MAX_ROW_LENGTH);
+    }
+
+    return shouldShorten && blocked !== null
+      ? final.filter(i => i !== blocked)
+      : final;
   };
+
 
   // Shortened word logic, active only on first row, and if debuff is active
   const shortenedBlockIndexRef = useRef(null);
@@ -69,11 +101,17 @@ export default function Board({
     return padded;
   }, [targetWord]);
 
+  // Helper to get correct guess
+  const isCorrectGuess = (guessStr) => {
+    return guessStr === targetWord.toUpperCase();
+  };
+
   const { handleKeyDown } = useKeyboardHandlers({
     guesses,
     currentGuess,
     setCurrentGuess,
     setGuesses,
+    targetWord,
     MAX_ROW_LENGTH,
     WORD_LENGTH,
     paddedTargetWord,
@@ -128,6 +166,9 @@ export default function Board({
     const rowActiveIndices = getRowActiveIndices(rowIndex);
     const cursorIndex = rowActiveIndices.find(i => guessArray[i] === '' && !revealedIndices.includes(i));
 
+    const guessStr = rowActiveIndices.map(i => guessArray[i]).join('');
+    const overrideAllCorrect = isSubmitted && isCorrectGuess(guessStr);
+
     const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const letter = guessArray[i] || '';
       const isActive = rowActiveIndices.includes(i);
@@ -141,9 +182,16 @@ export default function Board({
         : letter;
 
       const shouldApplyFeedback = isSubmitted || revealedIndices.includes(i);
-      let letterClass = shouldApplyFeedback
-        ? getLetterClass(letter, i, !isSubmitted, rowActiveIndices)
-        : '';
+      
+      let letterClass = '';
+
+      if (shouldApplyFeedback) {
+        if (overrideAllCorrect && isActive) {
+          letterClass = 'correct'; // Force green
+        } else {
+          letterClass = getLetterClass(letter, i, !isSubmitted, rowActiveIndices);
+        }
+      }
 
       if (
         bouncingIndices.includes(i) &&
@@ -190,9 +238,12 @@ export default function Board({
 
 
   const renderEmptyRow = (rowIndex) => {
-    const baseActiveIndices = getActiveIndices(WORD_LENGTH);
+    const rowActiveIndices = getRowActiveIndices(rowIndex);
     const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => (
-      <div className={`letter ${!baseActiveIndices.includes(i) ? 'inactive' : ''}`} key={i}></div>
+      <div
+        className={`letter ${!rowActiveIndices.includes(i) ? 'inactive' : ''}`}
+        key={i}
+      />
     ));
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
@@ -213,13 +264,16 @@ export default function Board({
       renderedRows.push(renderRow(currentGuess, guesses.length, false));
     }
 
-    const remaining = MAX_GUESSES - renderedRows.length;
+    const totalRows = isGameOver ? guesses.length : guesses.length + 1;
+    const remaining = MAX_GUESSES - totalRows;
+
     for (let i = 0; i < remaining; i++) {
-      renderedRows.push(renderEmptyRow(i));
+      const globalRowIndex = totalRows + i;
+      renderedRows.push(renderEmptyRow(globalRowIndex));
     }
 
     return renderedRows;
-  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow]);
+  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shiftInitialized]);
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {

@@ -47,3 +47,23 @@ export function generateDebuffPlan() {
 
   return plan;
 }
+
+export function generateDebugDebuffPlan({ forcePassive = null, forceActive = null } = {}) {
+  const plan = generateDebuffPlan();
+
+  // Force passive debuff
+  if (forcePassive) {
+    if (!plan[1].passive.includes(forcePassive)) {
+      plan[1].passive.push(forcePassive);
+    }
+  }
+
+  // Force active debuff
+  if (forceActive) {
+    if (!plan[1].active.includes(forceActive)) {
+      plan[1].active.push(forceActive);
+    }
+  }
+
+  return plan;
+}

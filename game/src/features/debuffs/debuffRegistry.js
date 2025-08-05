@@ -56,23 +56,23 @@ export const debuffRegistry = {
     description: 'Your first guess must be a 4-letter word.',
     weight: 1,
   },
-  ThreedomDenied: {
+  NoThreedom: {
     type: 'passive',
-    name: 'Threedom Denied',
+    name: 'No Threedom',
     description: 'Your first guess must be a 3-letter word. Brutal.',
     hidden: true, // optional: don’t show in perk selection if it's an upgrade
   },
   OneLessGuess: {
     type: 'passive',
     name: 'Fewer Guesses',
-    description: 'You only have 5 guesses this round.',
+    description: 'You have 1 less guess.',
     weight: 1,
     maxStacks: 3
   },
   PerkTax: {
     type: 'passive',
     name: 'Perk Tax',
-    description: 'Using a perk costs 1 gold.',
+    description: 'Using a perk costs +1 gold.',
     weight: 1,
     maxStacks: 2
   },
