@@ -13,6 +13,6 @@ export const debuffRegistry = {
     name: 'Blurred Vision',
     description: 'Letters one step away from the correct letter will also appear green. (But yellows remain sharp — only exact letters out of place count.)',
     component: BlurredVision, // optional visual influence on feedback
-    weight: 0
+    weight: 1
   },
 };

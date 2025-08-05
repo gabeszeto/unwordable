@@ -1,12 +1,21 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import './boardStyles.css';
-import combinedWordList from '../../../assets/combined_wordlist.txt?raw';
+import combinedWordList from '../../../assets/five-letter-words.txt?raw';
 import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
 
-const WORD_LENGTH = 5;
+const WORD_LENGTH = 5; // change dynamically if needed (perk/debuff controlled)
+const MAX_ROW_LENGTH = 7;
 const MAX_GUESSES = 6;
 
-const validWords = combinedWordList.split('\n').map(word => word.trim().toUpperCase());
+import fourLetterWords from '../../../assets/four-letter-words.txt?raw';
+import fiveLetterWords from '../../../assets/five-letter-words.txt?raw';
+import sixLetterWords from '../../../assets/six-letter-words.txt?raw';
+
+const validWords = {
+  4: fourLetterWords.split('\n').map(w => w.trim().toUpperCase()),
+  5: fiveLetterWords.split('\n').map(w => w.trim().toUpperCase()),
+  6: sixLetterWords.split('\n').map(w => w.trim().toUpperCase())
+};
 
 export default function Board({
   onRoundComplete,
@@ -18,96 +27,134 @@ export default function Board({
   onVirtualKey
 }) {
   const [guesses, setGuesses] = useState([]);
-  const [currentGuess, setCurrentGuess] = useState(Array(WORD_LENGTH).fill(''));
-
-  // Animations
+  const [currentGuess, setCurrentGuess] = useState(Array(MAX_ROW_LENGTH).fill(''));
   const [shakeRow, setShakeRow] = useState(false);
   const [bouncingIndices, setBouncingIndices] = useState([]);
-
   const [isGameOver, setIsGameOver] = useState(false);
 
-  // Debuff board logic
   const { activeDebuffs } = useDebuffs();
-
-  // Blurred vision checker
   const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
 
+  const getActiveIndices = (len) => {
+    const offset = Math.floor((MAX_ROW_LENGTH - len) / 2);
+    return Array.from({ length: len }, (_, i) => i + offset);
+  };
+
+  const getRowActiveIndices = (rowIndex) => {
+    const base = getActiveIndices(WORD_LENGTH);
+    const shouldShorten = rowIndex === 0 && activeDebuffs.includes('ShortenedWord');
+    const blocked = shortenedBlockIndexRef.current;
+    return shouldShorten && blocked !== null ? base.filter(i => i !== blocked) : base;
+  };
+
+
+  // Shortened word logic, active only on first row, and if debuff is active
+  const shortenedBlockIndexRef = useRef(null);
+
+  if (shortenedBlockIndexRef.current === null && activeDebuffs.includes('ShortenedWord')) {
+    shortenedBlockIndexRef.current = Math.random() < 0.5 ? 1 : 5;
+  }
+
+
+  const activeIndices = useMemo(() => getActiveIndices(5), []);
+
+  const paddedTargetWord = useMemo(() => {
+    const padded = Array(MAX_ROW_LENGTH).fill('');
+    const offset = Math.floor((MAX_ROW_LENGTH - targetWord.length) / 2);
+    targetWord.split('').forEach((char, i) => {
+      padded[offset + i] = char;
+    });
+    return padded;
+  }, [targetWord]);
+
+
+  // Revelation logic
   useEffect(() => {
     setCurrentGuess(prev => {
       const updated = [...prev];
-      revealedIndices.forEach(i => updated[i] = targetWord[i]);
+      revealedIndices.forEach(i => updated[i] = paddedTargetWord[i]);
       return updated;
     });
   }, [revealedIndices, targetWord]);
 
+  // Keydown logic
   const handleKeyDown = useCallback((e) => {
     if (isGameOver) return;
     const key = e.key.toUpperCase();
+    const rowActiveIndices = getRowActiveIndices(guesses.length);
 
     if (key === 'ENTER') {
-      const guessStr = currentGuess.join('');
-      if (guessStr.length === WORD_LENGTH && !currentGuess.includes('')) {
-        // if (!validWords.includes(guessStr)) {
-        //   setShakeRow(true);
-        //   setTimeout(() => setShakeRow(false), 400); // allow animation to run
-        //   return;
-        // }
-        submitGuess(guessStr);
+      const guessStr = rowActiveIndices.map(i => currentGuess[i]).join('');
+      const guessLen = guessStr.length;
+
+      if (!validWords[guessLen].includes(guessStr)) {
+        setShakeRow(true);
+        setTimeout(() => setShakeRow(false), 400); // match your animation duration
+        return;
+      }
+      if (guessStr.length === rowActiveIndices.length && !rowActiveIndices.some(i => currentGuess[i] === '')) {
+        submitGuess(guessStr, rowActiveIndices);
       }
     } else if (key === 'BACKSPACE') {
       const updated = [...currentGuess];
-      for (let i = WORD_LENGTH - 1; i >= 0; i--) {
-        if (!revealedIndices.includes(i) && updated[i] !== '') {
-          updated[i] = '';
+      for (let i = rowActiveIndices.length - 1; i >= 0; i--) {
+        const idx = rowActiveIndices[i];
+        if (!revealedIndices.includes(idx) && updated[idx] !== '') {
+          updated[idx] = '';
           break;
         }
       }
       setCurrentGuess(updated);
     } else if (/^[A-Z]$/.test(key)) {
       const updated = [...currentGuess];
-      for (let i = 0; i < WORD_LENGTH; i++) {
-        if (!revealedIndices.includes(i) && updated[i] === '') {
-          updated[i] = key;
+      for (let i = 0; i < rowActiveIndices.length; i++) {
+        const idx = rowActiveIndices[i];
+        if (!revealedIndices.includes(idx) && updated[idx] === '') {
+          updated[idx] = key;
           break;
         }
       }
       setCurrentGuess(updated);
     }
-  }, [isGameOver, currentGuess, revealedIndices, targetWord, usedKeys]);
+  }, [isGameOver, currentGuess, revealedIndices, guesses.length]);
 
-  const submitGuess = (guessStr) => {
+
+  // Submit logic
+  const submitGuess = (guessStr, rowActiveIndices) => {
     const newGuesses = [...guesses, guessStr];
     setGuesses(newGuesses);
-    setCurrentGuess(Array(WORD_LENGTH).fill(''));
+    setCurrentGuess(Array(MAX_ROW_LENGTH).fill(''));
 
     const newUsed = { ...usedKeys };
     let hasColor = false;
 
-    for (let i = 0; i < WORD_LENGTH; i++) {
+    rowActiveIndices.forEach((idx, i) => {
       const letter = guessStr[i];
-      if (!targetWord.includes(letter)) {
+      const targetChar = paddedTargetWord[idx];
+
+      if (!paddedTargetWord.includes(letter)) {
         if (!newUsed[letter]) newUsed[letter] = 'absent';
-      } else if (targetWord[i] === letter) {
+      } else if (letter === targetChar) {
         newUsed[letter] = 'correct';
         hasColor = true;
       } else {
         if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
         hasColor = true;
       }
-    }
+    });
 
-    // GrayReaper instant loss logic
     if (activeDebuffs.includes('GrayReaper') && !hasColor) {
       setUsedKeys(newUsed);
       setIsGameOver(true);
-      onRoundComplete(false, newGuesses, 'GrayReaper'); // optional third param to tag reason
+      onRoundComplete(false, newGuesses, 'GrayReaper');
       return;
     }
 
     setUsedKeys(newUsed);
 
-    if (guessStr === targetWord) {
-      setBouncingIndices([0, 1, 2, 3, 4]); // mark all
+    const targetSlice = rowActiveIndices.map(i => paddedTargetWord[i]).join('');
+    if (guessStr === targetSlice) {
+      setBouncingIndices([...rowActiveIndices]);
       setTimeout(() => setBouncingIndices([]), 1000);
       setIsGameOver(true);
       onRoundComplete(true, newGuesses);
@@ -123,15 +170,14 @@ export default function Board({
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentGuess, isGameOver]);
+  }, [handleKeyDown]);
 
   const getLetterClass = (letter, index, isCurrentRow) => {
-    if (!letter) return '';
+    if (!letter || !activeIndices.includes(index)) return '';
 
-    // 1. Perk override — revealed letter
     if (revealedIndices.includes(index) && isCurrentRow) return 'correct';
 
-    const targetChar = targetWord[index];
+    const targetChar = paddedTargetWord[index];
     const isExact = letter === targetChar;
     const isBlurredGreen =
       isBlurredVisionActive &&
@@ -141,30 +187,29 @@ export default function Board({
         .includes(letter);
 
     if (isExact || isBlurredGreen) return 'correct';
-
-    // 2. Yellow (only exact match elsewhere in wrong position)
-    if (targetWord.includes(letter)) return 'present';
+    if (paddedTargetWord.includes(letter)) return 'present';
 
     return 'absent';
-  };
-
+  }
 
   const renderRow = (guessArray, rowIndex, isSubmitted) => {
-    const cursorIndex = guessArray.findIndex(
-      (ch, i) => ch === '' && !revealedIndices.includes(i)
-    );
+    const rowActiveIndices = getRowActiveIndices(rowIndex);
+    const cursorIndex = rowActiveIndices.find(i => guessArray[i] === '' && !revealedIndices.includes(i));
 
-    const letters = Array.from({ length: WORD_LENGTH }, (_, i) => {
+    const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const letter = guessArray[i] || '';
+      const isActive = activeIndices.includes(i);
+      const isBlockedSlot =
+        rowIndex === 0 &&
+        activeDebuffs.includes('ShortenedWord') &&
+        shortenedBlockIndexRef.current === i;
+
       const displayLetter = !isSubmitted && revealedIndices.includes(i)
-        ? targetWord[i]
+        ? paddedTargetWord[i]
         : letter;
 
       const shouldApplyFeedback = isSubmitted || revealedIndices.includes(i);
-
-      let letterClass = shouldApplyFeedback
-        ? getLetterClass(letter, i, isSubmitted === false)
-        : '';
+      let letterClass = shouldApplyFeedback ? getLetterClass(letter, i, !isSubmitted) : '';
 
       if (
         bouncingIndices.includes(i) &&
@@ -178,7 +223,13 @@ export default function Board({
 
       return (
         <div
-          className={`letter ${letterClass} ${isCurrent ? 'current-input' : ''}`}
+          className={`
+            letter 
+            ${letterClass} 
+            ${isCurrent ? 'current-input' : ''} 
+            ${!isActive ? 'inactive' : ''} 
+            ${isBlockedSlot ? 'blocked' : ''}
+          `}
           key={i}
           style={
             bouncingIndices.includes(i) &&
@@ -186,7 +237,8 @@ export default function Board({
               rowIndex === guesses.length - 1
               ? { animationDelay: `${i * 0.1}s` }
               : {}
-          }        >
+          }
+        >
           {displayLetter}
         </div>
       );
@@ -202,9 +254,10 @@ export default function Board({
     );
   };
 
+
   const renderEmptyRow = (rowIndex) => {
-    const emptyCells = Array.from({ length: WORD_LENGTH }, (_, i) => (
-      <div className="letter" key={i}></div>
+    const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => (
+      <div className={`letter ${!activeIndices.includes(i) ? 'inactive' : ''}`} key={i}></div>
     ));
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
@@ -212,7 +265,11 @@ export default function Board({
   const rows = useMemo(() => {
     const renderedRows = [
       ...guesses.map((guessStr, i) => {
-        const guessArray = guessStr.split('');
+        const guessArray = Array(MAX_ROW_LENGTH).fill('');
+        const rowActiveIndices = getRowActiveIndices(i);
+        rowActiveIndices.forEach((idx, j) => {
+          guessArray[idx] = guessStr[j];
+        });
         return renderRow(guessArray, i, true);
       }),
     ];

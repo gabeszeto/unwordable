@@ -17,7 +17,7 @@
 
 .guess-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     gap: 0.4rem;
 }
 
@@ -42,6 +42,20 @@
     transition: transform 0.1s ease;
 }
 
+.letter.inactive {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.letter.blocked {
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.board .guess-row:first-child .letter.blocked.loaded {
+    visibility: visible;
+    opacity: 0.3;
+}
 
 /* Feedback colors */
 .correct {

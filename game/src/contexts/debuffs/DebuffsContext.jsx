@@ -15,7 +15,7 @@ export const DebuffsProvider = ({ children }) => {
     setActiveDebuffs((prev) => prev.filter((key) => key !== debuffKey));
   };
 
-  const clearDebuffs = () => setActiveDebuffs([]);
+  const clearDebuffs = () => setActiveDebuffs(["ShortenedWord"]);
 
   console.log(activeDebuffs)
 
