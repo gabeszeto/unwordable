@@ -22,7 +22,7 @@ export default function GameScreen() {
   const { stage, setStage, advanceStage } = useLevel();
   const { setDeathInfo } = useDeath();
   const { gold, addGold } = useGold();
-  const { activeDebuffs } = useDebuffs();
+  const { activeDebuffs, passiveDebuffs } = useDebuffs();
 
   const BOSS_STAGES = [4, 10, 16, 18];
 
@@ -93,14 +93,21 @@ export default function GameScreen() {
         </div>
 
         <div className="mod-right">
-          {activeDebuffs.length === 0 ? (
+          {activeDebuffs.length === 0 && Object.keys(passiveDebuffs || {}).length === 0 ? (
             <span className="mod-none">No modifiers</span>
           ) : (
-            activeDebuffs.map((debuffKey) => (
-              <span className="mod-debuff" key={debuffKey}>
-                {debuffKey}
-              </span>
-            ))
+            <>
+              {Object.entries(passiveDebuffs || {}).map(([debuffKey, level]) => (
+                <span className="mod-debuff passive" key={`passive-${debuffKey}`}>
+                  {debuffKey}{level > 1 ? ` ×${level}` : ''}
+                </span>
+              ))}
+              {activeDebuffs.map((debuffKey, i) => (
+                <span className="mod-debuff active" key={`active-${i}`}>
+                  {debuffKey}
+                </span>
+              ))}
+            </>
           )}
         </div>
       </div>
@@ -149,7 +156,7 @@ export default function GameScreen() {
           markAsUsed={markPerkAsUsed}
           sharedProps={sharedProps}
           isKeyzoneUsed={isKeyzoneUsed}
-          
+
         />
       </div>
 

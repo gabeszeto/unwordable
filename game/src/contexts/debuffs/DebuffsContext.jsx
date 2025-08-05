@@ -4,24 +4,57 @@ const DebuffsContext = createContext();
 
 export const DebuffsProvider = ({ children }) => {
   const [activeDebuffs, setActiveDebuffs] = useState([]);
+  const [passiveDebuffs, setPassiveDebuffs] = useState({});
 
-  const addDebuff = (debuffKey) => {
+  const [debuffPlan, setDebuffPlan] = useState({});
+
+  const addActiveDebuff = (debuffKey) => {
     setActiveDebuffs((prev) =>
       prev.includes(debuffKey) ? prev : [...prev, debuffKey]
     );
   };
 
-  const removeDebuff = (debuffKey) => {
+  const addPassiveDebuff = (debuffKey) => {
+    setPassiveDebuffs((prev) => {
+      const current = prev[debuffKey] || 0;
+      return {
+        ...prev,
+        [debuffKey]: current + 1,
+      };
+    });
+  };
+
+  const removeActiveDebuff = (debuffKey) => {
     setActiveDebuffs((prev) => prev.filter((key) => key !== debuffKey));
   };
 
-  const clearDebuffs = () => setActiveDebuffs([]);
+  const removePassiveDebuff = (debuffKey) => {
+    setPassiveDebuffs((prev) => {
+      const { [debuffKey]: _, ...rest } = prev;
+      return rest;
+    });
+  };
 
-  console.log(activeDebuffs)
+  const clearDebuffs = () => {
+    setActiveDebuffs([]);
+    setPassiveDebuffs({});
+  };
+
+  console.log({ activeDebuffs, passiveDebuffs });
 
   return (
     <DebuffsContext.Provider
-      value={{ activeDebuffs, addDebuff, removeDebuff, clearDebuffs }}
+      value={{
+        activeDebuffs,
+        passiveDebuffs,
+        addActiveDebuff,
+        addPassiveDebuff,
+        removeActiveDebuff,
+        removePassiveDebuff,
+        clearDebuffs,
+        debuffPlan,
+        setDebuffPlan
+      }}
     >
       {children}
     </DebuffsContext.Provider>

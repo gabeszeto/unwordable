@@ -5,33 +5,48 @@ import { useLevel } from '../contexts/level/LevelContext';
 import { useDebuffs } from '../contexts/debuffs/DebuffsContext';
 import { useDeath } from '../contexts/death/DeathContext';
 
-import { debuffRegistry } from './debuffs/debuffRegistry';
-import { pickWeightedDebuff } from './debuffs/pickWeightedDebuff'; // ⬅️ Make this if not yet made
+import { generateDebuffPlan } from './debuffs/generateDebuffPlan';
+
 import DeathScreen from './game/DeathScreen';
 
 import './gameStageManagerStyles.css'
 
 const FINAL_STAGE = 18;
-const BOSS_STAGES = [4, 10, 16, 18];
 
 export default function GameStageManager() {
   const { stage } = useLevel();
-  const { addDebuff, clearDebuffs } = useDebuffs();
+  const {
+    addActiveDebuff,
+    addPassiveDebuff,
+    clearDebuffs,
+    debuffPlan,
+    setDebuffPlan
+  } = useDebuffs();
+
   const { deathRound, reason } = useDeath();
 
   const round = Math.floor(stage / 2) + 1;
 
+  // Initially set debuff plan
   useEffect(() => {
-    if (BOSS_STAGES.includes(stage)) {
-      clearDebuffs()
-      const debuffKey = pickWeightedDebuff(debuffRegistry);
-      if (debuffKey) {
-        addDebuff(debuffKey);
-      }
-    } else {
-      clearDebuffs()
+    // Only run once at game start
+    if (Object.keys(debuffPlan).length === 0) {
+      const plan = generateDebuffPlan();
+      setDebuffPlan(plan);
+      console.log(plan)
     }
-  }, [stage]);
+  }, []);
+
+  // Add the correct debuffs based off plan
+  useEffect(() => {
+    clearDebuffs();
+
+    const roundPlan = debuffPlan[round];
+    if (!roundPlan) return;
+
+    for (const p of roundPlan.passive) addPassiveDebuff(p);
+    for (const a of roundPlan.active) addActiveDebuff(a);
+  }, [stage, debuffPlan]);
 
   const isGameLevel = stage % 2 === 0;
   const isDeath = stage === 100;
