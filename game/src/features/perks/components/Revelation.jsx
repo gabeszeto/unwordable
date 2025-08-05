@@ -35,3 +35,5 @@ export default function Revelation({
     </button>
   );
 }
+
+// need to fix the logic here and where revelation is done.

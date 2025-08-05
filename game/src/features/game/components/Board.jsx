@@ -217,9 +217,14 @@ export default function Board({
 
       if (shouldApplyFeedback) {
         if (overrideAllCorrect && isActive) {
-          letterClass = 'correct'; // Force green
+          letterClass = 'correct'; // Boss override
         } else {
           letterClass = getLetterClass(letter, i, !isSubmitted, rowActiveIndices);
+
+          // 👇 Override green with yellow if Grellow is active
+          if (isGrellowActive && letterClass === 'correct') {
+            letterClass = 'present';
+          }
         }
       }
 

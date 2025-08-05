@@ -31,6 +31,14 @@ export default function useKeyboardHandlers({
     const delayFeedback = activeDebuffs.includes('DelayedFeedback');
     const feedbackSuppressed = delayFeedback && guesses.length < FEEDBACK_DELAY_THRESHOLD;
 
+    // Apply delayed feedback when threshold is passed
+    useEffect(() => {
+        if (feedbackShownUpToRow >= 1 && pendingUsedKeys) {
+            setUsedKeys(prev => ({ ...prev, ...pendingUsedKeys }));
+            setPendingUsedKeys(null);
+        }
+    }, [feedbackShownUpToRow, pendingUsedKeys, setUsedKeys]);
+
     const getPriority = (status) => {
         switch (status) {
             case 'correct':
@@ -44,13 +52,8 @@ export default function useKeyboardHandlers({
         }
     };
 
-    // Apply delayed feedback when threshold is passed
-    useEffect(() => {
-        if (feedbackShownUpToRow >= 1 && pendingUsedKeys) {
-            setUsedKeys(prev => ({ ...prev, ...pendingUsedKeys }));
-            setPendingUsedKeys(null);
-        }
-    }, [feedbackShownUpToRow, pendingUsedKeys, setUsedKeys]);
+    // Grellow
+    const isGrellowActive = activeDebuffs.includes('Grellow');
 
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
@@ -87,7 +90,11 @@ export default function useKeyboardHandlers({
                         .includes(letter);
 
                 if (isExact || isBlurredGreen) {
-                    newUsed[letter] = 'correct';
+                    if (isGrellowActive) {
+                        if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
+                    } else {
+                        newUsed[letter] = 'correct';
+                    }
                     hasColor = true;
                 } else if (paddedTargetWord.includes(letter)) {
                     if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
@@ -95,6 +102,7 @@ export default function useKeyboardHandlers({
                 } else {
                     if (!newUsed[letter]) newUsed[letter] = 'absent';
                 }
+
             });
         }
 
