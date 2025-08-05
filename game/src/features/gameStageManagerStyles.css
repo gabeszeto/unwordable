@@ -62,6 +62,12 @@
     background: #505050;
 }
 
+.round-step.shop-outline {
+    border: 3px solid black;
+    box-sizing: border-box;
+}
+
+
 /* dead display */
 .round-step.died {
     background: #d06363;
@@ -70,4 +76,5 @@
 /* Completed regular levels */
 .round-step.complete {
     background: #c9b458;
+    border: 3px solid black;
 }

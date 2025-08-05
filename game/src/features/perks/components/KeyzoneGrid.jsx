@@ -8,7 +8,7 @@ export default function KeyzoneGrid({
   markAsUsed,
   remaining,
 }) {
-  const { perks } = usePerks();
+  const { perks, usePerk } = usePerks();
   const used = isKeyzoneUsed;
   const quantity = perks[perkKey] || 0;
 
@@ -17,6 +17,7 @@ export default function KeyzoneGrid({
 
     onKBActivate?.('grid');
     markAsUsed(perkKey);
+    usePerk(perkKey)
   };
 
   return (

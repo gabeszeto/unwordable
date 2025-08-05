@@ -9,7 +9,7 @@ export default function Revelation({
   markAsUsed,
   remaining
 }) {
-  const { perks } = usePerks();
+  const { perks, usePerk } = usePerks();
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
 
@@ -26,6 +26,7 @@ export default function Revelation({
     setRevealedIndices([...revealedIndices, randomIndex]);
 
     markAsUsed(perkKey); // updates usedPerks array
+    usePerk(perkKey)
   };
 
   return (

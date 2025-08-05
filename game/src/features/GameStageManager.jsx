@@ -19,7 +19,7 @@ export default function GameStageManager() {
   const { addDebuff, clearDebuffs } = useDebuffs();
   const { deathRound, reason } = useDeath();
 
-  const round = stage / 2 + 1;
+  const round = Math.floor(stage / 2) + 1;
 
   useEffect(() => {
     if (BOSS_STAGES.includes(stage)) {
@@ -35,6 +35,7 @@ export default function GameStageManager() {
 
   const isGameLevel = stage % 2 === 0;
   const isDeath = stage === 100;
+  const isShop = stage % 2 === 1;
   const isFinished = stage > FINAL_STAGE;
 
   const roundToUse = isDeath ? deathRound : round;
@@ -53,6 +54,7 @@ export default function GameStageManager() {
             const isComplete = step < roundToUse
             const isActive = step === round;
             const isDeathRound = step === deathRound
+            const isShopRound = isShop && step === round;
 
             return (
               <div
@@ -63,6 +65,7 @@ export default function GameStageManager() {
                 ${isBoss ? 'boss' : ''}
                 ${isComplete ? 'complete' : ''}
                 ${isActive ? 'active' : ''}
+                ${isShopRound ? 'shop-outline' : ''}
                 ${isDeathRound ? 'died' : ''}
                 `}
               />

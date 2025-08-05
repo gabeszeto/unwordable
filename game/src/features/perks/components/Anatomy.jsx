@@ -8,7 +8,7 @@ export default function Anatomy({
   remaining,
   setInfoPerkKey
 }) {
-  const { perks } = usePerks();
+  const { perks, usePerk } = usePerks();
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
 
@@ -16,6 +16,7 @@ export default function Anatomy({
     if (used || quantity <= 0) return;
     setInfoPerkKey?.(perkKey); 
     markAsUsed(perkKey);
+    usePerk(perkKey)
   };
 
   return (

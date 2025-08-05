@@ -3,6 +3,7 @@ import KeyzoneSegment from './components/KeyzoneSegment';
 import KeyzoneGrid from './components/KeyzoneGrid';
 import Revelation from './components/Revelation';
 import Anatomy from './components/Anatomy';
+import Jybrish from './components/Jybrish';
 
 export const perkRegistry = {
   Revelation: {
@@ -10,35 +11,36 @@ export const perkRegistry = {
     description: "Reveals 1 correct letter in the right position.",
     rarity: "rare",
     component: Revelation,
-    props: ['targetWord', 'revealedIndices', 'setRevealedIndices', 'used', 'setUsed', 'onUse']
   },
   Anatomy: {
     name: "🧪 Anatomy",
     description: "Tells you how many vowels and consonants are in the word.",
     rarity: "basic",
     component: Anatomy,
-    props: ['targetWord', 'used', 'setUsed', 'onUse']
   },
   KeyzoneRow: {
-    name: "KeyzoneRow",
+    name: "Keyzone",
     description: "Splits keyboard into rows and shows letter counts per row.",
     rarity: "basic",
     component: KeyzoneRow,
-    props: ['targetWord', 'onKBActivate']
   },
   KeyzoneSegment: {
     name: "KeyzoneSegment",
     description: "Splits keyboard into vertical thirds and shows letter counts.",
     rarity: "basic",
     component: KeyzoneSegment,
-    props: ['targetWord', 'onKBActivate']
   },
   KeyzoneGrid: {
     name: "KeyzoneGrid",
-    description: "Splits keyboard into 9 zones and shows letter counts per zone.",
+    description: "Splits keyboard into 6 zones and shows letter counts per zone.",
     rarity: "epic",
     component: KeyzoneGrid,
-    props: ['targetWord', 'onKBActivate']
+  },
+  Jybrish: {
+    name: "♒️ Jybrish",
+    description: "For the next guess, the word doesn't have to be real.",
+    rarity: "rare",
+    component: Jybrish,
   }
 };
 
