@@ -6,16 +6,6 @@ const rarityWeights = {
   epic: 1,
 };
 
-// Optional: central cost mapping
-export function getPerkCost(rarity) {
-  switch (rarity) {
-    case 'basic': return 3;
-    case 'rare': return 6;
-    case 'epic': return 11;
-    default: return 3;
-  }
-}
-
 // Keyzone perks that we want to hide from the shop
 const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
 
@@ -25,27 +15,37 @@ const virtualShopEntries = {
     name: '🎰 Keyzone Roulette',
     cost: 5,
     isVirtual: true,
+    weight: 3,
     description: 'Grants one of the Keyzone perks randomly.',
   }
 };
 
 // Weighted pool from real perkRegistry, excluding Keyzones
-export function getWeightedPerkPool(registry = perkRegistry) {
+export function getWeightedPerkPool(registry = perkRegistry, virtualEntries = virtualShopEntries) {
   const pool = [];
+
+  // Real perks
   for (const [id, perk] of Object.entries(registry)) {
     if (keyzonePerkIds.includes(id)) continue;
-
-    const weight = rarityWeights[perk.rarity] || 1;
+    const weight = perk.weight ?? 1;
     for (let i = 0; i < weight; i++) {
       pool.push(id);
     }
   }
+
+  // Virtual entries
+  for (const [id, entry] of Object.entries(virtualEntries)) {
+    const weight = entry.weight ?? 1;
+    for (let i = 0; i < weight; i++) {
+      pool.push(id);
+    }
+  }
+
   return pool;
 }
 
-// Final list of shop options (3 real, 1 roulette)
 export function pickUniquePerks(registry = perkRegistry, count = 3) {
-  let pool = getWeightedPerkPool(registry);
+  let pool = getWeightedPerkPool(registry, virtualShopEntries);
   const selected = new Set();
 
   while (selected.size < count && pool.length > 0) {
@@ -54,9 +54,6 @@ export function pickUniquePerks(registry = perkRegistry, count = 3) {
     selected.add(selectedId);
     pool = pool.filter(id => id !== selectedId);
   }
-
-  // Add KeyzoneRoulette manually
-  selected.add('KeyzoneRoulette');
 
   return Array.from(selected).map(id => {
     if (virtualShopEntries[id]) {
@@ -73,8 +70,9 @@ export function pickUniquePerks(registry = perkRegistry, count = 3) {
       return {
         id,
         name: perk.name,
-        cost: getPerkCost(perk.rarity),
+        cost: perk.cost,
         isVirtual: false,
+        description: perk.description
       };
     }
   });

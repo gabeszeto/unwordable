@@ -12,7 +12,7 @@ const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
 export default function ShopScreen() {
   const { gold, spendGold } = useGold();
   const { stage, advanceStage } = useLevel();
-  const { perks, addPerk } = usePerks();
+  const { addPerk } = usePerks();
 
   const [perksForSale, setPerksForSale] = useState([]);
 

@@ -9,46 +9,47 @@ export const perkRegistry = {
   Revelation: {
     name: "🔮 Revelation",
     description: "Reveals 1 correct letter in the right position.",
-    rarity: "rare",
+    cost: 6,
+    weight: 2,
     component: Revelation,
   },
   Anatomy: {
     name: "🧪 Anatomy",
     description: "Tells you how many vowels and consonants are in the word.",
-    rarity: "basic",
+    cost: 3,
+    weight: 5,
     component: Anatomy,
   },
   KeyzoneRow: {
-    name: "Keyzone",
+    name: "KeyzoneRow",
     description: "Splits keyboard into rows and shows letter counts per row.",
-    rarity: "basic",
+    cost: 4,
+    weight: 5,
     component: KeyzoneRow,
   },
   KeyzoneSegment: {
     name: "KeyzoneSegment",
     description: "Splits keyboard into vertical thirds and shows letter counts.",
-    rarity: "basic",
+    cost: 4,
+    weight: 4,
     component: KeyzoneSegment,
   },
   KeyzoneGrid: {
     name: "KeyzoneGrid",
     description: "Splits keyboard into 6 zones and shows letter counts per zone.",
-    rarity: "epic",
+    cost: 9,
+    weight: 1,
     component: KeyzoneGrid,
   },
   Jybrish: {
     name: "♒️ Jybrish",
     description: "For the next guess, the word doesn't have to be real.",
-    rarity: "rare",
+    cost: 6,
+    weight: 2,
     component: Jybrish,
   }
 };
 
-export const rarityWeights = {
-  basic: 5,
-  rare: 2,
-  epic: 1,
-}
 
 // export const allPerks = {
 //     // 🧠 Info

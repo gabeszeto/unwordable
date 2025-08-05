@@ -232,7 +232,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      {/* <div className="devWord">{targetWord}</div> */}
+      <div className="devWord">{targetWord}</div>
       {jybrishActive && (
         <div className="jybrish-banner">
           Jybrish Activated
