@@ -34,7 +34,7 @@ export default function GameStageManager() {
       // const plan = generateDebuffPlan();
       const plan = generateDebugDebuffPlan({
         forcePassive: 'ShiftedGuess',
-        forceActive: 'BlurredVision'
+        forceActive: ''
       });
       setDebuffPlan(plan);
       console.log(plan)

@@ -57,6 +57,17 @@ export default function Board({
     }
   }, [isShiftedGuessActive]);
 
+  useEffect(() => {
+    if (!isGameOver && guesses.length === 0 && shiftInitialized) {
+      const activeIndices = getRowActiveIndices(0); // first row
+      const newGuess = Array(MAX_ROW_LENGTH).fill('');
+      activeIndices.forEach((i) => {
+        newGuess[i] = '';
+      });
+      setCurrentGuess(newGuess);
+    }
+  }, [shiftInitialized]);
+
   // Local Perks
   const { jybrishActive } = usePerks();
 
