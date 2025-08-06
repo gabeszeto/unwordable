@@ -124,7 +124,7 @@ export const perkRegistry = {
 //     },
 //     wager: {
 //         name: "Wager",
-//         description: "Bet 5 Gold that your next guess is correct. Win double or lose it all.",
+//         description: "Bet 5 cash that your next guess is correct. Win double or lose it all.",
 //         rarity: "epic",
 //     },
 //     spectralGuess: {

@@ -2,14 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeath } from '../../contexts/death/DeathContext';
 import { useLevel } from '../../contexts/level/LevelContext';
-import { useGold } from '../../contexts/gold/GoldContext';
+import { useCash } from '../../contexts/cash/CashContext';
 
 export default function DeathScreen() {
     const navigate = useNavigate();
     const { deathRound, reason, setDeathInfo } = useDeath();
 
     const { resetLevel } = useLevel();
-    const { resetGold } = useGold();
+    const { resetCash } = useCash();
 
     const displayReason = {
         'GrayReaper': 'The Gray Reaper claimed your soul.',
@@ -24,7 +24,7 @@ export default function DeathScreen() {
 
             <div onClick={() => {
                 resetLevel();
-                resetGold();
+                resetCash();
                 setDeathInfo({ deathRound: 0, reason: null });
                 navigate('/');
             }}>

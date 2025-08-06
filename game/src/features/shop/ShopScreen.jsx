@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useGold } from '../../contexts/gold/GoldContext';
+import { useCash } from '../../contexts/cash/CashContext';
 import { useLevel } from '../../contexts/level/LevelContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
 
@@ -10,7 +10,7 @@ import './shopStyles.css';
 const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
 
 export default function ShopScreen() {
-  const { gold, spendGold } = useGold();
+  const { cash, spendCash } = useCash();
   const { stage, advanceStage } = useLevel();
   const { addPerk } = usePerks();
 
@@ -21,7 +21,7 @@ export default function ShopScreen() {
   }, [stage]);
 
   const handleBuy = (perkId, cost) => {
-    if (gold < cost) return;
+    if (cash < cost) return;
 
     if (perkId === 'KeyzoneRoulette') {
       // Randomly select one Keyzone perk
@@ -32,14 +32,14 @@ export default function ShopScreen() {
       addPerk(perkId);
     }
 
-    spendGold(cost);
+    spendCash(cost);
     console.log(`[SHOP] Bought: ${perkId}`);
   };
 
   return (
     <div className="shop-container">
       <h2>🛒 Shop</h2>
-      <p>Cash: 💰 {gold}</p>
+      <p>Cash: 💰 {cash}</p>
 
       <div className="perk-options">
         {perksForSale.map(({ id, name, cost, isVirtual, description }) => (

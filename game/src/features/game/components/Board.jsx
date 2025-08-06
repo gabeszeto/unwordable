@@ -186,9 +186,9 @@ export default function Board({
 
   const getLetterClass = (letter, index, isCurrentRow, rowActiveIndices) => {
     if (!letter || !rowActiveIndices.includes(index)) return '';
-
+  
     if (revealedIndices.includes(index) && isCurrentRow) return 'correct';
-
+  
     const targetChar = paddedTargetWord[index];
     const isExact = letter === targetChar;
     const isBlurredGreen =
@@ -197,12 +197,21 @@ export default function Board({
       [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
         .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
         .includes(letter);
-
+  
     if (isExact || isBlurredGreen) return 'correct';
-    if (paddedTargetWord.includes(letter)) return 'present';
-
+  
+    const isPresent = paddedTargetWord.includes(letter);
+  
+    // 🎯 Yellowless logic override
+    if (isPresent && activeDebuffs.includes('Yellowless')) {
+      return 'absent';
+    }
+  
+    if (isPresent) return 'present';
+  
     return 'absent';
-  }
+  };
+  
 
   const renderRow = (guessArray, rowIndex, isSubmitted) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);
@@ -338,7 +347,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      {/* <div className="devWord">{targetWord}</div> */}
+      <div className="devWord">{targetWord}</div>
       {jybrishActive && (
         <div className="jybrish-banner">
           Jybrish Activated

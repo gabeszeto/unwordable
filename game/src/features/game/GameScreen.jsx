@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import Board from './components/Board.jsx';
 import Keyboard from './components/Keyboard.jsx';
 
-import { useGold } from '../../contexts/gold/GoldContext.jsx';
-import { calculateRoundGold } from '../../contexts/gold/goldUtils.js';
+import { useCash } from '../../contexts/cash/CashContext.jsx';
+import { calculateRoundCash } from '../../contexts/cash/cashUtils.js';
 import { useLevel } from '../../contexts/level/LevelContext';
 import { useDeath } from '../../contexts/death/DeathContext'
 import { useDebuffs } from '../../contexts/debuffs/DebuffsContext.jsx';
@@ -21,13 +21,13 @@ import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 export default function GameScreen() {
   const { stage, setStage, advanceStage } = useLevel();
   const { setDeathInfo } = useDeath();
-  const { gold, addGold } = useGold();
+  const { cash, addCash } = useCash();
   const { activeDebuffs, passiveDebuffs } = useDebuffs();
 
   const BOSS_STAGES = [4, 10, 16, 18];
 
   const [usedKeys, setUsedKeys] = useState({});
-  const [goldEarned, setGoldEarned] = useState(0);
+  const [cashEarned, setCashEarned] = useState(0);
   const round = stage / 2 + 1;
 
   // Perk states
@@ -80,7 +80,7 @@ export default function GameScreen() {
     return (
       <div className="game-screen end-screen">
         <h1>🏁 Game Over</h1>
-        <p>You earned {gold} gold!</p>
+        <p>You earned {cash} cash!</p>
         {/* Optionally, a "Play Again" button */}
       </div>
     );
@@ -119,12 +119,12 @@ export default function GameScreen() {
         key={round}
         onRoundComplete={async (success, guesses, deathReason) => {
           if (success) {
-            const earned = calculateRoundGold({
+            const earned = calculateRoundCash({
               guessesUsed: guesses.length,
               isBoss: round % 3 === 0
             });
-            addGold(earned);
-            setGoldEarned(earned);
+            addCash(earned);
+            setCashEarned(earned);
             await new Promise((resolve) => setTimeout(resolve, 2000));
             advanceStage();
 
@@ -150,7 +150,7 @@ export default function GameScreen() {
         revealedIndices={revealedIndices}
         setRevealedIndices={setRevealedIndices}
         onVirtualKey={setVirtualKeyHandler}
-        goldEarned={goldEarned}
+        cashEarned={cashEarned}
         feedbackShownUpToRow={feedbackShownUpToRow}
         setFeedbackShownUpToRow={setFeedbackShownUpToRow}
       />

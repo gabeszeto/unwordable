@@ -10,7 +10,7 @@ function HowToPlayMenu({ onBack }) {
 
         <p>Some levels are regular, but every three rounds, there's a boss which messes with the rules, making your life more difficult.</p>
 
-        <p>To help you out, you can use perks which give you little boosts. These are bought with gold from beating levels and can be spent between rounds.</p>
+        <p>To help you out, you can use perks which give you little boosts. These are bought with cash from beating levels and can be spent between rounds.</p>
 
         <p>If you run out of guesses, the run ends. If you beat all 10? You're <strong>Unwordable</strong>.</p>
       </div>

@@ -49,7 +49,7 @@ export function generateDebuffPlan() {
 }
 
 export function generateDebugDebuffPlan({
-  forcePassive = [],
+  forcePassive = {},
   forceActive = [],
 } = {}) {
   const plan = generateDebuffPlan();
@@ -57,14 +57,14 @@ export function generateDebugDebuffPlan({
   for (let round = 1; round <= 3; round++) {
     const entry = plan[round];
 
-    // Force up to 3 passive debuffs
-    forcePassive.slice(0, 3).forEach((debuff) => {
-      if (!entry.passive.includes(debuff)) {
+    // NEW: Add passive debuffs with stacking
+    Object.entries(forcePassive).forEach(([debuff, count]) => {
+      for (let i = 0; i < count; i++) {
         entry.passive.push(debuff);
       }
     });
 
-    // Force up to 2 active debuffs
+    // Force up to 2 unique active debuffs
     forceActive.slice(0, 2).forEach((debuff) => {
       if (!entry.active.includes(debuff)) {
         entry.active.push(debuff);

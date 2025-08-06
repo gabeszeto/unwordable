@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../features/home/components/Home';
 
-import { GoldProvider } from '../contexts/gold/GoldContext';
+import { CashProvider } from '../contexts/cash/CashContext';
 import { LevelProvider } from '../contexts/level/LevelContext';
 import { PerksProvider } from '../contexts/perks/PerksContext';
 import { DebuffsProvider } from '../contexts/debuffs/DebuffsContext';
@@ -17,14 +17,14 @@ export default function App() {
       <DeathProvider>
         <DebuffsProvider>
           <PerksProvider>
-            <GoldProvider>
+            <CashProvider>
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/play" element={<GameStageManager />} />
                 </Routes>
               </BrowserRouter>
-            </GoldProvider>
+            </CashProvider>
           </PerksProvider>
         </DebuffsProvider>
       </DeathProvider>

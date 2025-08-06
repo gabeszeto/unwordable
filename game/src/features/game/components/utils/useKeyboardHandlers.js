@@ -56,6 +56,14 @@ export default function useKeyboardHandlers({
     // Grellow
     const isGrellowActive = activeDebuffs.includes('Grellow');
 
+    // Yellowless
+    const applyYellowlessToKeyStatus = (letter, status) => {
+        if (status === 'present' && activeDebuffs.includes('Yellowless')) {
+            return 'absent';
+        }
+        return status;
+    }
+
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
@@ -82,29 +90,44 @@ export default function useKeyboardHandlers({
             rowActiveIndices.forEach((idx, i) => {
                 const letter = guessStr[i];
                 const targetChar = paddedTargetWord[idx];
-
+            
                 const isExact = letter === targetChar;
                 const isBlurredGreen =
                     activeDebuffs.includes('BlurredVision') &&
                     [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
                         .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
                         .includes(letter);
-
+            
+                let rawStatus;
+            
                 if (isExact || isBlurredGreen) {
-                    if (isGrellowActive) {
-                        if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
-                    } else {
-                        newUsed[letter] = 'correct';
-                    }
+                    rawStatus = 'correct';
                     hasColor = true;
                 } else if (paddedTargetWord.includes(letter)) {
-                    if (newUsed[letter] !== 'correct') newUsed[letter] = 'present';
+                    rawStatus = 'present';
                     hasColor = true;
                 } else {
-                    if (!newUsed[letter]) newUsed[letter] = 'absent';
+                    rawStatus = 'absent';
                 }
-
+            
+                // 👁 Grellow override (visual downgrade)
+                let status = rawStatus;
+                if (isGrellowActive && rawStatus === 'correct') {
+                    status = 'present';
+                }
+            
+                // 💛 Yellowless applies ONLY to raw present letters (not grellow-faked)
+                if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
+                    status = 'absent';
+                }
+            
+                // Final: apply with priority
+                if (!newUsed[letter] || getPriority(status) > getPriority(newUsed[letter])) {
+                    newUsed[letter] = status;
+                }
             });
+            
+            
         }
 
         // Handle Gray Reaper instant death

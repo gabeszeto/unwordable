@@ -6,12 +6,12 @@ export const debuffRegistry = {
     description: `Green tiles are replaced with yellow. You'll never know what's correct.`,
     weight: 1,
   },
-  // Yellowless: {
-  //   type: 'active',
-  //   name: 'Yellow-less',
-  //   description: "Correct letters in the wrong place won't show up yellow.",
-  //   weight: 1,
-  // },
+  Yellowless: {
+    type: 'active',
+    name: 'Yellowless',
+    description: "Correct letters in the wrong place won't show up yellow.",
+    weight: 1,
+  },
   DelayedFeedback: {
     type: 'active',
     name: 'Delayed Feedback',
@@ -67,13 +67,15 @@ export const debuffRegistry = {
     name: 'Cut Short',
     description: 'You have 1 less guess.',
     weight: 1,
-    maxStacks: 3
+    maxStacks: 3,
+    stackable: true
   },
-  // PerkTax: {
-  //   type: 'passive',
-  //   name: 'Perk Tax',
-  //   description: 'Using a perk costs +1 gold.',
-  //   weight: 1,
-  //   maxStacks: 2
-  // },
+  PerkTax: {
+    type: 'passive',
+    name: 'Perk Tax',
+    description: 'Using a perk costs +1 cash.',
+    weight: 1,
+    maxStacks: 2,
+    stackable: true
+  },
 };

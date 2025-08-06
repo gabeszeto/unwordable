@@ -31,11 +31,11 @@ export default function GameStageManager() {
   useEffect(() => {
     // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      // const plan = generateDebuffPlan();
-      const plan = generateDebugDebuffPlan({
-        forcePassive: ['CutShort', 'FourSight', 'ShiftedGuess'],
-        forceActive: ['DelayedFeedback', 'BlurredVision']
-      });
+      const plan = generateDebuffPlan();
+      // const plan = generateDebugDebuffPlan({
+      //   forcePassive: { PerkTax: 2 },
+      //   forceActive: ['Grellow']
+      // });
       setDebuffPlan(plan);
       console.log(plan)
     }

@@ -2,8 +2,10 @@ import React, { useMemo } from 'react';
 
 import { perkRegistry } from '../../perks/perkRegistry.js';
 import { usePerks } from '../../../contexts/perks/PerksContext';
-import { useGold } from '../../../contexts/gold/GoldContext.jsx';
+import { useCash } from '../../../contexts/cash/CashContext.jsx';
 import { useLevel } from '../../../contexts/level/LevelContext';
+import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
+
 
 import './perksDisplayStyles.css'
 
@@ -13,7 +15,7 @@ export default function PerkDisplay({
     sharedProps,
 }) {
     const { perks } = usePerks();
-    const { gold } = useGold();
+    const { cash } = useCash();
     const { stage } = useLevel();
     const perksAtStartOfRound = useMemo(() => ({ ...perks }), [stage]);
 
@@ -21,12 +23,22 @@ export default function PerkDisplay({
         <div className="perkDisplay">
             <div className="topPerksSection">
                 <div className="inventoryTitle">Inventory</div>
-                <div className="gold-counter">💰 {gold}</div>
+                <div className="cash-counter">💰 {cash}</div>
             </div>
             <div className="perkGrid">
                 {Object.entries(perksAtStartOfRound).map(([key, startingQuantity]) => {
                     const { component: PerkComponent } = perkRegistry[key] || {};
                     if (!PerkComponent) return null;
+
+                    const { passiveDebuffs } = useDebuffs();
+                    const perkTaxStacks = passiveDebuffs['PerkTax'] || 0;
+                    const { spendCash } = useCash();
+                    
+                    const applyPerkTax = () => {
+                        if (perkTaxStacks > 0) {
+                          spendCash(perkTaxStacks);
+                        }
+                      };
 
                     const currentQty = perks[key] || 0;
                     const timesUsed = usedPerks.filter(p => p === key).length;
@@ -38,18 +50,22 @@ export default function PerkDisplay({
 
                     return (
                         <PerkComponent
-                            key={`inv-${key}`}
-                            perkKey={key}
-                            usedPerks={usedPerks}
-                            markAsUsed={markAsUsed}
-                            remaining={Math.max(0, remaining)}
-                            isKeyzoneUsed={
-                                key.toLowerCase().includes('keyzone') &&
-                                usedPerks.some(k => k.toLowerCase().includes('keyzone'))
-                            }
-                            {...sharedProps}
+                          key={`inv-${key}`}
+                          perkKey={key}
+                          usedPerks={usedPerks}
+                          markAsUsed={(k) => {
+                            markAsUsed(k);
+                            applyPerkTax(); // 💸 Apply gold tax
+                          }}
+                          remaining={Math.max(0, remaining)}
+                          isKeyzoneUsed={
+                            key.toLowerCase().includes('keyzone') &&
+                            usedPerks.some(k => k.toLowerCase().includes('keyzone'))
+                          }
+                          {...sharedProps}
                         />
-                    );
+                      );
+                      
                 })}
             </div>
         </div>
