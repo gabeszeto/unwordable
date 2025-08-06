@@ -45,6 +45,12 @@ export default function Board({
   const isFeedbackDelayActive = activeDebuffs.includes('DelayedFeedback');
   const FEEDBACK_DELAY_THRESHOLD = 2; // First 2 guesses are delayed
 
+  // Shortened word logic, active only on first row, and if debuff is active
+  const shortenedBlockIndexRef = useRef(null);
+
+  if (shortenedBlockIndexRef.current === null && 'FourSight' in passiveDebuffs) {
+    shortenedBlockIndexRef.current = Math.random() < 0.5 ? 1 : 5;
+  }
   // ShiftedGuess debuff logic
   const isShiftedGuessActive = passiveDebuffs['ShiftedGuess'] > 0;
   const shiftedGuessRowRef = useRef(null); // Which row to shift (0–2)
@@ -87,32 +93,42 @@ export default function Board({
     return Array.from({ length: len }, (_, i) => i + offset);
   };
 
-  const getRowActiveIndices = (rowIndex) => {
-    const base = getActiveIndices(WORD_LENGTH);
-
-    // Check for FourSight shortening
-    const shouldShorten = rowIndex === 0 && activeDebuffs.includes('FourSight');
-    const blocked = shortenedBlockIndexRef.current;
-
-    let final = base;
-
-    // Apply shifted guess
-    if (isShiftedGuessActive && rowIndex === shiftedGuessRowRef.current) {
-      final = base.map(i => i + shiftDirectionRef.current).filter(i => i >= 0 && i < MAX_ROW_LENGTH);
+  function getFinalRowIndices({
+    rowIndex,
+    wordLength,
+    maxRowLength,
+    passiveDebuffs,
+    shiftedGuessRow,
+    shiftDirection,
+    shortenedBlockIndex
+  }) {
+    let indices = getActiveIndices(wordLength); // Only needs wordLength because getActiveIndices is already scoped to maxRowLength
+  
+    // Step 1: Apply FourSight (shortening first row)
+    if (rowIndex === 0 && 'FourSight' in passiveDebuffs && shortenedBlockIndex != null) {
+      indices = indices.filter(i => i !== shortenedBlockIndex);
     }
-
-    return shouldShorten && blocked !== null
-      ? final.filter(i => i !== blocked)
-      : final;
-  };
-
-
-  // Shortened word logic, active only on first row, and if debuff is active
-  const shortenedBlockIndexRef = useRef(null);
-
-  if (shortenedBlockIndexRef.current === null && activeDebuffs.includes('FourSight')) {
-    shortenedBlockIndexRef.current = Math.random() < 0.5 ? 1 : 5;
+  
+    // Step 2: Apply ShiftedGuess (only for 1 row)
+    if (shiftedGuessRow === rowIndex && shiftDirection != null) {
+      indices = indices.map(i => i + shiftDirection).filter(i => i >= 0 && i < maxRowLength);
+    }
+  
+    return indices;
   }
+  
+
+  const getRowActiveIndices = (rowIndex) => {
+    return getFinalRowIndices({
+      rowIndex,
+      wordLength: WORD_LENGTH,
+      maxRowLength: MAX_ROW_LENGTH,
+      passiveDebuffs,
+      shortenedBlockIndex: shortenedBlockIndexRef.current,
+      shiftedGuessRow: shiftedGuessRowRef.current,
+      shiftDirection: shiftDirectionRef.current
+    });
+  };
 
   const paddedTargetWord = useMemo(() => {
     const padded = Array(MAX_ROW_LENGTH).fill('');
@@ -135,6 +151,7 @@ export default function Board({
     setGuesses,
     targetWord,
     MAX_ROW_LENGTH,
+    MAX_GUESSES,
     WORD_LENGTH,
     paddedTargetWord,
     setShakeRow,
@@ -321,7 +338,7 @@ export default function Board({
       <div className="board">
         {rows}
       </div>
-      <div className="devWord">{targetWord}</div>
+      {/* <div className="devWord">{targetWord}</div> */}
       {jybrishActive && (
         <div className="jybrish-banner">
           Jybrish Activated

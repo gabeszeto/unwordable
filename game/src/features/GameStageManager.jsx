@@ -33,8 +33,8 @@ export default function GameStageManager() {
     if (Object.keys(debuffPlan).length === 0) {
       // const plan = generateDebuffPlan();
       const plan = generateDebugDebuffPlan({
-        forcePassive: 'CutShort',
-        forceActive: 'Grellow'
+        forcePassive: ['CutShort', 'FourSight', 'ShiftedGuess'],
+        forceActive: ['DelayedFeedback', 'BlurredVision']
       });
       setDebuffPlan(plan);
       console.log(plan)

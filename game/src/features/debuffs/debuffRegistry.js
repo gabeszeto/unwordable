@@ -3,15 +3,15 @@ export const debuffRegistry = {
   Grellow: {
     type: 'active',
     name: 'Grellow',
-    description: 'Green tiles are replaced with yellow. You’ll never know what’s correct.',
+    description: `Green tiles are replaced with yellow. You'll never know what's correct.`,
     weight: 1,
   },
-  Yellowless: {
-    type: 'active',
-    name: 'Yellow-less',
-    description: "Correct letters in the wrong place won't show up yellow.",
-    weight: 1,
-  },
+  // Yellowless: {
+  //   type: 'active',
+  //   name: 'Yellow-less',
+  //   description: "Correct letters in the wrong place won't show up yellow.",
+  //   weight: 1,
+  // },
   DelayedFeedback: {
     type: 'active',
     name: 'Delayed Feedback',
@@ -38,12 +38,12 @@ export const debuffRegistry = {
     description: 'Guessing a word with no colors ends your run instantly.',
     weight: 1,
   },
-  LetterLock: {
-    type: 'passive',
-    name: 'Locked Letter',
-    description: 'A random letter is locked into a specific position in one of your first three guesses.',
-    weight: 1,
-  },
+  // LetterLock: {
+  //   type: 'passive',
+  //   name: 'Locked Letter',
+  //   description: 'A random letter is locked into a specific position in one of your first three guesses.',
+  //   weight: 1,
+  // },
   ShiftedGuess: {
     type: 'passive',
     name: 'Shifted Guess',
@@ -56,12 +56,12 @@ export const debuffRegistry = {
     description: 'Your first guess must be a 4-letter word.',
     weight: 1,
   },
-  NoThreedom: {
-    type: 'passive',
-    name: 'No Threedom',
-    description: 'Your first guess must be a 3-letter word. Brutal.',
-    hidden: true, // optional: don’t show in perk selection if it's an upgrade
-  },
+  // NoThreedom: {
+  //   type: 'passive',
+  //   name: 'No Threedom',
+  //   description: 'Your first guess must be a 3-letter word. Brutal.',
+  //   hidden: true, // optional: don’t show in perk selection if it's an upgrade
+  // },
   CutShort: {
     type: 'passive',
     name: 'Cut Short',
@@ -69,11 +69,11 @@ export const debuffRegistry = {
     weight: 1,
     maxStacks: 3
   },
-  PerkTax: {
-    type: 'passive',
-    name: 'Perk Tax',
-    description: 'Using a perk costs +1 gold.',
-    weight: 1,
-    maxStacks: 2
-  },
+  // PerkTax: {
+  //   type: 'passive',
+  //   name: 'Perk Tax',
+  //   description: 'Using a perk costs +1 gold.',
+  //   weight: 1,
+  //   maxStacks: 2
+  // },
 };

@@ -8,6 +8,7 @@ export default function useKeyboardHandlers({
     setGuesses,
     targetWord,
     MAX_ROW_LENGTH,
+    MAX_GUESSES,
     paddedTargetWord,
     setShakeRow,
     setBouncingIndices,
@@ -140,7 +141,7 @@ export default function useKeyboardHandlers({
             setTimeout(() => setBouncingIndices([]), 1000);
             setIsGameOver(true);
             onRoundComplete(true, newGuesses);
-        } else if (newGuesses.length >= 6) {
+        } else if (newGuesses.length >= MAX_GUESSES) {
             setIsGameOver(true);
             onRoundComplete(false, newGuesses);
         }
@@ -156,6 +157,8 @@ export default function useKeyboardHandlers({
         (e) => {
             const key = e.key.toUpperCase();
             const rowActiveIndices = getRowActiveIndices(guesses.length);
+
+            if (guesses.length >= MAX_GUESSES) return; // Prevent extra guesses
 
             if (key === 'ENTER') {
                 const guessStr = rowActiveIndices.map(i => currentGuess[i]).join('');

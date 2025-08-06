@@ -48,19 +48,28 @@ export function generateDebuffPlan() {
   return plan;
 }
 
-export function generateDebugDebuffPlan({ forcePassive = null, forceActive = null } = {}) {
+export function generateDebugDebuffPlan({
+  forcePassive = [],
+  forceActive = [],
+} = {}) {
   const plan = generateDebuffPlan();
 
   for (let round = 1; round <= 3; round++) {
     const entry = plan[round];
 
-    if (forcePassive && !entry.passive.includes(forcePassive)) {
-      entry.passive.push(forcePassive);
-    }
+    // Force up to 3 passive debuffs
+    forcePassive.slice(0, 3).forEach((debuff) => {
+      if (!entry.passive.includes(debuff)) {
+        entry.passive.push(debuff);
+      }
+    });
 
-    if (forceActive && !entry.active.includes(forceActive)) {
-      entry.active.push(forceActive);
-    }
+    // Force up to 2 active debuffs
+    forceActive.slice(0, 2).forEach((debuff) => {
+      if (!entry.active.includes(debuff)) {
+        entry.active.push(debuff);
+      }
+    });
   }
 
   return plan;

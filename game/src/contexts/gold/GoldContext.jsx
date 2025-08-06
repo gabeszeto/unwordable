@@ -8,7 +8,7 @@ export function useGold() {
 }
 
 export function GoldProvider({ children }) {
-  const [gold, setGold] = useState(0);
+  const [gold, setGold] = useState(5);
 
   const addGold = (amount) => setGold((g) => g + amount);
   const spendGold = (amount) => setGold((g) => Math.max(g - amount, 0));
