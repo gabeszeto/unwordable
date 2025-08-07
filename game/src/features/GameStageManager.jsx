@@ -33,8 +33,8 @@ export default function GameStageManager() {
     if (Object.keys(debuffPlan).length === 0) {
       // const plan = generateDebuffPlan();
       const plan = generateDebugDebuffPlan({
-        forcePassive: {},
-        forceActive: ["GoldenLie"]
+        forcePassive: { LetterLock: 1 },
+        forceActive: [""]
       });
       setDebuffPlan(plan);
       console.log(plan)

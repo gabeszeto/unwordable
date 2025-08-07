@@ -43,7 +43,7 @@ export default function Board({
   const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
   const isGrellowActive = activeDebuffs.includes('Grellow');
 
-  //GoldenLie
+  // GoldenLie
   const goldenLieUsedPerRow = useRef(new Set());
   const goldenLieInjectedIndex = useRef({});
 
@@ -100,12 +100,16 @@ export default function Board({
     }
   }, [shiftInitialized, shortenedBlockIndices]);
 
-  // Local Perks
-  const { jybrishActive } = usePerks();
+  // LockedLetter
+  const lockedLetterByRow = useRef({});
+  const [letterLocked, setLetterLocked] = useState(false)
 
   // Cut Short logic
   const cutShortStacks = passiveDebuffs['CutShort'] || 0;
   const MAX_GUESSES = Math.max(1, BASE_GUESSES - cutShortStacks);
+
+  // Local Perks
+  const { jybrishActive } = usePerks();
 
   function getFinalRowIndices({
     rowIndex,
@@ -143,6 +147,28 @@ export default function Board({
       shiftDirection: shiftDirectionRef.current
     });
   }, [passiveDebuffs, shortenedBlockIndices]);
+
+
+  useEffect(() => {
+    if ('LetterLock' in passiveDebuffs && Object.keys(lockedLetterByRow.current).length === 0) {
+      const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
+
+      const eligibleRows = [0, 1, 2];
+      const selectedRow = eligibleRows[Math.floor(Math.random() * eligibleRows.length)];
+      const rowIndices = getRowActiveIndices(selectedRow);
+
+      const selectedIndex = rowIndices[Math.floor(Math.random() * rowIndices.length)];
+      const selectedLetter = topLetters[Math.floor(Math.random() * topLetters.length)];
+      console.log(`index: ${selectedIndex} and letter: ${selectedLetter} in row ${selectedRow}`)
+      lockedLetterByRow.current[selectedRow] = {
+        index: selectedIndex,
+        letter: selectedLetter
+      };
+
+      setLetterLocked(true)
+    }
+  }, [passiveDebuffs, getRowActiveIndices]);
+
 
   const paddedTargetWord = useMemo(() => {
     const padded = Array(MAX_ROW_LENGTH).fill('');
@@ -183,7 +209,8 @@ export default function Board({
     setFeedbackShownUpToRow,
     FEEDBACK_DELAY_THRESHOLD,
     goldenLieUsedPerRow,             // 👈 NEW
-    goldenLieInjectedIndex
+    goldenLieInjectedIndex,
+    lockedLetterByRow
   });
 
   // Revelation logic
@@ -232,7 +259,7 @@ export default function Board({
       goldenLieUsedPerRow.current.has(rowIndex)
     ) {
       const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
-    
+
       if (injectedIdx === index) {
         return 'present'; // This letter is the fake yellow
       }
@@ -258,9 +285,16 @@ export default function Board({
         shortenedBlockIndices.includes(i) &&
         !getRowActiveIndices(rowIndex).includes(i);
 
-      const displayLetter = !isSubmitted && revealedIndices.includes(i)
-        ? paddedTargetWord[i]
-        : letter;
+      let displayLetter = letter;
+
+      // Show locked letter in correct position on the right row
+      if (!isSubmitted && lockedLetterByRow.current[rowIndex]) {
+        const { index: lockedIndex, letter: lockedChar } = lockedLetterByRow.current[rowIndex];
+        if (i === lockedIndex) {
+          displayLetter = lockedChar;
+        }
+      }
+
 
       const feedbackSuppressed =
         isFeedbackDelayActive &&
@@ -330,14 +364,26 @@ export default function Board({
 
   const renderEmptyRow = (rowIndex) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);
-    const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => (
-      <div
-        className={`letter ${!rowActiveIndices.includes(i) ? 'inactive' : ''}`}
-        key={i}
-      />
-    ));
+  
+    const locked = lockedLetterByRow.current?.[rowIndex];
+    
+    const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
+      const isLocked = locked?.index === i;
+      const letter = isLocked ? locked.letter : '';
+  
+      return (
+        <div
+          className={`letter ${!rowActiveIndices.includes(i) ? 'inactive' : ''} ${isLocked ? 'locked' : ''}`}
+          key={i}
+        >
+          {letter}
+        </div>
+      );
+    });
+  
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
+  
 
   const rows = useMemo(() => {
     const renderedRows = [
@@ -364,7 +410,7 @@ export default function Board({
     }
 
     return renderedRows;
-  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shortenedBlockIndices, shiftInitialized, MAX_GUESSES]);
+  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shortenedBlockIndices, shiftInitialized, letterLocked, MAX_GUESSES]);
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {

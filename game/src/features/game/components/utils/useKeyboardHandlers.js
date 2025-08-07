@@ -25,7 +25,8 @@ export default function useKeyboardHandlers({
     setFeedbackShownUpToRow,
     FEEDBACK_DELAY_THRESHOLD,
     goldenLieUsedPerRow,             // 👈 NEW
-    goldenLieInjectedIndex
+    goldenLieInjectedIndex,
+    lockedLetterByRow
 }) {
     const { jybrishActive, consumeJybrish } = usePerks();
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
@@ -208,6 +209,7 @@ export default function useKeyboardHandlers({
         (e) => {
             const key = e.key.toUpperCase();
             const rowActiveIndices = getRowActiveIndices(guesses.length);
+            const locked = lockedLetterByRow?.current?.[guesses.length]; // 👈 Add this here
 
             if (guesses.length >= MAX_GUESSES) return; // Prevent extra guesses
 
@@ -231,28 +233,56 @@ export default function useKeyboardHandlers({
                 }
             } else if (key === 'BACKSPACE') {
                 const updated = [...currentGuess];
+
                 for (let i = rowActiveIndices.length - 1; i >= 0; i--) {
                     const idx = rowActiveIndices[i];
+
+                    // 👇 Skip locked index
+                    if (locked && idx === locked.index) continue;
+
                     if (!revealedIndices.includes(idx) && updated[idx] !== '') {
                         updated[idx] = '';
                         break;
                     }
                 }
+
                 setCurrentGuess(updated);
             } else if (/^[A-Z]$/.test(key)) {
                 const updated = [...currentGuess];
+
                 for (let i = 0; i < rowActiveIndices.length; i++) {
                     const idx = rowActiveIndices[i];
+
+                    // 👇 Skip locked index
+                    if (locked && idx === locked.index) continue;
+
                     if (!revealedIndices.includes(idx) && updated[idx] === '') {
                         updated[idx] = key;
                         break;
                     }
                 }
+
                 setCurrentGuess(updated);
             }
+
         },
         [guesses, currentGuess, revealedIndices, getRowActiveIndices]
     );
+
+    useEffect(() => {
+        const rowIndex = guesses.length;
+        const locked = lockedLetterByRow?.current?.[rowIndex];
+
+        // Only inject if guess is empty and there's a locked letter
+        if (
+            locked &&
+            currentGuess.every(c => c === '')
+        ) {
+            const updated = [...currentGuess];
+            updated[locked.index] = locked.letter;
+            setCurrentGuess(updated);
+        }
+    }, [guesses.length, currentGuess, lockedLetterByRow, setCurrentGuess]);
 
     return { handleKeyDown, submitGuess };
 }

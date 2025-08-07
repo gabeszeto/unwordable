@@ -1,5 +1,5 @@
 export const debuffRegistry = {
-  // 🔥 ACTIVE DEBUFFS — applied only in boss levels
+  // 🔥 ACTIVE DEBUFFS
   Grellow: {
     type: 'active',
     name: 'Grellow',
@@ -31,19 +31,19 @@ export const debuffRegistry = {
     weight: 1,
   },
 
-  // 💤 PASSIVE DEBUFFS — applied randomly to spice up non-boss levels
+  // 💤 PASSIVE DEBUFFS 
   GrayReaper: {
     type: 'passive',
     name: 'Gray Reaper',
     description: 'Guessing a word with no colors ends your run instantly.',
     weight: 1,
   },
-  // LetterLock: {
-  //   type: 'passive',
-  //   name: 'Locked Letter',
-  //   description: 'A random letter is locked into a specific position in one of your first three guesses.',
-  //   weight: 1,
-  // },
+  LetterLock: {
+    type: 'passive',
+    name: 'Locked Letter',
+    description: 'A random letter is locked into a specific position in one of your first three guesses.',
+    weight: 1,
+  },
   ShiftedGuess: {
     type: 'passive',
     name: 'Shifted Guess',
