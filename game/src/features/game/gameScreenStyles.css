@@ -54,6 +54,10 @@
     background-color: #e74c3c;
 }
 
+.mod-debuff.mod-upgraded {
+    background-color: #3683e1;
+
+}
 
 /* HUD and Perks */
 .hud {

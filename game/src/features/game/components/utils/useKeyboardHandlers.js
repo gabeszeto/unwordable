@@ -223,7 +223,7 @@ export default function useKeyboardHandlers({
                 setCurrentGuess(updated);
             }
         },
-        [guesses, currentGuess, revealedIndices]
+        [guesses, currentGuess, revealedIndices, getRowActiveIndices]
     );
 
     return { handleKeyDown, submitGuess };

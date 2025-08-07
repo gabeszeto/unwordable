@@ -5,14 +5,32 @@ import { debuffMilestones } from './debuffConfig';
 export function generateDebuffPlan() {
   const plan = {};
 
-  const passivePool = Object.entries(debuffRegistry)
-    .filter(([_, v]) => v.type === 'passive');
-  const activePool = Object.entries(debuffRegistry)
-    .filter(([_, v]) => v.type === 'active');
-
   const passiveCounts = {};
   const passiveStackLimit = 3;
   const persistentPassives = [];
+
+  // Build passive pool with conditional filters
+  const getFilteredPassivePool = () =>
+    Object.entries(debuffRegistry)
+      .filter(([key, v]) => {
+        if (v.type !== 'passive') return false;
+
+        const count = passiveCounts[key] || 0;
+
+        // Don't include hidden unless it has a valid 'requires' met
+        if (v.hidden && !v.requires) return false;
+
+        // If it has a requirement (like an upgrade), skip if not unlocked yet
+        if (v.requires && !persistentPassives.includes(v.requires)) return false;
+
+        // Stackable logic
+        return v.stackable
+          ? count < (v.maxStacks || passiveStackLimit)
+          : count === 0;
+      });
+
+  const activePool = Object.entries(debuffRegistry)
+    .filter(([_, v]) => v.type === 'active');
 
   for (let round = 1; round <= 10; round++) {
     plan[round] = {
@@ -20,22 +38,37 @@ export function generateDebuffPlan() {
       active: []
     };
 
-    // Passive debuffs: add one more if this round is a milestone
+    // Passive debuff selection
     if (debuffMilestones.passiveRounds.includes(round)) {
-      const filtered = passivePool.filter(([key, v]) => {
-        const count = passiveCounts[key] || 0;
-        return v.stackable ? count < (v.maxStacks || passiveStackLimit) : count === 0;
-      });
-
+      const filtered = getFilteredPassivePool();
       const selected = pickWeightedDebuff(Object.fromEntries(filtered));
+
       if (selected) {
-        persistentPassives.push(selected);
-        passiveCounts[selected] = (passiveCounts[selected] || 0) + 1;
+        const def = debuffRegistry[selected];
+        const currentCount = passiveCounts[selected] || 0;
+
+        const upgrade = def.upgradableTo;
+
+        if (upgrade && currentCount >= 1) {
+          // Upgrade: replace existing with upgraded version
+          const index = persistentPassives.indexOf(selected);
+          if (index !== -1) {
+            persistentPassives.splice(index, 1, upgrade);
+          } else {
+            persistentPassives.push(upgrade);
+          }
+          passiveCounts[upgrade] = (passiveCounts[upgrade] || 0) + 1;
+        } else {
+          // Normal stack or first-time
+          persistentPassives.push(selected);
+          passiveCounts[selected] = currentCount + 1;
+        }
+
         plan[round].passive = [...persistentPassives];
       }
     }
 
-    // Active debuffs: fresh ones every time
+    // Active debuffs: fresh each time
     const activeCount = debuffMilestones.activeRounds[round] || 0;
     for (let i = 0; i < activeCount; i++) {
       const selected = pickWeightedDebuff(Object.fromEntries(activePool));
@@ -47,6 +80,7 @@ export function generateDebuffPlan() {
 
   return plan;
 }
+
 
 export function generateDebugDebuffPlan({
   forcePassive = {},

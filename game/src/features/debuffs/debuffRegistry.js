@@ -32,12 +32,12 @@ export const debuffRegistry = {
   // },
 
   // 💤 PASSIVE DEBUFFS — applied randomly to spice up non-boss levels
-  GrayReaper: {
-    type: 'passive',
-    name: 'Gray Reaper',
-    description: 'Guessing a word with no colors ends your run instantly.',
-    weight: 1,
-  },
+  // GrayReaper: {
+  //   type: 'passive',
+  //   name: 'Gray Reaper',
+  //   description: 'Guessing a word with no colors ends your run instantly.',
+  //   weight: 1,
+  // },
   // LetterLock: {
   //   type: 'passive',
   //   name: 'Locked Letter',
@@ -50,18 +50,21 @@ export const debuffRegistry = {
     description: 'One of your first three guesses is shifted left or right.',
     weight: 1,
   },
-  FourSight: {
+  NoFoureedom: {
     type: 'passive',
-    name: 'Foursight',
+    name: 'NoFoureedom',
     description: 'Your first guess must be a 4-letter word.',
     weight: 1,
+    upgradableTo: 'NoThreedom', // 💡 new field
   },
-  // NoThreedom: {
-  //   type: 'passive',
-  //   name: 'No Threedom',
-  //   description: 'Your first guess must be a 3-letter word. Brutal.',
-  //   hidden: true, // optional: don’t show in perk selection if it's an upgrade
-  // },
+  NoThreedom: {
+    type: 'passive',
+    name: 'NoThreedom',
+    description: 'Your first guess must be a 3-letter word. Brutal.',
+    weight: 1,
+    hidden: true,
+    requires: 'NoFoureedom' // 💡 only eligible if this is already picked
+  },
   CutShort: {
     type: 'passive',
     name: 'Cut Short',
@@ -70,12 +73,12 @@ export const debuffRegistry = {
     maxStacks: 3,
     stackable: true
   },
-  PerkTax: {
-    type: 'passive',
-    name: 'Perk Tax',
-    description: 'Using a perk costs +1 cash.',
-    weight: 1,
-    maxStacks: 2,
-    stackable: true
-  },
+  // PerkTax: {
+  //   type: 'passive',
+  //   name: 'Perk Tax',
+  //   description: 'Using a perk costs +1 cash.',
+  //   weight: 1,
+  //   maxStacks: 2,
+  //   stackable: true
+  // },
 };

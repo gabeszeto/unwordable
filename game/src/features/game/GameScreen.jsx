@@ -100,11 +100,24 @@ export default function GameScreen() {
             <span className="mod-none">No modifiers</span>
           ) : (
             <>
-              {Object.entries(passiveDebuffs || {}).map(([debuffKey, level]) => (
-                <span className="mod-debuff passive" key={`passive-${debuffKey}`}>
-                  {debuffKey}{level > 1 ? ` ×${level}` : ''}
-                </span>
-              ))}
+              {Object.entries(passiveDebuffs || {}).map(([debuffKey, level]) => {
+                // 🟠 Override display if NoThreedom is present
+                if (debuffKey === 'NoFoureedom' && passiveDebuffs['NoThreedom']) {
+                  return null;
+                }
+
+                const isUpgrade = debuffKey === 'NoThreedom';
+
+                return (
+                  <span
+                    className={`mod-debuff passive ${isUpgrade ? 'mod-upgraded' : ''}`}
+                    key={`passive-${debuffKey}`}
+                  >
+                    {debuffKey}{level > 1 ? ` ×${level}` : ''}
+                  </span>
+                );
+              })}
+
               {activeDebuffs.map((debuffKey, i) => (
                 <span className="mod-debuff active" key={`active-${i}`}>
                   {debuffKey}
@@ -114,6 +127,7 @@ export default function GameScreen() {
           )}
         </div>
       </div>
+
 
       <Board
         key={round}
