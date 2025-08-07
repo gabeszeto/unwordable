@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import './boardStyles.css';
 import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import { useCorrectness } from '../../../contexts/CorrectnessContext';
+
 
 const WORD_LENGTH = 5;
 const MAX_ROW_LENGTH = 7;
@@ -26,13 +28,16 @@ export default function Board({
   setUsedKeys,
   usedKeys,
   targetWord,
-  revealedIndices,
-  setRevealedIndices,
   onVirtualKey,
   feedbackShownUpToRow,
-  setFeedbackShownUpToRow
+  setFeedbackShownUpToRow,
+  setSixerMode,
+  sixerMode
 }) {
   const [guesses, setGuesses] = useState([]);
+  const [guessRanges, setGuessRanges] = useState([]);
+  const { revealedIndices } = useCorrectness();
+
   const [currentGuess, setCurrentGuess] = useState(Array(MAX_ROW_LENGTH).fill(''));
   const [shakeRow, setShakeRow] = useState(false);
   const [bouncingIndices, setBouncingIndices] = useState([]);
@@ -110,6 +115,8 @@ export default function Board({
 
   // Local Perks
   const { jybrishActive } = usePerks();
+  const [sixerActiveIndices, setSixerActiveIndices] = useState(null);
+  const [sixerMeta, setSixerMeta] = useState([]); // e.g. [{ start: 0 }, null, { start: 1 }, ...]
 
   function getFinalRowIndices({
     rowIndex,
@@ -135,8 +142,14 @@ export default function Board({
     return indices;
   }
 
-
   const getRowActiveIndices = useCallback((rowIndex) => {
+    if (sixerActiveIndices && rowIndex === guesses.length) {
+      return Array.from(
+        { length: 6 },
+        (_, i) => i + sixerActiveIndices[0]
+      );
+    }
+
     return getFinalRowIndices({
       rowIndex,
       wordLength: WORD_LENGTH,
@@ -146,7 +159,7 @@ export default function Board({
       shiftedGuessRow: shiftedGuessRowRef.current,
       shiftDirection: shiftDirectionRef.current
     });
-  }, [passiveDebuffs, shortenedBlockIndices]);
+  }, [sixerActiveIndices, guesses.length, passiveDebuffs, shortenedBlockIndices]);
 
 
   useEffect(() => {
@@ -197,8 +210,6 @@ export default function Board({
     setShakeRow,
     setBouncingIndices,
     setIsGameOver,
-    revealedIndices,
-    setRevealedIndices,
     onRoundComplete,
     setUsedKeys,
     usedKeys,
@@ -210,17 +221,25 @@ export default function Board({
     FEEDBACK_DELAY_THRESHOLD,
     goldenLieUsedPerRow,             // 👈 NEW
     goldenLieInjectedIndex,
-    lockedLetterByRow
+    lockedLetterByRow,
+    setGuessRanges,
+    sixerActiveIndices,
+    setSixerActiveIndices,
+    setSixerMeta
   });
 
   // Revelation logic
   useEffect(() => {
+    if (!paddedTargetWord) return;
+  
     setCurrentGuess(prev => {
       const updated = [...prev];
-      revealedIndices.forEach(i => updated[i] = paddedTargetWord[i]);
+      revealedIndices.forEach(i => {
+        updated[i] = paddedTargetWord[i];
+      });
       return updated;
     });
-  }, [revealedIndices, targetWord]);
+  }, [revealedIndices, paddedTargetWord]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -269,10 +288,23 @@ export default function Board({
   };
 
 
-  const renderRow = (guessArray, rowIndex, isSubmitted) => {
-    const rowActiveIndices = getRowActiveIndices(rowIndex);
+  const renderRow = (
+    guessArray,
+    rowIndex,
+    isSubmitted,
+    forcedActiveIndices = null,
+    sixerThisRow = null
+  ) => {
+    const rowActiveIndices = forcedActiveIndices || getRowActiveIndices(rowIndex);
     const cursorIndex = rowActiveIndices.find(i => guessArray[i] === '' && !revealedIndices.includes(i));
 
+    // Sixer
+    const isCurrentGuessRow = rowIndex === guesses.length;
+
+    const isSixerSelectable =
+      isCurrentGuessRow && sixerMode && sixerActiveIndices === null;
+
+    // Normal
     const guessStr = rowActiveIndices.map(i => guessArray[i]).join('');
     const overrideAllCorrect = isSubmitted && isCorrectGuess(guessStr);
 
@@ -327,16 +359,23 @@ export default function Board({
       }
 
       const isCurrent = !isSubmitted && i === cursorIndex;
-
+      const isSixerSelectableTile = isSixerSelectable && (i === 0 || i === 6);
+      const sixerData = sixerMeta[rowIndex];
+      const isSixerLockedVisual = sixerData
+        ? i >= sixerData.start && i <= sixerData.end
+        : false;
       return (
         <div
           className={`
-            letter 
-            ${letterClass} 
-            ${isCurrent ? 'current-input' : ''} 
-            ${!isActive ? 'inactive' : ''} 
-            ${isBlockedSlot ? 'blocked' : ''}
-          `}
+        letter 
+        ${letterClass} 
+        ${isCurrent ? 'current-input' : ''} 
+        ${!isActive ? 'inactive' : ''} 
+        ${isBlockedSlot ? 'blocked' : ''}
+        ${isSixerSelectableTile ? 'sixer-entry' : ''}
+        ${isSixerLockedVisual ? 'sixer-locked' : ''}
+
+      `}
           key={i}
           style={
             bouncingIndices.includes(i) &&
@@ -345,6 +384,17 @@ export default function Board({
               ? { animationDelay: `${i * 0.1}s` }
               : {}
           }
+          onClick={() => {
+            console.log('clicked button')
+            console.log(`is sixer selectable: ${isSixerSelectable}, number is ${i}`)
+            if (isSixerSelectableTile) {
+              const start = i === 0 ? 0 : 1;
+              const end = start + 5;
+              console.log('clickingclack')
+              setSixerActiveIndices([start, end]);
+              setSixerMode(false);
+            }
+          }}
         >
           {displayLetter}
         </div>
@@ -364,13 +414,13 @@ export default function Board({
 
   const renderEmptyRow = (rowIndex) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);
-  
+
     const locked = lockedLetterByRow.current?.[rowIndex];
-    
+
     const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const isLocked = locked?.index === i;
       const letter = isLocked ? locked.letter : '';
-  
+
       return (
         <div
           className={`letter ${!rowActiveIndices.includes(i) ? 'inactive' : ''} ${isLocked ? 'locked' : ''}`}
@@ -380,21 +430,24 @@ export default function Board({
         </div>
       );
     });
-  
+
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
-  
+
 
   const rows = useMemo(() => {
     const renderedRows = [
       ...guesses.map((guessStr, i) => {
         const guessArray = Array(MAX_ROW_LENGTH).fill('');
-        const rowActiveIndices = getRowActiveIndices(i);
+        const rowActiveIndices = guessRanges[i] || getRowActiveIndices(i);
         rowActiveIndices.forEach((idx, j) => {
           guessArray[idx] = guessStr[j];
         });
-        return renderRow(guessArray, i, true);
-      }),
+
+        const sixerThisRow = sixerMeta[i]; // e.g. { start: 0 } or null
+
+        return renderRow(guessArray, i, true, rowActiveIndices, sixerThisRow);
+      })
     ];
 
     if (!isGameOver) {
@@ -410,7 +463,7 @@ export default function Board({
     }
 
     return renderedRows;
-  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shortenedBlockIndices, shiftInitialized, letterLocked, MAX_GUESSES]);
+  }, [guesses, currentGuess, isGameOver, revealedIndices, shakeRow, shortenedBlockIndices, shiftInitialized, sixerMode, letterLocked, MAX_GUESSES]);
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {

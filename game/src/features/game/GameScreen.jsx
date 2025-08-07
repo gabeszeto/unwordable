@@ -8,6 +8,7 @@ import { calculateRoundCash } from '../../contexts/cash/cashUtils.js';
 import { useLevel } from '../../contexts/level/LevelContext';
 import { useDeath } from '../../contexts/death/DeathContext'
 import { useDebuffs } from '../../contexts/debuffs/DebuffsContext.jsx';
+import { useCorrectness } from '../../contexts/CorrectnessContext.jsx';
 
 import PerkDisplay from './components/PerkDisplay.jsx';
 
@@ -20,6 +21,7 @@ import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
 export default function GameScreen() {
   const { stage, setStage, advanceStage } = useLevel();
+  const { revealedIndices, setRevealedIndices } = useCorrectness();
   const { setDeathInfo } = useDeath();
   const { cash, addCash } = useCash();
   const { activeDebuffs, passiveDebuffs } = useDebuffs();
@@ -31,8 +33,10 @@ export default function GameScreen() {
   const round = stage / 2 + 1;
 
   // Perk states
-  const [revealedIndices, setRevealedIndices] = useState([]);
   const [usedPerks, setUsedPerks] = useState([]);
+
+  // Sixer state for board ui
+  const [sixerMode, setSixerMode] = useState(false)
 
   const isKeyzoneUsed = usedPerks.some((key) => key.startsWith('keyzone'));
 
@@ -68,7 +72,8 @@ export default function GameScreen() {
     onKBActivate: setKeyzoneType,
     revealedIndices,
     setRevealedIndices,
-    setInfoPerkKey
+    setInfoPerkKey,
+    setSixerMode
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
@@ -167,6 +172,8 @@ export default function GameScreen() {
         cashEarned={cashEarned}
         feedbackShownUpToRow={feedbackShownUpToRow}
         setFeedbackShownUpToRow={setFeedbackShownUpToRow}
+        setSixerMode={setSixerMode}
+        sixerMode={sixerMode}
       />
 
       <div className="hud">
@@ -175,7 +182,6 @@ export default function GameScreen() {
           markAsUsed={markPerkAsUsed}
           sharedProps={sharedProps}
           isKeyzoneUsed={isKeyzoneUsed}
-
         />
       </div>
 

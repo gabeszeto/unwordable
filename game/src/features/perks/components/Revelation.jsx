@@ -1,32 +1,32 @@
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import { useCorrectness } from '../../../contexts/CorrectnessContext';
 
 export default function Revelation({
   perkKey = 'Revelation',
   targetWord,
-  revealedIndices,
-  setRevealedIndices,
   usedPerks,
   markAsUsed,
   remaining
 }) {
   const { perks, usePerk } = usePerks();
+  const { revealedIndices, revealIndex, getUnrevealedTrulyCorrectIndices } = useCorrectness();
+
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
 
   const handleClick = () => {
     if (used || quantity <= 0) return;
 
-    const unrevealed = [...targetWord]
-      .map((_, i) => (revealedIndices.includes(i) ? null : i))
-      .filter(i => i !== null);
-
+    const unrevealed = getUnrevealedTrulyCorrectIndices(targetWord);
+    console.log(unrevealed)
+    
     if (unrevealed.length === 0) return;
 
     const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
-    setRevealedIndices([...revealedIndices, randomIndex]);
+    revealIndex(randomIndex);
 
-    markAsUsed(perkKey); // updates usedPerks array
-    usePerk(perkKey)
+    markAsUsed(perkKey);
+    usePerk(perkKey);
   };
 
   return (
@@ -35,5 +35,3 @@ export default function Revelation({
     </button>
   );
 }
-
-// need to fix the logic here and where revelation is done.

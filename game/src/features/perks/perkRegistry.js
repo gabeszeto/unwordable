@@ -4,6 +4,8 @@ import KeyzoneGrid from './components/KeyzoneGrid';
 import Revelation from './components/Revelation';
 import Anatomy from './components/Anatomy';
 import Jybrish from './components/Jybrish';
+import Sixer from './components/Sixer';
+
 
 export const perkRegistry = {
   Revelation: {
@@ -47,7 +49,14 @@ export const perkRegistry = {
     cost: 6,
     weight: 2,
     component: Jybrish,
-  }
+  },
+  Sixer: {
+    name: "Sixer",
+    description: "Lets you guess a 6-letter word next guess.",
+    cost: 4,
+    weight: 3,
+    component: Sixer
+  },
 };
 
 
@@ -63,26 +72,6 @@ export const perkRegistry = {
 //         description: "Shows simulated top 3 penultimate guesses.",
 //         rarity: "basic",
 //     },
-//     Anatomy: {
-//         name: "Anatomy",
-//         description: "Tells you how many vowels and consonants are in the word.",
-//         rarity: "basic",
-//     },
-//     keyRowRoulette: {
-//         name: "Keyzones",
-//         description: "Splits the keyboard into rows and shows how many letters are in each.",
-//         rarity: "basic",
-//     },
-//     keySegmentRoulette: {
-//         name: "Thirds",
-//         description: "Splits the keyboard into vertical segments and shows how many letters are in each.",
-//         rarity: "basic",
-//     },
-//     keyGridRoulette: {
-//         name: "Gridlock",
-//         description: "Splits keyboard into 9 zones and reveals how many letters are in each.",
-//         rarity: "epic",
-//     },
 //     deadKeys: {
 //         name: "Dead Keys",
 //         description: "Reveals 2 letters that are not in the word.",
@@ -95,11 +84,7 @@ export const perkRegistry = {
 //         description: "Randomly shuffles clue colors that can legally change.",
 //         rarity: "rare",
 //     },
-//     stretch: {
-//         name: "Stretch",
-//         description: "Lets you guess a 6-letter word next turn.",
-//         rarity: "rare",
-//     },
+//    
 //     echoTrail: {
 //         name: "Echo Trail",
 //         description: "Yellow tiles show arrows pointing toward the closest correct position.",
@@ -115,11 +100,6 @@ export const perkRegistry = {
 //     borrowedTime: {
 //         name: "Borrowed Time",
 //         description: "Save a guess now to use in the next round.",
-//         rarity: "rare",
-//     },
-//     babble: {
-//         name: "Babble",
-//         description: "For this round, guesses don’t have to be real words.",
 //         rarity: "rare",
 //     },
 //     wager: {

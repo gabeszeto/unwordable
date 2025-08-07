@@ -44,12 +44,12 @@
 
 .letter.inactive {
     opacity: 0.2;
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .letter.blocked {
     opacity: 0.2;
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .board .guess-row:first-child .letter.blocked.loaded {
@@ -141,4 +141,30 @@
 
 .letter.correct.bounce {
     animation: bounce-up-down 0.6s ease;
+}
+
+/* Sixer */
+.sixer-entry {
+    background-color: #f0d96a !important;
+    cursor: pointer;
+    border: 2px solid #b89d00;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.sixer-locked {
+    opacity: 1 !important;
 }

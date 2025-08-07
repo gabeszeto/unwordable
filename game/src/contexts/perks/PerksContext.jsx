@@ -9,7 +9,8 @@ export const PerksProvider = ({ children }) => {
         KeyzoneRow: 1,
         KeyzoneSegment: 1,
         KeyzoneGrid: 1,
-        Jybrish: 1
+        Jybrish: 1,
+        Sixer: 1
     });
 
     // Perk states

@@ -71,9 +71,15 @@ export function generateDebuffPlan() {
     // Active debuffs: fresh each time
     const activeCount = debuffMilestones.activeRounds[round] || 0;
     for (let i = 0; i < activeCount; i++) {
-      const selected = pickWeightedDebuff(Object.fromEntries(activePool));
+      const activePoolMap = Object.fromEntries(activePool);
+      const selected = pickWeightedDebuff(activePoolMap);
+
       if (selected) {
         plan[round].active.push(selected);
+
+        // ❌ Remove selected active debuff from the pool permanently
+        const indexToRemove = activePool.findIndex(([key]) => key === selected);
+        if (indexToRemove !== -1) activePool.splice(indexToRemove, 1);
       }
     }
   }

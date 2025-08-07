@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { usePerks } from '../../../../contexts/perks/PerksContext';
+import { useCorrectness } from '../../../../contexts/CorrectnessContext';
 
 export default function useKeyboardHandlers({
     guesses,
@@ -13,8 +14,6 @@ export default function useKeyboardHandlers({
     setShakeRow,
     setBouncingIndices,
     setIsGameOver,
-    revealedIndices,
-    setRevealedIndices,
     onRoundComplete,
     setUsedKeys,
     usedKeys,
@@ -26,10 +25,22 @@ export default function useKeyboardHandlers({
     FEEDBACK_DELAY_THRESHOLD,
     goldenLieUsedPerRow,             // 👈 NEW
     goldenLieInjectedIndex,
-    lockedLetterByRow
+    lockedLetterByRow,
+    setGuessRanges,
+    setSixerMeta,
+    setSixerActiveIndices,
+    sixerActiveIndices
 }) {
     const { jybrishActive, consumeJybrish } = usePerks();
+    const {
+        revealedIndices,
+        markAsTrulyCorrect,
+        revealIndex,
+        resetCorrectness
+    } = useCorrectness();
+
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
+
 
     // Determine if we should delay feedback
     const delayFeedback = activeDebuffs.includes('DelayedFeedback');
@@ -62,7 +73,13 @@ export default function useKeyboardHandlers({
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
-        setCurrentGuess(Array(MAX_ROW_LENGTH).fill(''));
+        setGuessRanges(prev => [...prev, rowActiveIndices]);
+        // Set current guess long way
+        const cleared = [...currentGuess];
+        rowActiveIndices.forEach(i => {
+            cleared[i] = '';
+        });
+        setCurrentGuess(cleared);
 
         // Reveal previously delayed feedback now
         if (delayFeedback && newGuesses.length === FEEDBACK_DELAY_THRESHOLD) {
@@ -96,6 +113,11 @@ export default function useKeyboardHandlers({
                 let rawStatus;
 
                 if (isExact || isBlurredGreen) {
+                    if (isExact) {
+                        console.log('marking')
+                        console.log(i)
+                        markAsTrulyCorrect(i);
+                    }
                     rawStatus = 'correct';
                     hasColor = true;
                 } else if (paddedTargetWord.includes(letter)) {
@@ -198,7 +220,17 @@ export default function useKeyboardHandlers({
             onRoundComplete(false, newGuesses);
         }
 
-        setRevealedIndices([]);
+        if (sixerActiveIndices) {
+            setSixerMeta(prev => [
+                ...prev,
+                sixerActiveIndices ? { start: sixerActiveIndices[0], end: sixerActiveIndices[1] } : null
+            ]);
+            setSixerActiveIndices(null);
+        } else {
+            setSixerMeta(prev => [...prev, null]);
+        }
+
+        resetCorrectness()
     };
 
     useEffect(() => {
