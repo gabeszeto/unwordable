@@ -24,6 +24,8 @@ export default function useKeyboardHandlers({
     feedbackShownUpToRow,
     setFeedbackShownUpToRow,
     FEEDBACK_DELAY_THRESHOLD,
+    goldenLieUsedPerRow,             // 👈 NEW
+    goldenLieInjectedIndex
 }) {
     const { jybrishActive, consumeJybrish } = usePerks();
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
@@ -56,14 +58,6 @@ export default function useKeyboardHandlers({
     // Grellow
     const isGrellowActive = activeDebuffs.includes('Grellow');
 
-    // Yellowless
-    const applyYellowlessToKeyStatus = (letter, status) => {
-        if (status === 'present' && activeDebuffs.includes('Yellowless')) {
-            return 'absent';
-        }
-        return status;
-    }
-
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
@@ -90,16 +84,16 @@ export default function useKeyboardHandlers({
             rowActiveIndices.forEach((idx, i) => {
                 const letter = guessStr[i];
                 const targetChar = paddedTargetWord[idx];
-            
+
                 const isExact = letter === targetChar;
                 const isBlurredGreen =
                     activeDebuffs.includes('BlurredVision') &&
                     [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
                         .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
                         .includes(letter);
-            
+
                 let rawStatus;
-            
+
                 if (isExact || isBlurredGreen) {
                     rawStatus = 'correct';
                     hasColor = true;
@@ -109,25 +103,24 @@ export default function useKeyboardHandlers({
                 } else {
                     rawStatus = 'absent';
                 }
-            
+
                 // 👁 Grellow override (visual downgrade)
                 let status = rawStatus;
                 if (isGrellowActive && rawStatus === 'correct') {
                     status = 'present';
                 }
-            
+
                 // 💛 Yellowless applies ONLY to raw present letters (not grellow-faked)
                 if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
                     status = 'absent';
                 }
-            
+
                 // Final: apply with priority
                 if (!newUsed[letter] || getPriority(status) > getPriority(newUsed[letter])) {
                     newUsed[letter] = status;
                 }
             });
-            
-            
+
         }
 
         // Handle Gray Reaper instant death
@@ -137,6 +130,41 @@ export default function useKeyboardHandlers({
             onRoundComplete(false, newGuesses, 'GrayReaper');
             return;
         }
+
+        // Golden lie janky logic
+        if (
+            activeDebuffs.includes('GoldenLie') &&
+            !goldenLieUsedPerRow.current.has(guesses.length)
+        ) {
+            const rowIndex = guesses.length;
+            const eligibleIndices = [];
+
+            for (let i = 0; i < rowActiveIndices.length; i++) {
+                const idx = rowActiveIndices[i];
+                const letter = guessStr[i];
+                const targetChar = paddedTargetWord[idx];
+
+                const isCorrect = letter === targetChar;
+                const isPresent = paddedTargetWord.includes(letter);
+
+                if (letter && !isCorrect && !isPresent) {
+                    eligibleIndices.push(idx);
+                }
+            }
+
+            if (eligibleIndices.length > 0) {
+                const chosenIndex = eligibleIndices[Math.floor(Math.random() * eligibleIndices.length)];
+                const fakeLetter = guessStr[rowActiveIndices.indexOf(chosenIndex)];
+
+                newUsed[fakeLetter] = 'present'; // lie
+
+                goldenLieUsedPerRow.current.add(rowIndex);
+                goldenLieInjectedIndex.current[rowIndex] = chosenIndex; // 👈 Store exactly which index is the lie
+            }
+            console.log('golden lie injected:', JSON.stringify(goldenLieInjectedIndex.current));
+
+        }
+
 
         // Set key states — either now or after delay
         if (feedbackSuppressed) {

@@ -24,20 +24,20 @@ export const debuffRegistry = {
     description: 'Letters ±1 away from the correct letter show as green too.',
     weight: 1,
   },
-  // GoldenLie: {
-  //   type: 'active',
-  //   name: 'Golden Lie',
-  //   description: 'Each guess will have an extra fake yellow tile.',
-  //   weight: 1,
-  // },
+  GoldenLie: {
+    type: 'active',
+    name: 'Golden Lie',
+    description: 'Each guess will have an extra fake yellow tile if there is space.',
+    weight: 1,
+  },
 
   // 💤 PASSIVE DEBUFFS — applied randomly to spice up non-boss levels
-  // GrayReaper: {
-  //   type: 'passive',
-  //   name: 'Gray Reaper',
-  //   description: 'Guessing a word with no colors ends your run instantly.',
-  //   weight: 1,
-  // },
+  GrayReaper: {
+    type: 'passive',
+    name: 'Gray Reaper',
+    description: 'Guessing a word with no colors ends your run instantly.',
+    weight: 1,
+  },
   // LetterLock: {
   //   type: 'passive',
   //   name: 'Locked Letter',
@@ -73,12 +73,12 @@ export const debuffRegistry = {
     maxStacks: 3,
     stackable: true
   },
-  // PerkTax: {
-  //   type: 'passive',
-  //   name: 'Perk Tax',
-  //   description: 'Using a perk costs +1 cash.',
-  //   weight: 1,
-  //   maxStacks: 2,
-  //   stackable: true
-  // },
+  PerkTax: {
+    type: 'passive',
+    name: 'Perk Tax',
+    description: 'Using a perk costs +1 cash.',
+    weight: 1,
+    maxStacks: 2,
+    stackable: true
+  },
 };

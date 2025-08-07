@@ -33,8 +33,8 @@ export default function GameStageManager() {
     if (Object.keys(debuffPlan).length === 0) {
       // const plan = generateDebuffPlan();
       const plan = generateDebugDebuffPlan({
-        forcePassive: { NoFoureedom: 1, NoThreedom: 1, ShiftedGuess: 1 },
-        forceActive: []
+        forcePassive: {},
+        forceActive: ["GoldenLie"]
       });
       setDebuffPlan(plan);
       console.log(plan)

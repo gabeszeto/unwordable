@@ -43,6 +43,10 @@ export default function Board({
   const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
   const isGrellowActive = activeDebuffs.includes('Grellow');
 
+  //GoldenLie
+  const goldenLieUsedPerRow = useRef(new Set());
+  const goldenLieInjectedIndex = useRef({});
+
   // Delayed feedback
   const isFeedbackDelayActive = activeDebuffs.includes('DelayedFeedback');
   const FEEDBACK_DELAY_THRESHOLD = 2; // First 2 guesses are delayed
@@ -177,7 +181,9 @@ export default function Board({
     activeDebuffs,
     feedbackShownUpToRow,
     setFeedbackShownUpToRow,
-    FEEDBACK_DELAY_THRESHOLD
+    FEEDBACK_DELAY_THRESHOLD,
+    goldenLieUsedPerRow,             // 👈 NEW
+    goldenLieInjectedIndex
   });
 
   // Revelation logic
@@ -194,13 +200,14 @@ export default function Board({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const getLetterClass = (letter, index, isCurrentRow, rowActiveIndices) => {
+  const getLetterClass = (letter, index, isCurrentRow, rowActiveIndices, rowIndex) => {
     if (!letter || !rowActiveIndices.includes(index)) return '';
 
     if (revealedIndices.includes(index) && isCurrentRow) return 'correct';
 
     const targetChar = paddedTargetWord[index];
     const isExact = letter === targetChar;
+
     const isBlurredGreen =
       isBlurredVisionActive &&
       !isCurrentRow &&
@@ -212,12 +219,24 @@ export default function Board({
 
     const isPresent = paddedTargetWord.includes(letter);
 
-    // 🎯 Yellowless logic override
+    // 🎯 Yellowless override
     if (isPresent && activeDebuffs.includes('Yellowless')) {
       return 'absent';
     }
 
     if (isPresent) return 'present';
+
+    // Golden Lie
+    if (
+      activeDebuffs.includes('GoldenLie') &&
+      goldenLieUsedPerRow.current.has(rowIndex)
+    ) {
+      const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
+    
+      if (injectedIdx === index) {
+        return 'present'; // This letter is the fake yellow
+      }
+    }
 
     return 'absent';
   };
@@ -256,7 +275,7 @@ export default function Board({
         if (overrideAllCorrect && isActive) {
           letterClass = 'correct'; // Boss override
         } else {
-          letterClass = getLetterClass(letter, i, !isSubmitted, rowActiveIndices);
+          letterClass = getLetterClass(letter, i, !isSubmitted, rowActiveIndices, rowIndex);
 
           // 👇 Override green with yellow if Grellow is active
           if (isGrellowActive && letterClass === 'correct') {
