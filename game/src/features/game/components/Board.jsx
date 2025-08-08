@@ -37,7 +37,7 @@ export default function Board({
   sixerMode
 }) {
   const [guessRanges, setGuessRanges] = useState([]);
-  const { revealedIndices } = useCorrectness();
+  const { revealedIndices, getRevealedForRow} = useCorrectness();
   const { setRowsAfterDebuffs, rowsAfterDebuffs, getRowActiveIndices: getRowFromHelper } = useBoardHelper();
 
   const [currentGuess, setCurrentGuess] = useState(Array(MAX_ROW_LENGTH).fill(''));
@@ -146,7 +146,7 @@ export default function Board({
     // ----- Step 4: seed LetterLock using the final rows
     if ('LetterLock' in passiveDebuffs) {
       const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
-      const eligibleRows = [0, 1, 2];
+      const eligibleRows = [0,1,2];
       const lockRow = eligibleRows[Math.floor(Math.random() * eligibleRows.length)];
       const allowed = rows[lockRow] ?? [];
       if (allowed.length) {
@@ -224,16 +224,16 @@ export default function Board({
 
   // Revelation logic
   useEffect(() => {
-    if (!paddedTargetWord) return;
-
+    if (!boardInitialized) return;
+    const rowIndex = guesses.length; // current row only
+    const rowReveals = getRevealedForRow(rowIndex);
+  
     setCurrentGuess(prev => {
       const updated = [...prev];
-      revealedIndices.forEach(i => {
-        updated[i] = paddedTargetWord[i];
-      });
+      rowReveals.forEach(i => { updated[i] = paddedTargetWord[i]; });
       return updated;
     });
-  }, [revealedIndices, paddedTargetWord]);
+  }, [boardInitialized, guesses.length, getRevealedForRow, paddedTargetWord]);
 
   useEffect(() => {
     if (!boardInitialized) return;
@@ -291,55 +291,69 @@ export default function Board({
     sixerThisRow = null
   ) => {
     const rowActiveIndices = forcedActiveIndices || getRowActiveIndices(rowIndex);
-    const cursorIndex = rowActiveIndices.find(i => guessArray[i] === '' && !revealedIndices.includes(i));
-
+  
+    // 🔒 use row-scoped revelations
+    const rowReveals = getRevealedForRow(rowIndex);
+  
+    // caret: first empty, non-revealed slot in THIS row
+    const cursorIndex = rowActiveIndices.find(
+      i => guessArray[i] === '' && !rowReveals.includes(i)
+    );
+  
     // Sixer
     const isCurrentGuessRow = rowIndex === guesses.length;
-
     const isSixerSelectable =
       isCurrentGuessRow && sixerMode && sixerActiveIndices === null;
-
+  
     // Normal
     const guessStr = rowActiveIndices.map(i => guessArray[i]).join('');
     const overrideAllCorrect = isSubmitted && isCorrectGuess(guessStr);
-
+  
     const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const letter = guessArray[i] || '';
       const isActive = rowActiveIndices.includes(i);
-
+  
       let displayLetter = letter;
-
+  
       // Show locked letter in correct position on the right row
-      if (!isSubmitted && lockedLetterByRow.current[rowIndex]) {
-        const { index: lockedIndex, letter: lockedChar } = lockedLetterByRow.current[rowIndex];
-        if (i === lockedIndex) {
-          displayLetter = lockedChar;
+      if (!isSubmitted) {
+        if (rowReveals.includes(i)) {
+          // force the real target letter when revealed
+          displayLetter = paddedTargetWord[i];
+        } else if (lockedLetterByRow.current[rowIndex]?.index === i) {
+          // only show the lock if the cell is NOT revealed
+          displayLetter = lockedLetterByRow.current[rowIndex].letter;
         }
       }
-
-
+  
       const feedbackSuppressed =
         isFeedbackDelayActive &&
         rowIndex <= 1 &&
         rowIndex > feedbackShownUpToRow;
-
-      const shouldApplyFeedback = (isSubmitted || revealedIndices.includes(i)) && !feedbackSuppressed;
-
+  
+      // 👇 consider revealed-for-this-row as “feedback should show”
+      const shouldApplyFeedback = (isSubmitted || rowReveals.includes(i)) && !feedbackSuppressed;
+  
       let letterClass = '';
-
+  
       if (shouldApplyFeedback) {
         if (overrideAllCorrect && isActive) {
           letterClass = 'correct'; // Boss override
         } else {
-          letterClass = getLetterClass(letter, i, !isSubmitted, rowActiveIndices, rowIndex);
-
-          // 👇 Override green with yellow if Grellow is active
+          letterClass = getLetterClass(displayLetter, i, !isSubmitted, rowActiveIndices, rowIndex);
+  
+          // If this tile was revealed for THIS row, force green when editing this row
+          if (!isSubmitted && rowReveals.includes(i)) {
+            letterClass = 'correct';
+          }
+  
+          // 👁 Grellow downgrade
           if (isGrellowActive && letterClass === 'correct') {
             letterClass = 'present';
           }
         }
       }
-
+  
       if (
         bouncingIndices.includes(i) &&
         isSubmitted &&
@@ -347,39 +361,36 @@ export default function Board({
       ) {
         letterClass += ' bounce';
       }
-
+  
       const isCurrent = !isSubmitted && i === cursorIndex;
       const isSixerSelectableTile = isSixerSelectable && (i === 0 || i === 6);
       const sixerData = sixerMeta[rowIndex];
       const isSixerLockedVisual = sixerData
         ? i >= sixerData.start && i <= sixerData.end
         : false;
+  
       return (
         <div
           className={`
-        letter 
-        ${letterClass} 
-        ${isCurrent ? 'current-input' : ''} 
-        ${!isActive ? 'inactive' : ''} 
-        ${isSixerSelectableTile ? 'sixer-entry' : ''}
-        ${isSixerLockedVisual ? 'sixer-locked' : ''}
-
-      `}
+            letter 
+            ${letterClass} 
+            ${isCurrent ? 'current-input' : ''} 
+            ${!isActive ? 'inactive' : ''} 
+            ${isSixerSelectableTile ? 'sixer-entry' : ''}
+            ${isSixerLockedVisual ? 'sixer-locked' : ''}
+          `}
           key={i}
           style={
             bouncingIndices.includes(i) &&
-              isSubmitted &&
-              rowIndex === guesses.length - 1
+            isSubmitted &&
+            rowIndex === guesses.length - 1
               ? { animationDelay: `${i * 0.1}s` }
               : {}
           }
           onClick={() => {
-            console.log('clicked button')
-            console.log(`is sixer selectable: ${isSixerSelectable}, number is ${i}`)
             if (isSixerSelectableTile) {
               const start = i === 0 ? 0 : 1;
               const end = start + 5;
-              console.log('clickingclack')
               setSixerActiveIndices([start, end]);
               setSixerMode(false);
             }
@@ -389,7 +400,7 @@ export default function Board({
         </div>
       );
     });
-
+  
     return (
       <div
         className={`guess-row ${!isSubmitted && rowIndex === guesses.length && shakeRow ? 'shake' : ''}`}
@@ -399,7 +410,7 @@ export default function Board({
       </div>
     );
   };
-
+  
 
   const renderEmptyRow = (rowIndex) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);

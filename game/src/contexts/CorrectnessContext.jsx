@@ -1,68 +1,60 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+// CorrectnessContext.jsx
+import { createContext, useContext, useMemo, useState, useCallback } from 'react';
 
 const CorrectnessContext = createContext();
 export const useCorrectness = () => useContext(CorrectnessContext);
 
 export function CorrectnessProvider({ children }) {
-  // Start empty (no debug seeds)
-  const [trulyCorrectIndices, setTrulyCorrectIndices] = useState([]);
-  const [revealedIndices, setRevealedIndices] = useState([]);
+  const [trulyCorrectIndices, setTrulyCorrectIndices] = useState([]); // stays global (padded indices 0..6)
+  const [revealedByRow, setRevealedByRow] = useState({});            // { [rowIndex]: number[] }
 
-  // Store PADDED board indices here (the same ones you compare against paddedTargetWord)
-  const markAsTrulyCorrect = (index) => {
-    if (index >= 1 && index <= 5) {
-      setTrulyCorrectIndices(prev => {
-        if (!prev.includes(index)) {
-          const updated = [...prev, index];
-          console.log('Setting truly correct to', updated);
-          return updated;
-        }
-        return prev;
-      });
-    }
-  };
-  
-
-  // Public API for revealing; don’t export the raw setter unless you really need it
-  const revealIndex = useCallback((index) => {
-    setRevealedIndices(prev => (prev.includes(index) ? prev : [...prev, index]));
+  const markAsTrulyCorrect = useCallback((index) => {
+    setTrulyCorrectIndices(prev => (prev.includes(index) ? prev : [...prev, index]));
   }, []);
 
-  // Call this ONLY when a new round starts (not on every submit)
+  // row-scoped reveal
+  const revealIndexForRow = useCallback((rowIndex, index) => {
+    setRevealedByRow(prev => {
+      const row = prev[rowIndex] || [];
+      if (row.includes(index)) return prev;
+      return { ...prev, [rowIndex]: [...row, index] };
+    });
+  }, []);
+
+  const getRevealedForRow = useCallback((rowIndex) => revealedByRow[rowIndex] || [], [revealedByRow]);
+
   const resetCorrectness = useCallback(() => {
     setTrulyCorrectIndices([]);
-    setRevealedIndices([]);
+    setRevealedByRow({});
   }, []);
 
-  // Takes paddedTargetWord so we operate in the same index space
-  const getUnrevealedTrulyCorrectIndices = () => {
-    const realSlots = [1, 2, 3, 4, 5]; // actual target word columns
-  
-    return realSlots.filter(i =>
-      !trulyCorrectIndices.includes(i) &&
-      !revealedIndices.includes(i)
-    );
-  };
+  // (unchanged) “unrevealed & not truly correct” in real slots [1..5]
+  const getUnrevealedTrulyCorrectIndices = useCallback(() => {
+    const realSlots = [1,2,3,4,5];
+    return realSlots.filter(i => !trulyCorrectIndices.includes(i));
+  }, [trulyCorrectIndices]);
 
   const value = useMemo(() => ({
     trulyCorrectIndices,
-    revealedIndices,
+    // old global (if anything still uses it, you can drop later)
+    revealedIndices: [],
+
+    revealedByRow,
+    getRevealedForRow,
+    revealIndexForRow,
+
     markAsTrulyCorrect,
-    revealIndex,
     resetCorrectness,
     getUnrevealedTrulyCorrectIndices,
   }), [
     trulyCorrectIndices,
-    revealedIndices,
+    revealedByRow,
+    getRevealedForRow,
+    revealIndexForRow,
     markAsTrulyCorrect,
-    revealIndex,
     resetCorrectness,
     getUnrevealedTrulyCorrectIndices,
   ]);
 
-  return (
-    <CorrectnessContext.Provider value={value}>
-      {children}
-    </CorrectnessContext.Provider>
-  );
+  return <CorrectnessContext.Provider value={value}>{children}</CorrectnessContext.Provider>;
 }

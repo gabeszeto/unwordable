@@ -1,3 +1,4 @@
+// Revelation.jsx
 import { usePerks } from "../../../contexts/perks/PerksContext";
 import { useCorrectness } from "../../../contexts/CorrectnessContext";
 import { useBoardHelper } from "../../../contexts/BoardHelperContext";
@@ -10,47 +11,48 @@ export default function Revelation({
   guesses
 }) {
   const { perks, usePerk } = usePerks();
-  const { revealIndex, getUnrevealedTrulyCorrectIndices, revealedIndices } = useCorrectness();
+  const {
+    revealIndexForRow,
+    getUnrevealedTrulyCorrectIndices,
+    getRevealedForRow,
+  } = useCorrectness();
   const { getRowActiveIndices } = useBoardHelper();
 
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
 
-  const currentRow = Array.isArray(guesses) ? guesses.length : 0;
-  const allowed = getRowActiveIndices(currentRow) || [];
-
   const handleClick = () => {
     if (used || quantity <= 0) return;
-  
-    const allowed = getRowActiveIndices(guesses.length) || [];
-    if (!allowed.length) return; // no playable slots in this row
-  
-    // 1) Intersection: (unrevealed & not-truly-correct from [1..5]) ∩ allowed
-    const unrevealedTruly = getUnrevealedTrulyCorrectIndices(); // from context, in [1..5]
-    const allowedSet = new Set(allowed);
-    const candidates = unrevealedTruly.filter(i => allowedSet.has(i));
-  
-    // 2) Fallback: any unrevealed index within the allowed window
-    const fallbackUnrevealed = allowed.filter(i => !revealedIndices.includes(i));
-  
-    // 3) Last resort: any allowed index
-    const pool =
-      candidates.length ? candidates :
-      fallbackUnrevealed.length ? fallbackUnrevealed :
-      allowed;
-  
+
+    const rowIndex = guesses.length;               // current row
+    const allowed = getRowActiveIndices(rowIndex); // debuff-window
+
+    if (!allowed?.length) return;
+
+    // candidates = not-truly-correct & not-already-revealed-for-this-row & inside allowed
+    const notTrulyCorrect = getUnrevealedTrulyCorrectIndices();
+    const alreadyRevealed = new Set(getRevealedForRow(rowIndex));
+
+    const candidates = allowed.filter(i =>
+      notTrulyCorrect.includes(i) && !alreadyRevealed.has(i)
+    );
+
+    // fallback: any allowed slot not already revealed this row
+    const fallbackUnrevealed = allowed.filter(i => !alreadyRevealed.has(i));
+
+    const pool = candidates.length ? candidates
+               : fallbackUnrevealed.length ? fallbackUnrevealed
+               : allowed;
+
     const pick = pool[Math.floor(Math.random() * pool.length)];
-    revealIndex(pick);
-  
+
+    revealIndexForRow(rowIndex, pick); // <-- row-scoped reveal
     markAsUsed(perkKey);
     usePerk(perkKey);
   };
-  
-
-  const disabled = used || quantity <= 0 || !allowed.length;
 
   return (
-    <button className="perk-button" onClick={handleClick} disabled={disabled}>
+    <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
       🔮 Revelation ×{remaining}
     </button>
   );
