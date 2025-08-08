@@ -62,11 +62,6 @@ export const perkRegistry = {
 
 // export const allPerks = {
 //     // 🧠 Info
-//     Revelation: {
-//         name: "Divine Insight",
-//         description: "Reveals 1 correct letter in the right position.",
-//         rarity: "rare",
-//     },
 //     consensus: {
 //         name: "Consensus",
 //         description: "Shows simulated top 3 penultimate guesses.",

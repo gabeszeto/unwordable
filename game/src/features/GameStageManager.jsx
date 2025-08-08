@@ -12,6 +12,7 @@ import DeathScreen from './game/DeathScreen';
 import './gameStageManagerStyles.css'
 import { useCorrectness } from '../contexts/CorrectnessContext';
 import { BoardHelperProvider } from '../contexts/BoardHelperContext';
+import { SkillsProvider } from '../contexts/skills/SkillsContext';
 
 const FINAL_STAGE = 18;
 
@@ -115,9 +116,11 @@ export default function GameStageManager() {
           <p>You survived. Congrats.</p>
         </div>
       ) : isGameLevel ? (
-        <BoardHelperProvider>
-          <GameScreen />
-        </BoardHelperProvider>
+        <SkillsProvider>
+          <BoardHelperProvider>
+            <GameScreen />
+          </BoardHelperProvider>
+        </SkillsProvider>
       ) : (
         <ShopScreen />
       )}

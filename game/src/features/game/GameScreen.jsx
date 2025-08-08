@@ -194,14 +194,12 @@ export default function GameScreen() {
             {keyzoneOverlayVisible ? 'Hide Overlay' : 'Show Overlay'}
           </button>
         )}
-        {infoPerkKey && (
-          <button
-            className="toggle-overlay-button"
-            onClick={() => setShowInfoPanel((prev) => !prev)}
-          >
-            {showInfoPanel ? 'Hide Info' : 'Show Info'}
-          </button>
-        )}
+        <button
+          className="toggle-overlay-button"
+          onClick={() => setShowInfoPanel((prev) => !prev)}
+        >
+          {showInfoPanel ? 'Hide Info' : 'Show Info'}
+        </button>
       </div>
 
       <Keyboard
