@@ -114,9 +114,8 @@ export default function useKeyboardHandlers({
 
                 if (isExact || isBlurredGreen) {
                     if (isExact) {
-                        console.log('marking')
-                        console.log(i)
-                        markAsTrulyCorrect(i);
+                        console.log(`marking ${idx}`)
+                        markAsTrulyCorrect(idx);
                     }
                     rawStatus = 'correct';
                     hasColor = true;
@@ -145,6 +144,7 @@ export default function useKeyboardHandlers({
             });
 
         }
+
 
         // Handle Gray Reaper instant death
         if (activeDebuffs.includes('GrayReaper') && !hasColor) {
@@ -229,8 +229,6 @@ export default function useKeyboardHandlers({
         } else {
             setSixerMeta(prev => [...prev, null]);
         }
-
-        resetCorrectness()
     };
 
     useEffect(() => {
@@ -265,19 +263,27 @@ export default function useKeyboardHandlers({
                 }
             } else if (key === 'BACKSPACE') {
                 const updated = [...currentGuess];
-
+              
                 for (let i = rowActiveIndices.length - 1; i >= 0; i--) {
-                    const idx = rowActiveIndices[i];
-
-                    // 👇 Skip locked index
-                    if (locked && idx === locked.index) continue;
-
-                    if (!revealedIndices.includes(idx) && updated[idx] !== '') {
-                        updated[idx] = '';
-                        break;
-                    }
+                  const idx = rowActiveIndices[i];
+              
+                  // skip locked always
+                  if (locked && idx === locked.index) continue;
+              
+                  // skip empty slots
+                  if (updated[idx] === '') continue;
+              
+                  // skip revealed: restore the true letter (safety) and keep going left
+                  if (revealedIndices.includes(idx)) {
+                    updated[idx] = paddedTargetWord[idx];
+                    continue;
+                  }
+              
+                  // normal deletable slot
+                  updated[idx] = '';
+                  break;
                 }
-
+              
                 setCurrentGuess(updated);
             } else if (/^[A-Z]$/.test(key)) {
                 const updated = [...currentGuess];
@@ -288,8 +294,13 @@ export default function useKeyboardHandlers({
                     // 👇 Skip locked index
                     if (locked && idx === locked.index) continue;
 
-                    if (!revealedIndices.includes(idx) && updated[idx] === '') {
-                        updated[idx] = key;
+                    if (updated[idx] === '') {
+                        if (revealedIndices.includes(idx)) {
+                            // Always keep the revealed letter
+                            updated[idx] = paddedTargetWord[idx];
+                        } else {
+                            updated[idx] = key;
+                        }
                         break;
                     }
                 }

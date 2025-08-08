@@ -10,12 +10,15 @@ import { generateDebuffPlan, generateDebugDebuffPlan } from './debuffs/generateD
 import DeathScreen from './game/DeathScreen';
 
 import './gameStageManagerStyles.css'
-import { CorrectnessProvider } from '../contexts/CorrectnessContext';
+import { useCorrectness } from '../contexts/CorrectnessContext';
+import { BoardHelperProvider } from '../contexts/BoardHelperContext';
 
 const FINAL_STAGE = 18;
 
 export default function GameStageManager() {
   const { stage } = useLevel();
+  const { resetCorrectness } = useCorrectness();
+
   const {
     addActiveDebuff,
     addPassiveDebuff,
@@ -32,11 +35,11 @@ export default function GameStageManager() {
   useEffect(() => {
     // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      const plan = generateDebuffPlan();
-      // const plan = generateDebugDebuffPlan({
-      //   forcePassive: { NoFoureedom: 1, ShiftedGuess: 1 },
-      //   forceActive: [""]
-      // });
+      // const plan = generateDebuffPlan();
+      const plan = generateDebugDebuffPlan({
+        forcePassive: { NoFoureedom: 1, ShiftedGuess: 1, NoThreedom: 1, LetterLock: 1 },
+        forceActive: [""]
+      });
       setDebuffPlan(plan);
       console.log(plan)
     }
@@ -53,10 +56,19 @@ export default function GameStageManager() {
     for (const a of roundPlan.active) addActiveDebuff(a);
   }, [stage, debuffPlan]);
 
+
+
   const isGameLevel = stage % 2 === 0;
   const isDeath = stage === 100;
   const isShop = stage % 2 === 1;
   const isFinished = stage > FINAL_STAGE;
+
+  // Reset truly correct in each game round
+  useEffect(() => {
+    if (isGameLevel) {
+      resetCorrectness();
+    }
+  }, [stage]);
 
   const roundToUse = isDeath ? deathRound : round;
 
@@ -103,9 +115,9 @@ export default function GameStageManager() {
           <p>You survived. Congrats.</p>
         </div>
       ) : isGameLevel ? (
-        <CorrectnessProvider>
+        <BoardHelperProvider>
           <GameScreen />
-        </CorrectnessProvider>
+        </BoardHelperProvider>
       ) : (
         <ShopScreen />
       )}

@@ -21,7 +21,8 @@ import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
 export default function GameScreen() {
   const { stage, setStage, advanceStage } = useLevel();
-  const { revealedIndices, setRevealedIndices } = useCorrectness();
+  const [guesses, setGuesses] = useState([]);
+  const { trulyCorrectIndices, revealedIndices, setRevealedIndices } = useCorrectness();
   const { setDeathInfo } = useDeath();
   const { cash, addCash } = useCash();
   const { activeDebuffs, passiveDebuffs } = useDebuffs();
@@ -71,9 +72,9 @@ export default function GameScreen() {
     targetWord,
     onKBActivate: setKeyzoneType,
     revealedIndices,
-    setRevealedIndices,
     setInfoPerkKey,
-    setSixerMode
+    setSixerMode,
+    guesses
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
@@ -149,7 +150,6 @@ export default function GameScreen() {
 
             // Reset things
             resetUsedPerks();
-            setRevealedIndices([]);
             setUsedKeys({});
             setKeyzoneType(null);
             setKeyzoneOverlayVisible(false);
@@ -162,12 +162,11 @@ export default function GameScreen() {
             setStage(100);
           }
         }}
-
+        guesses={guesses}
+        setGuesses={setGuesses}
         setUsedKeys={setUsedKeys}
         usedKeys={usedKeys}
         targetWord={targetWord}
-        revealedIndices={revealedIndices}
-        setRevealedIndices={setRevealedIndices}
         onVirtualKey={setVirtualKeyHandler}
         cashEarned={cashEarned}
         feedbackShownUpToRow={feedbackShownUpToRow}
