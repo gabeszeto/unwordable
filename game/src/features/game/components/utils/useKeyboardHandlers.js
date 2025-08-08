@@ -35,8 +35,6 @@ export default function useKeyboardHandlers({
     const {
         revealedIndices,
         markAsTrulyCorrect,
-        revealIndex,
-        resetCorrectness
     } = useCorrectness();
 
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
@@ -150,7 +148,7 @@ export default function useKeyboardHandlers({
         if (activeDebuffs.includes('GrayReaper') && !hasColor) {
             setUsedKeys(newUsed);
             setIsGameOver(true);
-            onRoundComplete(false, newGuesses, 'GrayReaper');
+            onRoundComplete(false, newGuesses, 'GrayReaper', targetWord);
             return;
         }
 
@@ -217,7 +215,7 @@ export default function useKeyboardHandlers({
             onRoundComplete(true, newGuesses);
         } else if (newGuesses.length >= MAX_GUESSES) {
             setIsGameOver(true);
-            onRoundComplete(false, newGuesses);
+            onRoundComplete(false, newGuesses, 'Out of guesses', targetWord);
         }
 
         if (sixerActiveIndices) {

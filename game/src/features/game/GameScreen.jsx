@@ -196,7 +196,7 @@ export default function GameScreen() {
 
       <Board
         key={round}
-        onRoundComplete={async (success, guesses, deathReason) => {
+        onRoundComplete={async (success, guesses, deathReason, word) => {
           if (success) {
             const earned = calculateRoundCash({
               guessesUsed: guesses.length,
@@ -217,6 +217,7 @@ export default function GameScreen() {
             setDeathInfo({
               deathRound: round,
               reason: deathReason || 'Out of guesses',
+              word: word
             });
             setStage(100);
           }

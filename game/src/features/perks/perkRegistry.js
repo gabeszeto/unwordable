@@ -23,21 +23,21 @@ export const perkRegistry = {
     component: Anatomy,
   },
   KeyzoneRow: {
-    name: "KeyzoneRow",
+    name: "↔️ Keyzones (Row)",
     description: "Splits keyboard into rows and shows letter counts per row.",
     cost: 4,
     weight: 5,
     component: KeyzoneRow,
   },
   KeyzoneSegment: {
-    name: "KeyzoneSegment",
+    name: "↕️ Keyzones (Segment)",
     description: "Splits keyboard into vertical thirds and shows letter counts.",
     cost: 4,
     weight: 4,
     component: KeyzoneSegment,
   },
   KeyzoneGrid: {
-    name: "KeyzoneGrid",
+    name: "#️⃣ Keyzones (Grid)",
     description: "Splits keyboard into 6 zones and shows letter counts per zone.",
     cost: 9,
     weight: 1,
@@ -51,7 +51,7 @@ export const perkRegistry = {
     component: Jybrish,
   },
   Sixer: {
-    name: "Sixer",
+    name: "6️⃣ Sixer",
     description: "Lets you guess a 6-letter word next guess.",
     cost: 4,
     weight: 3,

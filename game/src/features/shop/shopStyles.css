@@ -18,33 +18,168 @@
     align-items: center;
 }
 
+/* Cash header */
+.cash-display {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.cash-emoji {
+    font-size: 1.1rem;
+}
+
+.cash-amount {
+    font-weight: 700;
+}
+
+/* Floating delta (+/-) */
+.cash-delta {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    opacity: 0;
+    animation: cashFloat 550ms ease-out forwards;
+    pointer-events: none;
+}
+
+.cash-delta.pos {
+    color: #2e7d32;
+}
+
+.cash-delta.neg {
+    color: #c62828;
+}
+
+@keyframes cashFloat {
+    0% {
+        transform: translate(6px, -50%);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translate(0px, -60%);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(0px, -90%);
+        opacity: 0;
+    }
+}
+
+/* Perk cards as buttons */
 .perk-card {
     background: #222;
     color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 80%;
+    padding: 16px 16px 18px;
+    border-radius: 10px;
+    width: 100%;
     font-size: 1rem;
-    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    border: 1px solid #2a2a2a;
+    transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    position: relative;
+    text-align: left;
 }
 
-.perk-card:hover {
+.perk-card:hover:not(.is-disabled) {
     cursor: pointer;
-    background: #333333;
+    background: #2a2a2a;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
     transform: scale(1.03);
+}
+
+.perk-card:disabled,
+.perk-card.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.1);
+}
+
+/* Purchase pop */
+.perk-card.is-buying {
+    animation: perkPop 160ms ease-out;
+}
+
+@keyframes perkPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.97);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Purchased check badge (slides in and fades) */
+.perk-badge {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    background: #1b5e20;
+    color: #d8ffd8;
+    border: 1px solid #2e7d32;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.perk-card.is-bought .perk-badge {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Roulette 'spinning' shimmer */
+.perk-card.is-spinning .perk-name {
+    position: relative;
+    overflow: hidden;
+}
+
+.perk-card.is-spinning .perk-name::after {
+    content: '';
+    position: absolute;
+    left: -30%;
+    top: 0;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    animation: shimmer 700ms ease-out forwards;
+}
+
+@keyframes shimmer {
+    to {
+        left: 120%;
+    }
 }
 
 .choiceTopPart {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
 }
 
 .perk-description {
     margin-top: 0.5rem;
+    color: #f0f0f0;
+    opacity: 0.9;
 }
 
+
 .nextButton {
-    margin-top: 20px;
+    margin-top: 0.5rem;
     padding: 12px 24px;
     font-size: 1rem;
     background: #222;
@@ -58,4 +193,76 @@
     cursor: pointer;
     background: #333333;
     transform: scale(1.03);
+}
+
+/* -------- Inventory panel (below the shop list) -------- */
+.shop-inventory-panel {
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.yourInventory {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-decoration: underline;
+}
+
+.inv-section {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+}
+
+.inv-title {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.inv-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.inv-empty {
+    opacity: 0.6;
+    font-style: italic;
+    padding: 4px 0;
+}
+
+/* Chips */
+button {
+    font-family: 'Zilla Slab';
+    font-size: 0.7rem;
+}
+
+/* Pulse when quantity/level increases */
+.inv-chip.changed {
+    animation: invPulse 700ms ease-out;
+}
+
+@keyframes invPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.06);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }

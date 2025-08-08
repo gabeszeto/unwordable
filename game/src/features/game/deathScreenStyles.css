@@ -1,0 +1,44 @@
+.death-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100svh;
+    text-align: center;
+    padding: 2rem;
+    font-family: 'Zilla Slab', serif;
+}
+
+.death-screen h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.death-screen p {
+    margin: 0.3rem 0;
+    font-size: 1.1rem;
+    max-width: 500px;
+    line-height: 1.5;
+}
+
+.death-screen strong {
+    color: #daab3e;
+
+}
+
+.death-screen div {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    background: #222;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.death-screen div:hover {
+    cursor: pointer;
+    background: #333333;
+    transform: scale(1.03);
+}

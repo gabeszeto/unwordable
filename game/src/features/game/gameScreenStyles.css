@@ -168,14 +168,13 @@
     border: 1px solid #e6e6e6;
     background: #fafafa;
     font-size: 0.9rem;
+    font-family: 'Zilla Slab';
     cursor: pointer;
     transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .gb-btn:hover {
     background: #f2f2f2;
-    transform: translateY(-1px);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
 }
 
 /* Active/pressed state */
@@ -203,8 +202,8 @@
     border-bottom-width: 2px;
     border-radius: 6px;
     background: white;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     opacity: 0.8;
+    font-family: 'Zilla Slab';
 }
 
 /* Focus ring for keyboard users */

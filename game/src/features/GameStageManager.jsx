@@ -38,7 +38,7 @@ export default function GameStageManager() {
     if (Object.keys(debuffPlan).length === 0) {
       const plan = generateDebuffPlan();
       // const plan = generateDebugDebuffPlan({
-      //   forcePassive: { NoFoureedom: 1, ShiftedGuess: 1, NoThreedom: 1, LetterLock: 1 },
+      //   forcePassive: { NoFoureedom: 1, ShiftedGuess: 1, LetterLock: 1 },
       //   forceActive: []
       // });
       setDebuffPlan(plan);
@@ -136,7 +136,9 @@ export default function GameStageManager() {
           </BoardHelperProvider>
         </SkillsProvider>
       ) : (
-        <ShopScreen />
+        <SkillsProvider>
+          <ShopScreen />
+        </SkillsProvider>
       )}
     </div>
   );

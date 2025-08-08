@@ -22,7 +22,7 @@ export default function PerkDisplay({
     return (
         <div className="perkDisplay">
             <div className="topPerksSection">
-                <div className="inventoryTitle">Inventory</div>
+                <div className="inventoryTitle">Consumables</div>
                 <div className="cash-counter">💰 {cash}</div>
             </div>
             <div className="perkGrid">
