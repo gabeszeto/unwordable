@@ -11,53 +11,104 @@
 }
 
 /* modifiers display */
+/* Center the unified strip + give it breathing room */
 .modifiersDisplay {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    /* background-color: #f3f3f3; */
-    border-radius: 8px;
-    font-family: 'Zilla Slab';
-}
-
-.mod-left {
-    font-weight: bold;
-    color: #333;
-}
-
-.mod-right {
-    display: flex;
-    gap: 0.2rem;
+    justify-content: center;
+    gap: 10px;
     flex-wrap: wrap;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 0.5rem;
 }
 
-.mod-debuff {
-    color: white;
-    padding: 0.15rem 0.4rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
+/* Optional: tiny boss cue without text */
+.modifiersDisplay.is-boss {
+    box-shadow: inset 0 0 0 2px rgba(200, 0, 0, 0.06);
 }
 
+/* New grouping primitives (good = skills, bad = debuffs) */
+.mod-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 2px 0px;
+}
+
+/* Small pill label for each group (hide on mobile if you want later) */
+.mod-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+.mod-label.good {
+    background: #e8f7ee;
+    border-color: #cbead6;
+}
+
+/* Hairline separator when both groups present */
+.mod-sep {
+    width: 1px;
+    height: 18px;
+    background: #ddd;
+}
+
+/* New neutral chip style (re-usable) */
+.mod-chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    line-height: 1;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    user-select: none;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.mod-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Good chips (skills) */
+.mod-chip.good {
+    background: #eef9ff;
+    border-color: #d3efff;
+    color: #16425b;
+}
+
+/* Bad chips (debuffs) — map to your existing colors */
+.mod-chip.bad.passive {
+    /* passive debuffs */
+    background: #fff7e8;
+    border-color: #ffe1b0;
+    color: #7a4b00;
+}
+
+.mod-chip.bad.active {
+    /* active debuffs */
+    background: #ffefef;
+    border-color: #ffcaca;
+    color: #7a0000;
+}
+
+/* Keep your upgraded highlight vibe */
+.mod-upgraded {
+    box-shadow: inset 0 0 0 2px rgba(255, 180, 60, 0.22);
+}
+
+/* Keep your "no modifiers" style consistent */
 .mod-none {
     color: #777;
     font-style: italic;
 }
 
-.mod-debuff.passive {
-    background-color: #4490f0;
-}
-
-.mod-debuff.active {
-    background-color: #e74c3c;
-}
-
-.mod-debuff.mod-upgraded {
-    background-color: #3683e1;
-
-}
 
 /* HUD and Perks */
 .hud {
@@ -96,8 +147,81 @@
 }
 
 /* buttons for perks */
+/* Command strip */
 .gameButtons {
-    padding: 0;
-    margin: 0;
-    height: 20px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 0 8px;
+    height: auto;
+    /* was fixed 20px; let buttons breathe */
+}
+
+/* Button base */
+.gb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid #e6e6e6;
+    background: #fafafa;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.gb-btn:hover {
+    background: #f2f2f2;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Active/pressed state */
+.gb-btn.is-active {
+    background: #eef9ff;
+    border-color: #d3efff;
+    box-shadow: inset 0 0 0 2px rgba(45, 145, 255, 0.12);
+}
+
+/* Icon + label + keyboard hint */
+.gb-ico {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.gb-label {
+    line-height: 1;
+}
+
+.gb-kbd {
+    margin-left: 4px;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border: 1px solid #e2e2e2;
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    background: white;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    opacity: 0.8;
+}
+
+/* Focus ring for keyboard users */
+.gb-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, .45);
+    border-color: #b6daff;
+}
+
+/* Compact on small screens */
+@media (max-width: 420px) {
+    .gb-label {
+        display: none;
+    }
+
+    /* icons + kbd only */
+    .gb-btn {
+        padding: 6px 8px;
+    }
 }

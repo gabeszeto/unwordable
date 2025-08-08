@@ -1,5 +1,5 @@
 // GameScreen.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Board from './components/Board.jsx';
 import Keyboard from './components/Keyboard.jsx';
 
@@ -9,6 +9,7 @@ import { useLevel } from '../../contexts/level/LevelContext';
 import { useDeath } from '../../contexts/death/DeathContext'
 import { useDebuffs } from '../../contexts/debuffs/DebuffsContext.jsx';
 import { useCorrectness } from '../../contexts/CorrectnessContext.jsx';
+import { useSkills } from '../../contexts/skills/SkillsContext.jsx';
 
 import PerkDisplay from './components/PerkDisplay.jsx';
 
@@ -22,10 +23,11 @@ import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 export default function GameScreen() {
   const { stage, setStage, advanceStage } = useLevel();
   const [guesses, setGuesses] = useState([]);
-  const { trulyCorrectIndices, revealedIndices, setRevealedIndices } = useCorrectness();
+  const { revealedIndices } = useCorrectness();
   const { setDeathInfo } = useDeath();
   const { cash, addCash } = useCash();
   const { activeDebuffs, passiveDebuffs } = useDebuffs();
+  const { activeSkills } = useSkills()
 
   const BOSS_STAGES = [4, 10, 16, 18];
 
@@ -82,6 +84,23 @@ export default function GameScreen() {
     if (virtualKeyHandler) virtualKeyHandler({ key });
   };
 
+  // KB Shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.shiftKey && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        setShowInfoPanel(prev => !prev);
+      }
+      if (e.shiftKey && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        setKeyzoneOverlayVisible(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+
   if (round > 10) {
     return (
       <div className="game-screen end-screen">
@@ -96,43 +115,83 @@ export default function GameScreen() {
     <div className="game-screen">
 
       {/* passives and debuffs display */}
-      <div className="modifiersDisplay">
-        <div className="mod-left">
-          {BOSS_STAGES.includes(stage) ? 'Boss Level' : 'Normal Level'}
-        </div>
+      <div className={`modifiersDisplay ${BOSS_STAGES.includes(stage) ? 'is-boss' : ''}`}>
+        {(() => {
+          const toRoman = (num) => {
+            if (num <= 0) return '';
+            const map = [
+              { value: 10, numeral: 'X' },
+              { value: 9, numeral: 'IX' },
+              { value: 5, numeral: 'V' },
+              { value: 4, numeral: 'IV' },
+              { value: 1, numeral: 'I' }
+            ];
+            let result = '';
+            for (const { value, numeral } of map) {
+              while (num >= value) {
+                result += numeral;
+                num -= value;
+              }
+            }
+            return result;
+          };
 
-        <div className="mod-right">
-          {activeDebuffs.length === 0 && Object.keys(passiveDebuffs || {}).length === 0 ? (
-            <span className="mod-none">No modifiers</span>
-          ) : (
+          const skillEntries = Object.entries(activeSkills || {}).filter(([, lvl]) => lvl > 0);
+          const hasSkills = skillEntries.length > 0;
+          const hasPassives = Object.keys(passiveDebuffs || {}).length > 0;
+          const hasActives = (activeDebuffs || []).length > 0;
+          const hasAny = hasSkills || hasPassives || hasActives;
+
+          if (!hasAny) return <span className="mod-none">No modifiers</span>;
+
+          return (
             <>
-              {Object.entries(passiveDebuffs || {}).map(([debuffKey, level]) => {
-                // 🟠 Override display if NoThreedom is present
-                if (debuffKey === 'NoFoureedom' && passiveDebuffs['NoThreedom']) {
-                  return null;
-                }
+              {/* GOOD: Skills (permanent upgrades) */}
+              {hasSkills && (
+                <div className="mod-group good" aria-label="Skills">
+                  {skillEntries.map(([skillKey, level]) => (
+                    <span className="mod-chip good" key={`skill-${skillKey}`}>
+                      {skillKey} {level > 1 ? toRoman(level) : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
 
-                const isUpgrade = debuffKey === 'NoThreedom';
+              {/* separator if both groups present */}
+              {hasSkills && (hasPassives || hasActives) && <span className="mod-sep" aria-hidden="true" />}
 
-                return (
-                  <span
-                    className={`mod-debuff passive ${isUpgrade ? 'mod-upgraded' : ''}`}
-                    key={`passive-${debuffKey}`}
-                  >
-                    {debuffKey}{level > 1 ? ` ×${level}` : ''}
-                  </span>
-                );
-              })}
+              {/* BAD: Debuffs (passive + active) */}
+              {(hasPassives || hasActives) && (
+                <div className="mod-group bad" aria-label="Debuffs">
+                  {/* passive debuffs */}
+                  {Object.entries(passiveDebuffs || {}).map(([debuffKey, level]) => {
+                    // hide NoFoureedom if NoThreedom exists
+                    if (debuffKey === 'NoFoureedom' && passiveDebuffs['NoThreedom']) return null;
+                    const isUpgrade = debuffKey === 'NoThreedom';
+                    return (
+                      <span
+                        className={`mod-chip bad passive ${isUpgrade ? 'mod-upgraded' : ''}`}
+                        key={`passive-${debuffKey}`}
+                      >
+                        {debuffKey}{level > 1 ? ` ${toRoman(level)}` : ''}
+                      </span>
+                    );
+                  })}
 
-              {activeDebuffs.map((debuffKey, i) => (
-                <span className="mod-debuff active" key={`active-${i}`}>
-                  {debuffKey}
-                </span>
-              ))}
+                  {/* active debuffs */}
+                  {activeDebuffs.map((debuffKey, i) => (
+                    <span className="mod-chip bad active" key={`active-${i}`}>
+                      {debuffKey}
+                    </span>
+                  ))}
+                </div>
+              )}
             </>
-          )}
-        </div>
+          );
+        })()}
       </div>
+
+
 
 
       <Board
@@ -188,19 +247,26 @@ export default function GameScreen() {
       <div className="gameButtons">
         {keyzoneType && (
           <button
-            className="toggle-overlay-button"
-            onClick={() => setKeyzoneOverlayVisible((v) => !v)}
+            className={`gb-btn ${keyzoneOverlayVisible ? 'is-active' : ''}`}
+            onClick={() => setKeyzoneOverlayVisible(v => !v)}
+            title="Toggle keyzone overlay (O)"
           >
-            {keyzoneOverlayVisible ? 'Hide Overlay' : 'Show Overlay'}
+            <span className="gb-ico">🗺️</span>
+            <span className="gb-label">{keyzoneOverlayVisible ? 'Overlay On' : 'Overlay Off'}</span>
+            <kbd className="gb-kbd">O</kbd>
           </button>
         )}
         <button
-          className="toggle-overlay-button"
-          onClick={() => setShowInfoPanel((prev) => !prev)}
+          className={`gb-btn ${showInfoPanel ? 'is-active' : ''}`}
+          onClick={() => setShowInfoPanel(p => !p)}
+          title="Show hint/info (I)"
         >
-          {showInfoPanel ? 'Hide Info' : 'Show Info'}
+          <span className="gb-ico">💡</span>
+          <span className="gb-label">{showInfoPanel ? 'Hide Info' : 'Show Info'}</span>
+          <kbd className="gb-kbd">Shift I</kbd>
         </button>
       </div>
+
 
       <Keyboard
         usedKeys={usedKeys}

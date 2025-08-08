@@ -36,11 +36,11 @@ export default function GameStageManager() {
   useEffect(() => {
     // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      // const plan = generateDebuffPlan();
-      const plan = generateDebugDebuffPlan({
-        forcePassive: { NoFoureedom: 1, ShiftedGuess: 1, NoThreedom: 1, LetterLock: 1 },
-        forceActive: [""]
-      });
+      const plan = generateDebuffPlan();
+      // const plan = generateDebugDebuffPlan({
+      //   forcePassive: { NoFoureedom: 1, ShiftedGuess: 1, NoThreedom: 1, LetterLock: 1 },
+      //   forceActive: []
+      // });
       setDebuffPlan(plan);
       console.log(plan)
     }
@@ -72,40 +72,54 @@ export default function GameStageManager() {
   }, [stage]);
 
   const roundToUse = isDeath ? deathRound : round;
+  const BOSS_STEPS = [3, 6, 9];
+  const isBossRound = BOSS_STEPS.includes(roundToUse);
+  const isFinalBoss = roundToUse === 10;
+  const isShopThisRound = isShop && roundToUse === round;
 
   return (
     <div className="gameContainer">
       <div className="round-visual">
         <span className="round-label">
           {`Round ${roundToUse} of 10`}
+          {isFinalBoss ? (
+            <span className="round-badge final" title="Final Boss">💀 Final</span>
+          ) : isBossRound ? (
+            <span className="round-badge boss" title="Boss Round">⚠️ Boss</span>
+          ) : null}
+          {isShopThisRound && (
+            <span className="round-badge shop" title="Shop">🛒 Shop</span>
+          )}
         </span>
+
         <div className="round-progress-bar">
           {Array.from({ length: 10 }, (_, i) => {
             const step = i + 1;
             const isBoss = [3, 6, 9].includes(step);
             const isFinalBoss = step === 10;
-            const isComplete = step < roundToUse
+            const isComplete = step < roundToUse;
             const isActive = step === round;
-            const isDeathRound = step === deathRound
+            const isDeathRound = step === deathRound;
             const isShopRound = isShop && step === round;
 
             return (
               <div
                 key={i}
                 className={`
-                round-step
-                ${isFinalBoss ? 'finalBoss' : ''}
-                ${isBoss ? 'boss' : ''}
-                ${isComplete ? 'complete' : ''}
-                ${isActive ? 'active' : ''}
-                ${isShopRound ? 'shop-outline' : ''}
-                ${isDeathRound ? 'died' : ''}
-                `}
+            round-step
+            ${isFinalBoss ? 'finalBoss' : ''}
+            ${isBoss ? 'boss' : ''}
+            ${isComplete ? 'complete' : ''}
+            ${isActive ? 'active' : ''}
+            ${isShopRound ? 'shop-outline' : ''}
+            ${isDeathRound ? 'died' : ''}
+          `}
               />
             );
           })}
         </div>
       </div>
+
 
       {/* Render appropriate screen */}
       {isDeath ? (

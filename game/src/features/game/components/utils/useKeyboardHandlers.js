@@ -237,6 +237,13 @@ export default function useKeyboardHandlers({
 
     const handleKeyDown = useCallback(
         (e) => {
+
+            // Shift pressed then no input
+            if (e.shiftKey) {
+                e.preventDefault();
+                return;
+            }
+
             const key = e.key.toUpperCase();
             const rowActiveIndices = getRowActiveIndices(guesses.length);
             const locked = lockedLetterByRow?.current?.[guesses.length]; // 👈 Add this here
@@ -263,27 +270,27 @@ export default function useKeyboardHandlers({
                 }
             } else if (key === 'BACKSPACE') {
                 const updated = [...currentGuess];
-              
+
                 for (let i = rowActiveIndices.length - 1; i >= 0; i--) {
-                  const idx = rowActiveIndices[i];
-              
-                  // skip locked always
-                  if (locked && idx === locked.index) continue;
-              
-                  // skip empty slots
-                  if (updated[idx] === '') continue;
-              
-                  // skip revealed: restore the true letter (safety) and keep going left
-                  if (revealedIndices.includes(idx)) {
-                    updated[idx] = paddedTargetWord[idx];
-                    continue;
-                  }
-              
-                  // normal deletable slot
-                  updated[idx] = '';
-                  break;
+                    const idx = rowActiveIndices[i];
+
+                    // skip locked always
+                    if (locked && idx === locked.index) continue;
+
+                    // skip empty slots
+                    if (updated[idx] === '') continue;
+
+                    // skip revealed: restore the true letter (safety) and keep going left
+                    if (revealedIndices.includes(idx)) {
+                        updated[idx] = paddedTargetWord[idx];
+                        continue;
+                    }
+
+                    // normal deletable slot
+                    updated[idx] = '';
+                    break;
                 }
-              
+
                 setCurrentGuess(updated);
             } else if (/^[A-Z]$/.test(key)) {
                 const updated = [...currentGuess];

@@ -3,7 +3,7 @@ export const debuffRegistry = {
   Grellow: {
     type: 'active',
     name: 'Grellow',
-    description: `Green tiles are replaced with yellow. You'll never know what's correct.`,
+    description: `Green and yellow tiles may show up as one another.`,
     weight: 1,
   },
   Yellowless: {
