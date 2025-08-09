@@ -44,10 +44,15 @@ export default function ShopScreen() {
   }, [cash]);
 
   // build offers on enter / stage change / skill changes
+  const [shopVersion, setShopVersion] = useState(0);
+
   useEffect(() => {
+    // build once per stage (and when rerolled), using the snapshot of activeSkills
     setOffers(pickUniqueOffers({ count: 3, activeSkills, stage }));
-    setPurchasedSet(new Set()); // reset locks when the shop regenerates (e.g., new stage)
-  }, [stage, activeSkills]);
+    setPurchasedSet(new Set());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, shopVersion]);
+
 
   const handleBuy = async (offer) => {
     const { id, type, cost } = offer;
@@ -78,7 +83,7 @@ export default function ShopScreen() {
     setPurchasedSet(prev => new Set(prev).add(key));
 
     // visuals
-    setBoughtId(id);
+    setBoughtId(key);
     setTimeout(() => setBoughtId(null), 700);
     setTimeout(() => setPurchasingId(null), 200);
   };
@@ -91,16 +96,12 @@ export default function ShopScreen() {
     spendCash(1);
     setCashDelta(-1);
 
-    // rebuild offers from current state (activeSkills/stage)
-    const next = pickUniqueOffers({ count: 3, activeSkills, stage });
-    setOffers(next);
-
-    // clear “bought” state for the new set
     setPurchasedSet(new Set());
     setBoughtId(null);
     setPurchasingId(null);
-  };
 
+    setShopVersion(v => v + 1); // 🔁 triggers the effect to rebuild offers
+  };
   return (
     <div className="shop-container">
       <h2>🛒 Shop</h2>
@@ -126,7 +127,7 @@ export default function ShopScreen() {
           const key = `${type}:${id}`;
           const affordable = cash >= cost;
           const isBuying = purchasingId === id;
-          const isBought = boughtId === id;
+          const isBought = boughtId === key;
           const isLocked = purchasedSet.has(key);
 
           return (

@@ -2,6 +2,7 @@
 
 export const skillsRegistry = {
   LetterLens: {
+    id: 'LetterLens',
     name: '🔎 Letter Lens',
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 }, // optional; defaults applied if missing
@@ -11,6 +12,7 @@ export const skillsRegistry = {
     ],
   },
   Repeater: {
+    id: 'Repeater',
     name: '🔁 Repeater',
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },

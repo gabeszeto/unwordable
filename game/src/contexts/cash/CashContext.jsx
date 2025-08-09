@@ -8,7 +8,7 @@ export function useCash() {
 }
 
 export function CashProvider({ children }) {
-  const [cash, setCash] = useState(5);
+  const [cash, setCash] = useState(500);
 
   const addCash = (amount) => setCash((g) => g + amount);
   const spendCash = (amount) => setCash((g) => Math.max(g - amount, 0));

@@ -121,6 +121,7 @@
 }
 
 /* Purchased check badge (slides in and fades) */
+/* Base (hidden) */
 .perk-badge {
     position: absolute;
     right: 12px;
@@ -134,10 +135,17 @@
     opacity: 0;
     transform: translateY(6px);
     pointer-events: none;
-    transition: opacity 140ms ease, transform 140ms ease;
+    transition: opacity 400ms ease, transform 400ms ease;
 }
 
+/* 1) Animate in when just bought */
 .perk-card.is-bought .perk-badge {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 2) Stay visible while locked (after animation ends) */
+.perk-card.is-locked .perk-badge {
     opacity: 1;
     transform: translateY(0);
 }
@@ -293,23 +301,4 @@ button {
 .rerollButton:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-}
-
-/* Optional visual lock for purchased cards */
-.perk-card.is-locked {
-    position: relative;
-}
-
-.perk-card.is-locked::after {
-    content: 'Purchased';
-    position: absolute;
-    right: 12px;
-    bottom: 10px;
-    font-size: 0.8rem;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: #1b5e20;
-    color: #d8ffd8;
-    border: 1px solid #2e7d32;
-    opacity: 0.9;
 }
