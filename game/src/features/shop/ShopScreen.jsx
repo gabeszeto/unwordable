@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useCash } from '../../contexts/cash/CashContext';
 import { useLevel } from '../../contexts/level/LevelContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
-import { pickUniquePerks } from './shopUtils';
+import { useSkills } from '../../contexts/skills/SkillsContext';
 
+import { pickUniqueOffers, pickWeightedKeyzone } from './shopUtils'; // perks + skills
 import ShopInventoryPanel from './ShopInventoryPanel';
 import './shopStyles.css';
 
@@ -13,11 +14,15 @@ export default function ShopScreen() {
   const { cash, spendCash } = useCash();
   const { stage, advanceStage } = useLevel();
   const { addPerk } = usePerks();
+  const { activeSkills, upgradeSkill } = useSkills();
 
-  const [perksForSale, setPerksForSale] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [purchasingId, setPurchasingId] = useState(null);
   const [boughtId, setBoughtId] = useState(null);
   const [cashDelta, setCashDelta] = useState(0);
+
+  // NEW: track purchased choices for this shop screen (by type:id)
+  const [purchasedSet, setPurchasedSet] = useState(() => new Set());
 
   // animated cash display
   const [displayCash, setDisplayCash] = useState(cash);
@@ -35,34 +40,65 @@ export default function ShopScreen() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [cash]); // eslint-disable-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cash]);
 
+  // build offers on enter / stage change / skill changes
   useEffect(() => {
-    setPerksForSale(pickUniquePerks());
-  }, [stage]);
+    setOffers(pickUniqueOffers({ count: 3, activeSkills, stage }));
+    setPurchasedSet(new Set()); // reset locks when the shop regenerates (e.g., new stage)
+  }, [stage, activeSkills]);
 
-  const handleBuy = async (perkId, cost) => {
+  const handleBuy = async (offer) => {
+    const { id, type, cost } = offer;
+    const key = `${type}:${id}`;
+
+    // already bought this choice?
+    if (purchasedSet.has(key)) return;
+
     if (cash < cost || purchasingId) return;
+    setPurchasingId(id);
 
-    setPurchasingId(perkId);
-
-    // Keyzone roulette reveal
-    let awardedId = perkId;
-    if (perkId === 'KeyzoneRoulette') {
-      // tiny fake spin delay
-      await new Promise(r => setTimeout(r, 650));
-      awardedId = keyzonePerkIds[Math.floor(Math.random() * keyzonePerkIds.length)];
-      console.log(`[SHOP] You spun the roulette and got: ${awardedId}`);
+    if (type === 'perk') {
+      let awardedId = id;
+      if (id === 'KeyzoneRoulette') {
+        await new Promise((r) => setTimeout(r, 650));
+        awardedId = pickWeightedKeyzone(keyzonePerkIds) || keyzonePerkIds[0];
+        console.log(`[SHOP] You spun the roulette and got: ${awardedId}`);
+      }
+      addPerk(awardedId);
+    } else if (type === 'skill') {
+      upgradeSkill(id, 1);
     }
 
-    addPerk(awardedId);
     spendCash(cost);
     setCashDelta(-cost);
 
-    // pop + checkmark states
-    setBoughtId(perkId);
+    // mark this specific card as bought/locked
+    setPurchasedSet(prev => new Set(prev).add(key));
+
+    // visuals
+    setBoughtId(id);
     setTimeout(() => setBoughtId(null), 700);
     setTimeout(() => setPurchasingId(null), 200);
+  };
+
+  // NEW: reroll button — costs 1 cash, refreshes offers and clears purchased locks
+  const handleReroll = () => {
+    if (purchasingId) return;
+    if (cash < 1) return;
+
+    spendCash(1);
+    setCashDelta(-1);
+
+    // rebuild offers from current state (activeSkills/stage)
+    const next = pickUniqueOffers({ count: 3, activeSkills, stage });
+    setOffers(next);
+
+    // clear “bought” state for the new set
+    setPurchasedSet(new Set());
+    setBoughtId(null);
+    setPurchasingId(null);
   };
 
   return (
@@ -75,7 +111,7 @@ export default function ShopScreen() {
         <span className="cash-amount">{displayCash}</span>
         {!!cashDelta && (
           <span
-            key={cash + ':' + cashDelta} // re-trigger animation on change
+            key={cash + ':' + cashDelta}
             className={`cash-delta ${cashDelta < 0 ? 'neg' : 'pos'}`}
             onAnimationEnd={() => setCashDelta(0)}
           >
@@ -85,38 +121,71 @@ export default function ShopScreen() {
       </div>
 
       <div className="perk-options">
-        {perksForSale.map(({ id, name, cost, description }) => {
+        {offers.map((offer) => {
+          const { id, name, cost, description, type } = offer;
+          const key = `${type}:${id}`;
           const affordable = cash >= cost;
           const isBuying = purchasingId === id;
           const isBought = boughtId === id;
+          const isLocked = purchasedSet.has(key);
 
           return (
             <button
               type="button"
-              key={id}
+              key={key}
               className={[
                 'perk-card',
-                !affordable ? 'is-disabled' : '',
+                (!affordable || purchasingId === id || isLocked) ? 'is-disabled' : '',
                 isBuying ? 'is-buying' : '',
                 isBought ? 'is-bought' : '',
                 id === 'KeyzoneRoulette' && isBuying ? 'is-spinning' : '',
+                isLocked ? 'is-locked' : '',
               ].join(' ').trim()}
-              onClick={() => affordable && handleBuy(id, cost)}
-              disabled={!affordable || purchasingId === id}
+              onClick={() => affordable && !isLocked && handleBuy(offer)}
+              disabled={!affordable || purchasingId === id || isLocked}
+              aria-disabled={isLocked ? 'true' : undefined}
             >
               <div className="choiceTopPart">
                 <div className="perk-name">
                   {id === 'KeyzoneRoulette' && purchasingId === id ? 'Spinning…' : name}
+                  <span
+                    className="offer-tag"
+                    style={{
+                      marginLeft: 8,
+                      fontSize: '0.75rem',
+                      opacity: 0.8,
+                      padding: '2px 6px',
+                      borderRadius: 999,
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: type === 'skill' ? '#203245' : '#2a2a2a',
+                    }}
+                  >
+                    {type === 'skill' ? 'Skill' : 'Consumable'}
+                  </span>
                 </div>
                 <div className="perk-cost">💰 {cost}</div>
               </div>
               {description && <div className="perk-description">{description}</div>}
 
               {/* Bought check overlay */}
-              <div className="perk-badge" aria-hidden={true}>✓ Purchased</div>
+              <div className="perk-badge" aria-hidden={true}>
+                ✓ Purchased
+              </div>
             </button>
           );
         })}
+      </div>
+
+      {/* NEW: Reroll button */}
+      <div className="shop-reroll">
+        <button
+          className="rerollButton"
+          onClick={handleReroll}
+          disabled={cash < 1 || !!purchasingId}
+          title="Reroll shop (costs 1)"
+        >
+          ↻ Reroll -1
+        </button>
       </div>
 
       <ShopInventoryPanel />

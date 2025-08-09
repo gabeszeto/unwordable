@@ -142,7 +142,7 @@ export default function GameScreen() {
           const hasActives = (activeDebuffs || []).length > 0;
           const hasAny = hasSkills || hasPassives || hasActives;
 
-          if (!hasAny) return <span className="mod-none">No modifiers</span>;
+          if (!hasAny) return <span className="mod-none">No modifiers... yet</span>;
 
           return (
             <>

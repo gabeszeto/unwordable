@@ -266,3 +266,50 @@ button {
         transform: scale(1);
     }
 }
+
+.shop-reroll {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 6px;
+}
+
+.rerollButton {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    background: #262626;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    cursor: pointer;
+}
+
+.rerollButton:hover:not(:disabled) {
+    background: #2f2f2f;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.rerollButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Optional visual lock for purchased cards */
+.perk-card.is-locked {
+    position: relative;
+}
+
+.perk-card.is-locked::after {
+    content: 'Purchased';
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #1b5e20;
+    color: #d8ffd8;
+    border: 1px solid #2e7d32;
+    opacity: 0.9;
+}

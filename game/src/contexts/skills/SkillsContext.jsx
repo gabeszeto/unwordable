@@ -6,7 +6,7 @@ const SkillsContext = createContext(null);
 
 export const SkillsProvider = ({ children }) => {
   // { LetterLens: 2, OtherSkill: 1 }
-  const [activeSkills, setActiveSkills] = useState({LetterLens: 2});
+  const [activeSkills, setActiveSkills] = useState({LetterLens: 2, Repeater: 2});
 
   // optional persistence
   useEffect(() => {

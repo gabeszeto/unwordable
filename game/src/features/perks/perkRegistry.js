@@ -62,11 +62,6 @@ export const perkRegistry = {
 
 // export const allPerks = {
 //     // 🧠 Info
-//     consensus: {
-//         name: "Consensus",
-//         description: "Shows simulated top 3 penultimate guesses.",
-//         rarity: "basic",
-//     },
 //     deadKeys: {
 //         name: "Dead Keys",
 //         description: "Reveals 2 letters that are not in the word.",
@@ -74,12 +69,7 @@ export const perkRegistry = {
 //     },
 
 //     // 🛠️ Utility
-//     colorShift: {
-//         name: "Color Shift",
-//         description: "Randomly shuffles clue colors that can legally change.",
-//         rarity: "rare",
-//     },
-//    
+// Milos aid
 //     echoTrail: {
 //         name: "Echo Trail",
 //         description: "Yellow tiles show arrows pointing toward the closest correct position.",
@@ -100,11 +90,6 @@ export const perkRegistry = {
 //     wager: {
 //         name: "Wager",
 //         description: "Bet 5 cash that your next guess is correct. Win double or lose it all.",
-//         rarity: "epic",
-//     },
-//     spectralGuess: {
-//         name: "Spectral Guess",
-//         description: "Make a guess that doesn’t use a turn, but gives slightly inaccurate clues.",
 //         rarity: "epic",
 //     },
 // };
