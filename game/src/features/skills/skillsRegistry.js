@@ -7,8 +7,8 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 }, // optional; defaults applied if missing
     levels: [
-      { level: 1, cost: 20, weight: 3, description: 'Reveal if first letter is vowel/consonant.' },
-      { level: 2, cost: 30, weight: 1, description: 'Also reveal if last letter is vowel/consonant.' }
+      { level: 1, cost: 16, weight: 3, description: 'Reveal if first letter is vowel/consonant.' },
+      { level: 2, cost: 20, weight: 1, description: 'Also reveal if last letter is vowel/consonant.' }
     ],
   },
   Repeater: {
@@ -17,8 +17,8 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },
     levels: [
-      { level: 1, cost: 15, weight: 3, description: 'Tells if any letter repeats.' },
-      { level: 2, cost: 10, weight: 2, description: 'Also tells how many letters repeat.' },
+      { level: 1, cost: 14, weight: 3, description: 'Tells if any letter repeats.' },
+      { level: 2, cost: 12, weight: 2, description: 'Also tells how many letters repeat.' },
     ],
   },
   Insight: {
@@ -27,8 +27,8 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },
     levels: [
-      { level: 1, cost: 10, weight: 2, description: 'Shows how many tries Gabe took (simulated).' },
-      { level: 2, cost: 18, weight: 1, description: 'Also shows if Gabe knows the word (manual or simulated).' },
+      { level: 1, cost: 12, weight: 2, description: 'Shows how many tries Gabe took (simulated).' },
+      { level: 2, cost: 12, weight: 1, description: 'Also shows if Gabe knows the word (manual or simulated).' },
     ],
   },
   // ...more skills

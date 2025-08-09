@@ -105,12 +105,6 @@
     transform: scale(1.1);
 }
 
-/* Completed regular levels */
-.round-step.complete {
-    background: #c9b458;
-    border: 3px solid black;
-}
-
 /* Boss rounds */
 .round-step.boss {
     width: 1.2rem;
@@ -158,6 +152,11 @@
 .round-step.shop-outline {
     border: 2px solid #333;
     box-sizing: border-box;
+}
+
+.round-step.complete {
+    background: #c9b458;
+    border: 2px solid #333;
 }
 
 /* Death round */

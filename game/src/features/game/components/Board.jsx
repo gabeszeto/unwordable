@@ -38,7 +38,7 @@ export default function Board({
   stage
 }) {
   const [guessRanges, setGuessRanges] = useState([]);
-  const { revealedIndices, getRevealedForRow} = useCorrectness();
+  const { revealedIndices, getRevealedForRow } = useCorrectness();
   const { setRowsAfterDebuffs, rowsAfterDebuffs, getRowActiveIndices: getRowFromHelper } = useBoardHelper();
 
   const [currentGuess, setCurrentGuess] = useState(Array(MAX_ROW_LENGTH).fill(''));
@@ -46,7 +46,7 @@ export default function Board({
   const [bouncingIndices, setBouncingIndices] = useState([]);
   const [isGameOver, setIsGameOver] = useState(false);
 
-  const layoutRef = useRef(null); 
+  const layoutRef = useRef(null);
   const [boardInitialized, setBoardInitialized] = useState(false);
 
   // Local debuffs
@@ -66,7 +66,7 @@ export default function Board({
     const offset = Math.floor((maxLen - len) / 2);
     return Array.from({ length: len }, (_, i) => i + offset);
   };
-  
+
   function buildRowIndices(rowIndex, params) {
     const { shortenedFirstRow, shiftedRow, shiftDir } = params;
     let indices = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
@@ -111,7 +111,7 @@ export default function Board({
     lockedLetterByRow.current = {};
     goldenLieUsedPerRow.current = new Set();
     goldenLieInjectedIndex.current = {};
-  
+
     // ----- compute shortened first row
     const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
     let shortenedFirstRow = firstRowBase;
@@ -123,41 +123,41 @@ export default function Board({
       const block = Math.random() < 0.5 ? 1 : 5;
       shortenedFirstRow = firstRowBase.filter(i => i !== block);
     }
-  
+
     // ----- choose shifted row + dir once
     const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
     const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
-    const shiftDir   = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
-  
+    const shiftDir = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
+
     // stash params for this round
     layoutRef.current = { shortenedFirstRow, shiftedRow, shiftDir };
-  
+
     // build rows for current maxGuesses with the frozen params
     const rows = [];
     for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
     setRowsAfterDebuffs(rows);
-  
+
     // ----- seed LetterLock once (uses the frozen rows)
     if ('LetterLock' in passiveDebuffs) {
-      const topLetters = ['E','A','R','I','O','T','N','S','L','C'];
-      const eligibleRows = [0,1,2].filter(r => r < rows.length);
+      const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
+      const eligibleRows = [0, 1, 2].filter(r => r < rows.length);
       if (eligibleRows.length) {
-        const lockRow = eligibleRows[Math.floor(Math.random()*eligibleRows.length)];
+        const lockRow = eligibleRows[Math.floor(Math.random() * eligibleRows.length)];
         const allowed = rows[lockRow] ?? [];
         if (allowed.length) {
-          const lockIndex = allowed[Math.floor(Math.random()*allowed.length)];
-          const lockLetter = topLetters[Math.floor(Math.random()*topLetters.length)];
+          const lockIndex = allowed[Math.floor(Math.random() * allowed.length)];
+          const lockLetter = topLetters[Math.floor(Math.random() * topLetters.length)];
           lockedLetterByRow.current[lockRow] = { index: lockIndex, letter: lockLetter };
         }
       }
     }
-  
+
     // seed current guess row using frozen first row
     const firstRow = rows[0] ?? [];
     const next = Array(MAX_ROW_LENGTH).fill('');
     firstRow.forEach(i => { next[i] = ''; });
     setCurrentGuess(next);
-  
+
     setBoardInitialized(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -166,7 +166,7 @@ export default function Board({
     passiveDebuffs?.NoFoureedom,
     passiveDebuffs?.ShiftedGuess
   ]);
-  
+
   // Rebuild rows if borrowed time
   useEffect(() => {
     if (!layoutRef.current) return;
@@ -226,7 +226,7 @@ export default function Board({
     if (!boardInitialized) return;
     const rowIndex = guesses.length; // current row only
     const rowReveals = getRevealedForRow(rowIndex);
-  
+
     setCurrentGuess(prev => {
       const updated = [...prev];
       rowReveals.forEach(i => { updated[i] = paddedTargetWord[i]; });
@@ -290,30 +290,30 @@ export default function Board({
     sixerThisRow = null
   ) => {
     const rowActiveIndices = forcedActiveIndices || getRowActiveIndices(rowIndex);
-  
+
     // 🔒 use row-scoped revelations
     const rowReveals = getRevealedForRow(rowIndex);
-  
+
     // caret: first empty, non-revealed slot in THIS row
     const cursorIndex = rowActiveIndices.find(
       i => guessArray[i] === '' && !rowReveals.includes(i)
     );
-  
+
     // Sixer
     const isCurrentGuessRow = rowIndex === guesses.length;
     const isSixerSelectable =
       isCurrentGuessRow && sixerMode && sixerActiveIndices === null;
-  
+
     // Normal
     const guessStr = rowActiveIndices.map(i => guessArray[i]).join('');
     const overrideAllCorrect = isSubmitted && isCorrectGuess(guessStr);
-  
+
     const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const letter = guessArray[i] || '';
       const isActive = rowActiveIndices.includes(i);
-  
+
       let displayLetter = letter;
-  
+
       // Show locked letter in correct position on the right row
       if (!isSubmitted) {
         if (rowReveals.includes(i)) {
@@ -324,35 +324,38 @@ export default function Board({
           displayLetter = lockedLetterByRow.current[rowIndex].letter;
         }
       }
-  
+
       const feedbackSuppressed =
         isFeedbackDelayActive &&
         rowIndex <= 1 &&
         rowIndex > feedbackShownUpToRow;
-  
+
       // 👇 consider revealed-for-this-row as “feedback should show”
-      const shouldApplyFeedback = (isSubmitted || rowReveals.includes(i)) && !feedbackSuppressed;
-  
+      const isSuppressed = feedbackSuppressed && !overrideAllCorrect;
+
+      // ✅ show feedback if submitted, revealed-for-this-row, or override
+      const shouldApplyFeedback =
+        (isSubmitted || rowReveals.includes(i) || overrideAllCorrect) && !isSuppressed;
       let letterClass = '';
-  
+
       if (shouldApplyFeedback) {
         if (overrideAllCorrect && isActive) {
           letterClass = 'correct'; // Boss override
         } else {
           letterClass = getLetterClass(displayLetter, i, !isSubmitted, rowActiveIndices, rowIndex);
-  
+
           // If this tile was revealed for THIS row, force green when editing this row
           if (!isSubmitted && rowReveals.includes(i)) {
             letterClass = 'correct';
           }
-  
+
           // 👁 Grellow downgrade
           if (isGrellowActive && letterClass === 'correct') {
             letterClass = 'present';
           }
         }
       }
-  
+
       if (
         bouncingIndices.includes(i) &&
         isSubmitted &&
@@ -360,14 +363,14 @@ export default function Board({
       ) {
         letterClass += ' bounce';
       }
-  
+
       const isCurrent = !isSubmitted && i === cursorIndex;
       const isSixerSelectableTile = isSixerSelectable && (i === 0 || i === 6);
       const sixerData = sixerMeta[rowIndex];
       const isSixerLockedVisual = sixerData
         ? i >= sixerData.start && i <= sixerData.end
         : false;
-  
+
       return (
         <div
           className={`
@@ -381,8 +384,8 @@ export default function Board({
           key={i}
           style={
             bouncingIndices.includes(i) &&
-            isSubmitted &&
-            rowIndex === guesses.length - 1
+              isSubmitted &&
+              rowIndex === guesses.length - 1
               ? { animationDelay: `${i * 0.1}s` }
               : {}
           }
@@ -399,7 +402,7 @@ export default function Board({
         </div>
       );
     });
-  
+
     return (
       <div
         className={`guess-row ${!isSubmitted && rowIndex === guesses.length && shakeRow ? 'shake' : ''}`}
@@ -409,7 +412,7 @@ export default function Board({
       </div>
     );
   };
-  
+
 
   const renderEmptyRow = (rowIndex) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);

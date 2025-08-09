@@ -14,7 +14,7 @@ export default function DeathScreen() {
     const { resetCash } = useCash();
 
     const displayReason = {
-        'GrayReaper': 'The Gray Reaper claimed your soul.',
+        'GreyReaper': 'The Gray Reaper claimed your soul.',
         'Out of guesses': 'You ran out of guesses.',
     }[reason] || 'You perished...';
 

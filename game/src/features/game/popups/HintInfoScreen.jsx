@@ -13,24 +13,33 @@ export default function HintInfoScreen({ perkKey, targetWord }) {
     perkContent = <AnatomyInfo targetWord={targetWord} />;
   }
 
-  // --- Skills block (decide before rendering components) ---
+  // --- Skills block ---
   const { getSkillLevel } = useSkills();
-  const letterLensLevel = getSkillLevel('LetterLens');
-  const letterLensHint = letterLensLevel ? getLetterLensHint(targetWord, letterLensLevel) : null;
-  const showLetterLens = !!letterLensHint;
 
-  const hasInfo = !!perkContent || showLetterLens;
+  const letterLensLevel = getSkillLevel('LetterLens');
+  const repeaterLevel = getSkillLevel('Repeater');
+  const insightLevel = getSkillLevel('Insight');
+
+  const letterLensHint = letterLensLevel ? getLetterLensHint(targetWord, letterLensLevel) : null;
+
+  const showLetterLens = !!letterLensHint;
+  const showRepeater = repeaterLevel > 0;
+  const showInsight = insightLevel > 0;
+
+  const showAnySkill = showLetterLens || showRepeater || showInsight;
+
+  const hasInfo = !!perkContent || showAnySkill;
 
   return (
     <div className="hint-info-screen">
       {hasInfo ? (
         <>
           {perkContent}
-          {(showLetterLens) && (
+          {showAnySkill && (
             <div className="skills-info-block" style={{ marginTop: 12 }}>
-              <LetterLensInfo targetWord={targetWord} />
-              <RepeaterInfo targetWord={targetWord} />
-              <InsightInfo targetWord={targetWord} />
+              {showLetterLens && <LetterLensInfo targetWord={targetWord} />}
+              {showRepeater && <RepeaterInfo targetWord={targetWord} />}
+              {showInsight && <InsightInfo targetWord={targetWord} />}
             </div>
           )}
         </>

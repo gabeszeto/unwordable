@@ -236,7 +236,9 @@ export default function GameScreen() {
           if (success) {
             const earned = calculateRoundCash({
               guessesUsed: guesses.length,
-              isBoss: round % 3 === 0
+              isBoss: round % 3 === 0,
+              activeDebuffs: activeDebuffs,
+              passiveDebuffs: passiveDebuffs
             });
             addCash(earned);
             setCashEarned(earned);

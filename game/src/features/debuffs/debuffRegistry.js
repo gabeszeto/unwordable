@@ -32,9 +32,9 @@ export const debuffRegistry = {
   },
 
   // 💤 PASSIVE DEBUFFS 
-  GrayReaper: {
+  GreyReaper: {
     type: 'passive',
-    name: 'Gray Reaper',
+    name: 'Grey Reaper',
     description: 'Guessing a word with no colors ends your run instantly.',
     weight: 1,
   },

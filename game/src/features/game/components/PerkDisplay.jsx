@@ -34,37 +34,41 @@ export default function PerkDisplay({
       </div>
 
       <div className="perkGrid">
-        {Object.entries(perksAtStartOfRound).map(([key, startingQuantity]) => {
-          const { component: PerkComponent } = perkRegistry[key] || {};
-          if (!PerkComponent) return null;
+        {(!Object.keys(perksAtStartOfRound).length ||
+          Object.values(perksAtStartOfRound).every(v => v === 0)) ? (
+          <div className="perk-empty">None yet</div>
+        ) : (
+          Object.entries(perksAtStartOfRound).map(([key, startingQuantity]) => {
+            const { component: PerkComponent } = perkRegistry[key] || {};
+            if (!PerkComponent) return null;
 
-          const timesUsed = usedPerks.filter(p => p === key).length;
+            const timesUsed = usedPerks.filter(p => p === key).length;
 
-          // Only show if it existed at round start OR has been used this round
-          if (startingQuantity <= 0 && timesUsed <= 0) return null;
+            if (startingQuantity <= 0 && timesUsed <= 0) return null;
 
-          // ✅ Remaining is based on the start-of-round snapshot minus how many times you used it this round
-          const remaining = Math.max(0, (startingQuantity || 0) - timesUsed);
+            const remaining = Math.max(0, (startingQuantity || 0) - timesUsed);
 
-          return (
-            <PerkComponent
-              key={`inv-${key}`}
-              perkKey={key}
-              usedPerks={usedPerks}
-              markAsUsed={(k) => {
-                markAsUsed(k);
-                applyPerkTax(); // 💸 Apply cash tax on use
-              }}
-              remaining={remaining}
-              isKeyzoneUsed={
-                key.toLowerCase().includes('keyzone') &&
-                usedPerks.some(k => k.toLowerCase().includes('keyzone'))
-              }
-              {...sharedProps}
-            />
-          );
-        })}
+            return (
+              <PerkComponent
+                key={`inv-${key}`}
+                perkKey={key}
+                usedPerks={usedPerks}
+                markAsUsed={(k) => {
+                  markAsUsed(k);
+                  applyPerkTax();
+                }}
+                remaining={remaining}
+                isKeyzoneUsed={
+                  key.toLowerCase().includes('keyzone') &&
+                  usedPerks.some(k => k.toLowerCase().includes('keyzone'))
+                }
+                {...sharedProps}
+              />
+            );
+          })
+        )}
       </div>
+
     </div>
   );
 }

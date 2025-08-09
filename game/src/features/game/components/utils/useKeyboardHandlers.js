@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { usePerks } from '../../../../contexts/perks/PerksContext';
 import { useCorrectness } from '../../../../contexts/CorrectnessContext';
 import { useCash } from '../../../../contexts/cash/CashContext';
+import { useDebuffs } from '../../../../contexts/debuffs/DebuffsContext';
 
 export default function useKeyboardHandlers({
     guesses,
@@ -20,7 +21,6 @@ export default function useKeyboardHandlers({
     usedKeys,
     getRowActiveIndices,
     validWords,
-    activeDebuffs,
     feedbackShownUpToRow,
     setFeedbackShownUpToRow,
     FEEDBACK_DELAY_THRESHOLD,
@@ -38,10 +38,9 @@ export default function useKeyboardHandlers({
         markAsTrulyCorrect,
     } = useCorrectness();
     const { pendingWager, resolveWager } = useCash();
-
+    const { passiveDebuffs, activeDebuffs } = useDebuffs();
 
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
-
 
     // Determine if we should delay feedback
     const delayFeedback = activeDebuffs.includes('DelayedFeedback');
@@ -153,10 +152,9 @@ export default function useKeyboardHandlers({
 
 
         // Handle Gray Reaper instant death
-        if (activeDebuffs.includes('GrayReaper') && !hasColor) {
-            setUsedKeys(newUsed);
+        if ((passiveDebuffs.GreyReaper ?? 0) > 0 && !hasColor) {            setUsedKeys(newUsed);
             setIsGameOver(true);
-            onRoundComplete(false, newGuesses, 'GrayReaper', targetWord);
+            onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
             return;
         }
 

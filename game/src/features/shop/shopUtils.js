@@ -9,7 +9,7 @@ const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
 const virtualShopEntries = {
   KeyzoneRoulette: {
     name: '🎰 Keyzone Roulette',
-    cost: 5,
+    cost: 4,
     isVirtual: true,
     weight: 3,
     description: 'Grants one of the Keyzone perks randomly.',
