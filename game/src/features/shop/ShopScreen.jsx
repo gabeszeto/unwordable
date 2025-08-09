@@ -3,6 +3,7 @@ import { useCash } from '../../contexts/cash/CashContext';
 import { useLevel } from '../../contexts/level/LevelContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
 import { useSkills } from '../../contexts/skills/SkillsContext';
+import { useDebuffs } from '../../contexts/debuffs/DebuffsContext';
 
 import { pickUniqueOffers, pickWeightedKeyzone } from './shopUtils'; // perks + skills
 import ShopInventoryPanel from './ShopInventoryPanel';
@@ -15,6 +16,7 @@ export default function ShopScreen() {
   const { stage, advanceStage } = useLevel();
   const { addPerk } = usePerks();
   const { activeSkills, upgradeSkill } = useSkills();
+  const { activeDebuffs, passiveDebuffs } = useDebuffs();
 
   const [offers, setOffers] = useState([]);
   const [purchasingId, setPurchasingId] = useState(null);
@@ -47,12 +49,14 @@ export default function ShopScreen() {
   const [shopVersion, setShopVersion] = useState(0);
 
   useEffect(() => {
-    // build once per stage (and when rerolled), using the snapshot of activeSkills
-    setOffers(pickUniqueOffers({ count: 3, activeSkills, stage }));
+    setOffers(pickUniqueOffers({
+      count: 3,
+      activeSkills,
+      stage,
+      debuffs: { activeDebuffs, passiveDebuffs } // 👈 pass through
+    }));
     setPurchasedSet(new Set());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, shopVersion]);
-
+  }, [stage, activeSkills, activeDebuffs, passiveDebuffs, shopVersion]);
 
   const handleBuy = async (offer) => {
     const { id, type, cost } = offer;

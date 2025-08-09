@@ -7,7 +7,6 @@ import { useBoardHelper } from '../../../contexts/BoardHelperContext';
 
 const WORD_LENGTH = 5;
 const MAX_ROW_LENGTH = 7;
-const BASE_GUESSES = 6;
 
 import useKeyboardHandlers from './utils/useKeyboardHandlers';
 
@@ -34,7 +33,9 @@ export default function Board({
   feedbackShownUpToRow,
   setFeedbackShownUpToRow,
   setSixerMode,
-  sixerMode
+  sixerMode,
+  maxGuesses,
+  stage
 }) {
   const [guessRanges, setGuessRanges] = useState([]);
   const { revealedIndices, getRevealedForRow} = useCorrectness();
@@ -45,6 +46,7 @@ export default function Board({
   const [bouncingIndices, setBouncingIndices] = useState([]);
   const [isGameOver, setIsGameOver] = useState(false);
 
+  const layoutRef = useRef(null); 
   const [boardInitialized, setBoardInitialized] = useState(false);
 
   // Local debuffs
@@ -64,16 +66,21 @@ export default function Board({
     const offset = Math.floor((maxLen - len) / 2);
     return Array.from({ length: len }, (_, i) => i + offset);
   };
+  
+  function buildRowIndices(rowIndex, params) {
+    const { shortenedFirstRow, shiftedRow, shiftDir } = params;
+    let indices = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
+    if (rowIndex === 0) indices = shortenedFirstRow;
+    if (shiftedRow === rowIndex && shiftDir !== 0) {
+      indices = indices.map(i => i + shiftDir).filter(i => i >= 0 && i < MAX_ROW_LENGTH);
+    }
+    return indices;
+  }
 
   // Initial render logic
   const shiftedGuessRowRef = useRef(null);
   const shiftDirectionRef = useRef(null);
   const lockedLetterByRow = useRef({});
-  const [letterLocked, setLetterLocked] = useState(false)
-
-  // Cut Short logic
-  const cutShortStacks = passiveDebuffs['CutShort'] || 0;
-  const MAX_GUESSES = Math.max(1, BASE_GUESSES - cutShortStacks);
 
   // Local Perks
   const { jybrishActive } = usePerks();
@@ -99,83 +106,75 @@ export default function Board({
 
   // THE CHUNKY USEEFFECT FOR INITIAL RENDER BIG BIGBIG
   useEffect(() => {
-    // reset per-round stuff
     setBoardInitialized(false);
     setRowsAfterDebuffs([]);
     lockedLetterByRow.current = {};
-    // (optional) also clear per-row metadata:
-    // setSixerMeta([]); setGuessRanges([]);
-
-    // ----- Step 1: first-row shortening (NoThreedom / NoFoureedom)
-    const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH); // [1..5]
+    goldenLieUsedPerRow.current = new Set();
+    goldenLieInjectedIndex.current = {};
+  
+    // ----- compute shortened first row
+    const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
     let shortenedFirstRow = firstRowBase;
-    if ('NoThreedom' in passiveDebuffs) {
-      shortenedFirstRow = firstRowBase.filter(i => i !== 1 && i !== 5); // [2,3,4]
-    } else if ('NoFoureedom' in passiveDebuffs) {
+    const hasNo3 = !!passiveDebuffs?.NoThreedom;
+    const hasNo4 = !!passiveDebuffs?.NoFoureedom;
+    if (hasNo3) {
+      shortenedFirstRow = firstRowBase.filter(i => i !== 1 && i !== 5);
+    } else if (hasNo4) {
       const block = Math.random() < 0.5 ? 1 : 5;
-      shortenedFirstRow = firstRowBase.filter(i => i !== block);        // [2..5] or [1..4]
+      shortenedFirstRow = firstRowBase.filter(i => i !== block);
     }
-
-    // ----- Step 2: ShiftedGuess (choose one row & a direction)
-    const shiftActive = (passiveDebuffs['ShiftedGuess'] || 0) > 0;
-    if (shiftActive) {
-      shiftedGuessRowRef.current = Math.random() < 0.5 ? 1 : 2;      shiftDirectionRef.current = Math.random() < 0.5 ? -1 : +1;  // -1 or +1
-    } else {
-      shiftedGuessRowRef.current = null;
-      shiftDirectionRef.current = null;
-    }
-
-    // helper to apply shift (bounded by board)
-    const applyShift = (indices, rowIndex) => {
-      if (shiftedGuessRowRef.current !== rowIndex || shiftDirectionRef.current == null) return indices;
-      const dir = shiftDirectionRef.current;
-      return indices.map(i => i + dir).filter(i => i >= 0 && i < MAX_ROW_LENGTH);
-    };
-
-    // ----- Step 3: compute all rows after debuffs (no Sixer overlay here)
+  
+    // ----- choose shifted row + dir once
+    const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
+    const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
+    const shiftDir   = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
+  
+    // stash params for this round
+    layoutRef.current = { shortenedFirstRow, shiftedRow, shiftDir };
+  
+    // build rows for current maxGuesses with the frozen params
     const rows = [];
-    for (let row = 0; row < MAX_GUESSES; row++) {
-      let indices = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
-      if (row === 0) indices = shortenedFirstRow;       // first-row shorten
-      indices = applyShift(indices, row);               // maybe shifted
-      rows.push(indices);
-    }
-
+    for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
     setRowsAfterDebuffs(rows);
-
-    // ----- Step 4: seed LetterLock using the final rows
+  
+    // ----- seed LetterLock once (uses the frozen rows)
     if ('LetterLock' in passiveDebuffs) {
-      const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
-      const eligibleRows = [0,1,2];
-      const lockRow = eligibleRows[Math.floor(Math.random() * eligibleRows.length)];
-      const allowed = rows[lockRow] ?? [];
-      if (allowed.length) {
-        // if you want to avoid already revealed cells, do it here (optional)
-        const pool = allowed; // or: allowed.filter(i => !revealedIndices.includes(i))
-        const lockIndex = pool[Math.floor(Math.random() * pool.length)];
-        const lockLetter = topLetters[Math.floor(Math.random() * topLetters.length)];
-        lockedLetterByRow.current[lockRow] = { index: lockIndex, letter: lockLetter };
-        setLetterLocked(true);
+      const topLetters = ['E','A','R','I','O','T','N','S','L','C'];
+      const eligibleRows = [0,1,2].filter(r => r < rows.length);
+      if (eligibleRows.length) {
+        const lockRow = eligibleRows[Math.floor(Math.random()*eligibleRows.length)];
+        const allowed = rows[lockRow] ?? [];
+        if (allowed.length) {
+          const lockIndex = allowed[Math.floor(Math.random()*allowed.length)];
+          const lockLetter = topLetters[Math.floor(Math.random()*topLetters.length)];
+          lockedLetterByRow.current[lockRow] = { index: lockIndex, letter: lockLetter };
+        }
       }
     }
-
-    // ----- Step 5: seed the current guess row NOW that rows are final
-    {
-      const firstRow = rows[0] ?? [];
-      const next = Array(MAX_ROW_LENGTH).fill('');
-      // touch only playable slots (clarity; all others stay '')
-      firstRow.forEach(i => { next[i] = ''; });
-      setCurrentGuess(next);
-    }
-
-    // ----- Step 6: mark board ready
+  
+    // seed current guess row using frozen first row
+    const firstRow = rows[0] ?? [];
+    const next = Array(MAX_ROW_LENGTH).fill('');
+    firstRow.forEach(i => { next[i] = ''; });
+    setCurrentGuess(next);
+  
     setBoardInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    passiveDebuffs,     // shape/flags that change round layout
-    MAX_GUESSES,
-    MAX_ROW_LENGTH,
-    WORD_LENGTH
+    stage,
+    passiveDebuffs?.NoThreedom,
+    passiveDebuffs?.NoFoureedom,
+    passiveDebuffs?.ShiftedGuess
   ]);
+  
+  // Rebuild rows if borrowed time
+  useEffect(() => {
+    if (!layoutRef.current) return;
+    const rows = [];
+    for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
+    setRowsAfterDebuffs(rows);
+  }, [maxGuesses, setRowsAfterDebuffs]);
+
 
   const paddedTargetWord = useMemo(() => {
     const padded = Array(MAX_ROW_LENGTH).fill('');
@@ -198,7 +197,7 @@ export default function Board({
     setGuesses,
     targetWord,
     MAX_ROW_LENGTH,
-    MAX_GUESSES,
+    maxGuesses,
     WORD_LENGTH,
     paddedTargetWord,
     setShakeRow,
@@ -455,7 +454,7 @@ export default function Board({
     }
 
     const totalRows = isGameOver ? guesses.length : guesses.length + 1;
-    const remaining = MAX_GUESSES - totalRows;
+    const remaining = maxGuesses - totalRows;
 
     for (let i = 0; i < remaining; i++) {
       const globalRowIndex = totalRows + i;
@@ -471,7 +470,7 @@ export default function Board({
     shakeRow,
     sixerMode,
     sixerMeta,
-    MAX_GUESSES,
+    maxGuesses,
     getRowActiveIndices
   ]);
 

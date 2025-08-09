@@ -6,6 +6,7 @@ import Anatomy from './components/Anatomy';
 import Jybrish from './components/Jybrish';
 import Sixer from './components/Sixer';
 import DeadKeys from './components/DeadKeys';
+import BorrowedTime from './components/BorrowedTime';
 
 
 export const perkRegistry = {
@@ -65,6 +66,13 @@ export const perkRegistry = {
     weight: 5,
     component: DeadKeys
   },
+  BorrowedTime: {
+    name: "⌛️ Borrowed Time",
+    description: "Removes a guess from this round and adds it to the next round.",
+    cost: 6,
+    weight: 300,
+    component: BorrowedTime
+  },
 };
 
 
@@ -92,7 +100,7 @@ export const perkRegistry = {
 //     // 🃏 Wild
 //     borrowedTime: {
 //         name: "Borrowed Time",
-//         description: "Save a guess now to use in the next round.",
+//         description: "Remove a guess now to use in the next round.",
 //         rarity: "rare",
 //     },
 //     wager: {

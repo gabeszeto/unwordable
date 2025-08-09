@@ -58,12 +58,15 @@ export function getNextSkillLevelMeta(skillKey, currentLevel = 0) {
 /* ----------------- pools ----------------- */
 
 // Build weighted perk pool (including virtual entries)
-function buildWeightedPerkPool(stage) {
+function buildWeightedPerkPool(stage, debuffs) {
   const weighted = [];
+  const hasCutShort = !!debuffs?.activeDebuffs?.includes?.('CutShort') ||
+    (debuffs?.passiveDebuffs?.CutShort ?? 0) > 0;
 
   // Real perks (exclude keyzone direct)
   for (const [id, perk] of Object.entries(perkRegistry)) {
     if (keyzonePerkIds.includes(id)) continue;
+    if (id === 'BorrowedTime' && !hasCutShort) continue;
 
     const minStage = perk.shop?.minStage ?? 1;
     const maxStage = perk.shop?.maxStage ?? 20;
@@ -153,8 +156,8 @@ export function pickWeightedKeyzone(perkIds = []) {
 /* ----------------- unified picker ----------------- */
 
 // Public API: pick from a unified pool
-export function pickUniqueOffers({ count = 3, activeSkills = {}, stage = 1 }) {
-  const perkPool = buildWeightedPerkPool(stage);
+export function pickUniqueOffers({ count = 3, activeSkills = {}, stage = 1, debuffs = null }) {
+  const perkPool = buildWeightedPerkPool(stage, debuffs);
   const skillPool = buildWeightedSkillPool(activeSkills, stage);
   const pool = [...perkPool, ...skillPool];
 

@@ -36,11 +36,11 @@ export default function GameStageManager() {
   useEffect(() => {
     // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      const plan = generateDebuffPlan();
-      // const plan = generateDebugDebuffPlan({
-      //   forcePassive: { NoFoureedom: 1, ShiftedGuess: 1, LetterLock: 1 },
-      //   forceActive: []
-      // });
+      // const plan = generateDebuffPlan();
+      const plan = generateDebugDebuffPlan({
+        forcePassive: { CutShort: 1, ShiftedGuess: 1 },
+        forceActive: []
+      });
       setDebuffPlan(plan);
       console.log(plan)
     }
@@ -56,8 +56,6 @@ export default function GameStageManager() {
     for (const p of roundPlan.passive) addPassiveDebuff(p);
     for (const a of roundPlan.active) addActiveDebuff(a);
   }, [stage, debuffPlan]);
-
-
 
   const isGameLevel = stage % 2 === 0;
   const isDeath = stage === 100;

@@ -9,7 +9,7 @@ export default function useKeyboardHandlers({
     setGuesses,
     targetWord,
     MAX_ROW_LENGTH,
-    MAX_GUESSES,
+    maxGuesses,
     paddedTargetWord,
     setShakeRow,
     setBouncingIndices,
@@ -213,7 +213,7 @@ export default function useKeyboardHandlers({
             setTimeout(() => setBouncingIndices([]), 1000);
             setIsGameOver(true);
             onRoundComplete(true, newGuesses);
-        } else if (newGuesses.length >= MAX_GUESSES) {
+        } else if (newGuesses.length >= maxGuesses) {
             setIsGameOver(true);
             onRoundComplete(false, newGuesses, 'Out of guesses', targetWord);
         }
@@ -246,7 +246,7 @@ export default function useKeyboardHandlers({
             const rowActiveIndices = getRowActiveIndices(guesses.length);
             const locked = lockedLetterByRow?.current?.[guesses.length]; // 👈 Add this here
 
-            if (guesses.length >= MAX_GUESSES) return; // Prevent extra guesses
+            if (guesses.length >= maxGuesses) return; // Prevent extra guesses
 
             if (key === 'ENTER') {
                 const guessStr = rowActiveIndices.map(i => currentGuess[i]).join('');

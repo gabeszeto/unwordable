@@ -8,12 +8,18 @@
     font-family: 'Zilla Slab';
     /* border: 2px solid red; */
 }
-
+/* 
 .board {
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     gap: 0.5rem;
-}
+} */
+
+.board {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
 .guess-row {
     display: grid;

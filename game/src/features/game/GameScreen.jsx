@@ -21,7 +21,7 @@ import HintInfoScreen from './popups/HintInfoScreen.jsx'
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 
 export default function GameScreen() {
-  const { stage, setStage, advanceStage } = useLevel();
+  const { stage, setStage, advanceStage, isGameStage, bankGuess, consumeGuessBank } = useLevel();
   const [guesses, setGuesses] = useState([]);
   const { revealedIndices } = useCorrectness();
   const { setDeathInfo } = useDeath();
@@ -34,6 +34,37 @@ export default function GameScreen() {
   const [usedKeys, setUsedKeys] = useState({});
   const [cashEarned, setCashEarned] = useState(0);
   const round = stage / 2 + 1;
+
+  // Logic for cutshort and borrowedGuess
+  const BASE_MAX_GUESSES = 6;
+  const cutShortStacks = passiveDebuffs['CutShort'] || 0;
+
+  // Saved time for next round
+  const [maxGuesses, setMaxGuesses] = useState(BASE_MAX_GUESSES);
+
+  // const nextRoundBonusRef = React.useRef(0);
+
+  // const bankGuessToNextRound = () => {
+  //   nextRoundBonusRef.current = Math.min(
+  //     BASE_MAX_GUESSES,
+  //     nextRoundBonusRef.current + 1
+  //   );
+  // };
+
+  // ⬇️ Recompute only when entering a GAME stage
+  useEffect(() => {
+    if (!isGameStage(stage)) return; // skip shop screens
+
+    const base = BASE_MAX_GUESSES - cutShortStacks;
+    const bank = consumeGuessBank();          // <-- pulls from LevelContext and resets to 0
+    const applied = Math.max(2, Math.min(BASE_MAX_GUESSES, base + bank));
+    setMaxGuesses(applied);
+  }, [stage, cutShortStacks]);
+
+  // debugger
+  useEffect(() => {
+    console.log(`maxguesses changed to ${maxGuesses}`)
+  }, [maxGuesses])
 
   // Perk states
   const [usedPerks, setUsedPerks] = useState([]);
@@ -78,7 +109,10 @@ export default function GameScreen() {
     setSixerMode,
     guesses,
     usedKeys,
-    setUsedKeys
+    setUsedKeys,
+    maxGuesses,
+    setMaxGuesses, // to decrement this round by 1
+    bankGuessToNextRound: () => bankGuess(1, BASE_MAX_GUESSES), // <-- from context
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
@@ -235,6 +269,8 @@ export default function GameScreen() {
         setFeedbackShownUpToRow={setFeedbackShownUpToRow}
         setSixerMode={setSixerMode}
         sixerMode={sixerMode}
+        maxGuesses={maxGuesses}
+        stage={stage}
       />
 
       <div className="hud">
