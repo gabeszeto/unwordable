@@ -6,9 +6,10 @@ export const PerksProvider = ({ children }) => {
     const [perks, setPerks] = useState({
         Revelation: 1,
         Anatomy: 1,
-        Jybrish: 1,
+        Jybrish: 3,
         Sixer: 0,
-        BorrowedTime: 10
+        BorrowedTime: 4,
+        Wager: 3
     });
 
     // Perk states
@@ -34,6 +35,7 @@ export const PerksProvider = ({ children }) => {
                 [perkName]: Math.max(current - 1, 0),
             };
         });
+        console.log(`used perk ${perkName}`)
     };
 
 

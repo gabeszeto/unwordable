@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { usePerks } from '../../../../contexts/perks/PerksContext';
 import { useCorrectness } from '../../../../contexts/CorrectnessContext';
+import { useCash } from '../../../../contexts/cash/CashContext';
 
 export default function useKeyboardHandlers({
     guesses,
@@ -36,6 +37,8 @@ export default function useKeyboardHandlers({
         revealedIndices,
         markAsTrulyCorrect,
     } = useCorrectness();
+    const { pendingWager, resolveWager } = useCash();
+
 
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
 
@@ -87,6 +90,11 @@ export default function useKeyboardHandlers({
         const newUsed = { ...usedKeys };
         const correctWord = targetWord.toUpperCase();
         const isCorrect = guessStr === correctWord;
+
+        if (pendingWager) {
+            resolveWager(isCorrect);
+        }
+
         let hasColor = false;
 
         // Handle correct guess

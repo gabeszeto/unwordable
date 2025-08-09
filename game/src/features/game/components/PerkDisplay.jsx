@@ -6,68 +6,65 @@ import { useCash } from '../../../contexts/cash/CashContext.jsx';
 import { useLevel } from '../../../contexts/level/LevelContext';
 import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
 
-
 import './perksDisplayStyles.css'
 
 export default function PerkDisplay({
-    usedPerks,
-    markAsUsed,
-    sharedProps,
+  usedPerks,
+  markAsUsed,
+  sharedProps,
 }) {
-    const { perks } = usePerks();
-    const { cash } = useCash();
-    const { stage } = useLevel();
-    const perksAtStartOfRound = useMemo(() => ({ ...perks }), [stage]);
+  const { perks } = usePerks();
+  const { cash, spendCash } = useCash();              // ⬅️ move out of map
+  const { stage } = useLevel();
+  const { passiveDebuffs } = useDebuffs();            // ⬅️ move out of map
 
-    return (
-        <div className="perkDisplay">
-            <div className="topPerksSection">
-                <div className="inventoryTitle">Consumables</div>
-                <div className="cash-counter">💰 {cash}</div>
-            </div>
-            <div className="perkGrid">
-                {Object.entries(perksAtStartOfRound).map(([key, startingQuantity]) => {
-                    const { component: PerkComponent } = perkRegistry[key] || {};
-                    if (!PerkComponent) return null;
+  // Snapshot at start of round; stable until stage changes
+  const perksAtStartOfRound = useMemo(() => ({ ...perks }), [stage]);
 
-                    const { passiveDebuffs } = useDebuffs();
-                    const perkTaxStacks = passiveDebuffs['PerkTax'] || 0;
-                    const { spendCash } = useCash();
-                    
-                    const applyPerkTax = () => {
-                        if (perkTaxStacks > 0) {
-                          spendCash(perkTaxStacks);
-                        }
-                      };
+  const perkTaxStacks = passiveDebuffs['PerkTax'] || 0;
+  const applyPerkTax = () => {
+    if (perkTaxStacks > 0) spendCash(perkTaxStacks);
+  };
 
-                    const currentQty = perks[key] || 0;
-                    const timesUsed = usedPerks.filter(p => p === key).length;
-                    const remaining = currentQty - timesUsed;
+  return (
+    <div className="perkDisplay">
+      <div className="topPerksSection">
+        <div className="inventoryTitle">Consumables</div>
+        <div className="cash-counter">💰 {cash}</div>
+      </div>
 
-                    // Show only if it was available at start
-                    // Even if remaining is 0 but it was used, we show it
-                    if (startingQuantity <= 0 && timesUsed <= 0) return null;
+      <div className="perkGrid">
+        {Object.entries(perksAtStartOfRound).map(([key, startingQuantity]) => {
+          const { component: PerkComponent } = perkRegistry[key] || {};
+          if (!PerkComponent) return null;
 
-                    return (
-                        <PerkComponent
-                          key={`inv-${key}`}
-                          perkKey={key}
-                          usedPerks={usedPerks}
-                          markAsUsed={(k) => {
-                            markAsUsed(k);
-                            applyPerkTax(); // 💸 Apply gold tax
-                          }}
-                          remaining={Math.max(0, remaining)}
-                          isKeyzoneUsed={
-                            key.toLowerCase().includes('keyzone') &&
-                            usedPerks.some(k => k.toLowerCase().includes('keyzone'))
-                          }
-                          {...sharedProps}
-                        />
-                      );
-                      
-                })}
-            </div>
-        </div>
-    );
+          const timesUsed = usedPerks.filter(p => p === key).length;
+
+          // Only show if it existed at round start OR has been used this round
+          if (startingQuantity <= 0 && timesUsed <= 0) return null;
+
+          // ✅ Remaining is based on the start-of-round snapshot minus how many times you used it this round
+          const remaining = Math.max(0, (startingQuantity || 0) - timesUsed);
+
+          return (
+            <PerkComponent
+              key={`inv-${key}`}
+              perkKey={key}
+              usedPerks={usedPerks}
+              markAsUsed={(k) => {
+                markAsUsed(k);
+                applyPerkTax(); // 💸 Apply cash tax on use
+              }}
+              remaining={remaining}
+              isKeyzoneUsed={
+                key.toLowerCase().includes('keyzone') &&
+                usedPerks.some(k => k.toLowerCase().includes('keyzone'))
+              }
+              {...sharedProps}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
 }

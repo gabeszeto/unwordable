@@ -7,7 +7,7 @@ import Jybrish from './components/Jybrish';
 import Sixer from './components/Sixer';
 import DeadKeys from './components/DeadKeys';
 import BorrowedTime from './components/BorrowedTime';
-
+import Wager from './components/Wager';
 
 export const perkRegistry = {
   Revelation: {
@@ -70,8 +70,15 @@ export const perkRegistry = {
     name: "⌛️ Borrowed Time",
     description: "Removes a guess from this round and adds it to the next round.",
     cost: 6,
-    weight: 300,
+    weight: 3,
     component: BorrowedTime
+  },
+  Wager: {
+    name: "💸 Wager",
+    description: "Wager 5 Cash on your next guess. Guess right to win 10, guess wrong and lose it all.",
+    cost: 1,
+    weight: 2,
+    component: Wager
   },
 };
 
