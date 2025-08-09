@@ -21,5 +21,15 @@ export const skillsRegistry = {
       { level: 2, cost: 10, weight: 2, description: 'Also tells how many letters repeat.' },
     ],
   },
+  Insight: {
+    id: 'Insight',
+    name: '🧠 Insight',
+    maxLevel: 2,
+    shop: { minStage: 1, maxStage: 20 },
+    levels: [
+      { level: 1, cost: 10, weight: 2, description: 'Shows how many tries Gabe took (simulated).' },
+      { level: 2, cost: 18, weight: 1, description: 'Also shows if Gabe knows the word (manual or simulated).' },
+    ],
+  },
   // ...more skills
 };

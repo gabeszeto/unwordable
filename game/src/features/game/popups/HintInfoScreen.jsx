@@ -4,6 +4,7 @@ import LetterLensInfo from '../../skills/LetterLensInfo'; // <-- fix path
 import { useSkills } from '../../../contexts/skills/SkillsContext';
 import { getLetterLensHint } from '../../skills/helpers/getLetterLensHint'; // <-- compute hint upfront
 import RepeaterInfo from '../../skills/RepeaterInfo';
+import InsightInfo from '../../skills/InsightInfo';
 
 export default function HintInfoScreen({ perkKey, targetWord }) {
   // --- Perk-specific block ---
@@ -29,6 +30,7 @@ export default function HintInfoScreen({ perkKey, targetWord }) {
             <div className="skills-info-block" style={{ marginTop: 12 }}>
               <LetterLensInfo targetWord={targetWord} />
               <RepeaterInfo targetWord={targetWord} />
+              <InsightInfo targetWord={targetWord} />
             </div>
           )}
         </>

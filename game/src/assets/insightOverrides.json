@@ -1,0 +1,7 @@
+{
+    "RADAR": { "tries": 3, "knows": true },
+    "AGLET": { "tries": 6, "knows": false },
+    "SAVVY": { "tries": 7, "knows": true },
+    "AIOLI": { "tries": 4, "knows": true }
+}
+  
