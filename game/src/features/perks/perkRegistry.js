@@ -5,6 +5,7 @@ import Revelation from './components/Revelation';
 import Anatomy from './components/Anatomy';
 import Jybrish from './components/Jybrish';
 import Sixer from './components/Sixer';
+import DeadKeys from './components/DeadKeys';
 
 
 export const perkRegistry = {
@@ -56,6 +57,13 @@ export const perkRegistry = {
     cost: 4,
     weight: 3,
     component: Sixer
+  },
+  DeadKeys: {
+    name: "⬜️ Dead Keys",
+    description: "Turns two white keys gray.",
+    cost: 3,
+    weight: 5,
+    component: DeadKeys
   },
 };
 

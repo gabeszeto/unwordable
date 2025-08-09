@@ -15,8 +15,8 @@ export default function InsightInfo({ targetWord }) {
 
   const triesText =
     tries === 7
-      ? "didn't guess it"
-      : `guessed it in ${tries} ${tries === 1 ? 'try' : 'tries'}`;
+      ? "didn't guess this word"
+      : `guessed this word in ${tries} ${tries === 1 ? 'try' : 'tries'} `;
 
   return (
     <div className="info-chip">
@@ -24,9 +24,8 @@ export default function InsightInfo({ targetWord }) {
       {`Gabe ${triesText}`}
       {level >= 2 && usage ? (
         <>
-          {' · '}
           <span title={`${usage.freq?.toFixed?.(2) ?? usage.freq} per million`}>
-            {usage.label}
+            and {usage.label}
           </span>
         </>
       ) : null}

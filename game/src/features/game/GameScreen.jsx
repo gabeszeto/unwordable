@@ -76,7 +76,9 @@ export default function GameScreen() {
     revealedIndices,
     setInfoPerkKey,
     setSixerMode,
-    guesses
+    guesses,
+    usedKeys,
+    setUsedKeys
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
