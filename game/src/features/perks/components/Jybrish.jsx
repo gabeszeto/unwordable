@@ -35,7 +35,7 @@ export default function Jybrish({
 
   return (
     <button
-      className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
+      className={`perk-button ${(shiftHeld && !disabled) ? 'perk-shift-held' : ''}`}
       onClick={handleClick}
       disabled={disabled}
     >

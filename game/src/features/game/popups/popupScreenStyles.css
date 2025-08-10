@@ -52,10 +52,15 @@
     border: 1px solid black;
 }
 
+.itemName {
+    font-weight: 600;
+    font-size: 1.1rem
+}
+
 .itemCloseButton {
     position: absolute;
-    top: 1rem;
     right: 1rem;
+    font-size: 2rem;
 }
 
 .itemCloseButton:hover {

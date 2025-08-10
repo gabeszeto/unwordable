@@ -1,6 +1,11 @@
-button {
+.perk-button {
     font-family: 'Zilla Slab';
     font-size: 0.7rem;
+    margin: 2px;
+}
+
+.perk-button:hover {
+    cursor: pointer;
 }
 
 @keyframes perkPulse {
@@ -10,12 +15,12 @@ button {
         filter: brightness(1);
     }
     50% {
-        transform: scale(1.06);
+        transform: scale(1.04);
         box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.4);
         filter: brightness(1.25);
     }
     70% {
-        transform: scale(1.04);
+        transform: scale(1.03);
         box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
         filter: brightness(1.15);
     }
