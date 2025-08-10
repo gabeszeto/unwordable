@@ -41,16 +41,7 @@ export default function GameScreen() {
 
   // Saved time for next round
   const [maxGuesses, setMaxGuesses] = useState(BASE_MAX_GUESSES);
-
-  // const nextRoundBonusRef = React.useRef(0);
-
-  // const bankGuessToNextRound = () => {
-  //   nextRoundBonusRef.current = Math.min(
-  //     BASE_MAX_GUESSES,
-  //     nextRoundBonusRef.current + 1
-  //   );
-  // };
-
+  
   // ⬇️ Recompute only when entering a GAME stage
   useEffect(() => {
     if (!isGameStage(stage)) return; // skip shop screens
@@ -294,7 +285,7 @@ export default function GameScreen() {
           >
             <span className="gb-ico">🗺️</span>
             <span className="gb-label">{keyzoneOverlayVisible ? 'Overlay On' : 'Overlay Off'}</span>
-            <kbd className="gb-kbd">O</kbd>
+            <kbd className="gb-kbd">Shift+O</kbd>
           </button>
         )}
         <button
@@ -304,7 +295,7 @@ export default function GameScreen() {
         >
           <span className="gb-ico">💡</span>
           <span className="gb-label">{showInfoPanel ? 'Hide Info' : 'Show Info'}</span>
-          <kbd className="gb-kbd">Shift I</kbd>
+          <kbd className="gb-kbd">Shift+I</kbd>
         </button>
       </div>
 

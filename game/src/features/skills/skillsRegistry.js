@@ -7,7 +7,7 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 }, // optional; defaults applied if missing
     levels: [
-      { level: 1, cost: 16, weight: 3, description: 'Reveal if first letter is vowel/consonant.' },
+      { level: 1, cost: 15, weight: 2, description: 'Reveal if first letter is vowel/consonant.' },
       { level: 2, cost: 20, weight: 1, description: 'Also reveal if last letter is vowel/consonant.' }
     ],
   },
@@ -17,7 +17,7 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },
     levels: [
-      { level: 1, cost: 14, weight: 3, description: 'Tells if any letter repeats.' },
+      { level: 1, cost: 14, weight: 2, description: 'Tells if any letter repeats.' },
       { level: 2, cost: 12, weight: 2, description: 'Also tells how many letters repeat.' },
     ],
   },

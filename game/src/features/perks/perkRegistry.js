@@ -14,14 +14,14 @@ export const perkRegistry = {
     name: "🔮 Revelation",
     description: "Reveals 1 correct letter in the right position.",
     cost: 5,
-    weight: 2,
+    weight: 3,
     component: Revelation,
   },
   Anatomy: {
     name: "🧪 Anatomy",
     description: "Tells you how many vowels and consonants are in the word.",
-    cost: 2,
-    weight: 5,
+    cost: 3,
+    weight: 4,
     component: Anatomy,
   },
   KeyzoneRow: {
@@ -39,14 +39,14 @@ export const perkRegistry = {
   KeyzoneGrid: {
     name: "#️⃣ Keyzones (Grid)",
     description: "Splits keyboard into 6 zones and shows letter counts per zone.",
-    weight: 1,
+    weight: 2,
     component: KeyzoneGrid,
   },
   Jybrish: {
     name: "♒️ Jybrish",
     description: "For the next guess, the word doesn't have to be real.",
     cost: 4,
-    weight: 2,
+    weight: 3,
     component: Jybrish,
   },
   Sixer: {
@@ -67,7 +67,7 @@ export const perkRegistry = {
     name: "⌛️ Borrowed Time",
     description: "Removes a guess from this round and adds it to the next round.",
     cost: 4,
-    weight: 3,
+    weight: 2,
     component: BorrowedTime
   },
   Wager: {

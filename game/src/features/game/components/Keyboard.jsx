@@ -6,10 +6,18 @@ const keyLayout = [
   ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
   ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
 ];
-
 export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord }) {
   const getKeyClass = (key) => usedKeys[key] || '';
-  const targetLetters = new Set((targetWord || '').split(''));
+
+  // Build a frequency map of target letters (A–Z only)
+  const letterFreq = (targetWord || '')
+    .toUpperCase()
+    .split('')
+    .filter(ch => ch >= 'A' && ch <= 'Z')
+    .reduce((acc, ch) => {
+      acc[ch] = (acc[ch] || 0) + 1;
+      return acc;
+    }, {});
 
   const zoneMap = {};
   const zoneCounts = {};
@@ -30,7 +38,11 @@ export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord
 
       if (zone) {
         zoneMap[key] = zone;
-        zoneCounts[zone] = (zoneCounts[zone] || 0) + (targetLetters.has(key) ? 1 : 0);
+
+        // ✅ add full frequency for this key (0 if not in word)
+        const add = letterFreq[key] || 0;
+        zoneCounts[zone] = (zoneCounts[zone] || 0) + add;
+
         if (!zoneKeys[zone]) zoneKeys[zone] = [];
         zoneKeys[zone].push({ key, row: rowIdx, col: colIdx });
       }
@@ -58,18 +70,12 @@ export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord
             const zone = zoneMap[key];
             const zoneKeyClass = zone ? `keyzone keyzone-${zone}` : '';
             const keyClass = `key ${getKeyClass(key)} ${zoneKeyClass}`;
-            const label = labelKeyMap[key] ? zoneCounts[zoneMap[key]] : null;
+            const label = labelKeyMap[key] ? zoneCounts[zone] : null;
 
             return (
-              <button
-                key={key}
-                className={keyClass}
-                onClick={() => onKeyPress(key)}
-              >
+              <button key={key} className={keyClass} onClick={() => onKeyPress(key)}>
                 {key}
-                {label != null && (
-                  <div className="zone-count">{label}</div>
-                )}
+                {label != null && <div className="zone-count">{label}</div>}
               </button>
             );
           })}

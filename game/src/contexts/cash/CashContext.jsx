@@ -8,7 +8,7 @@ export function useCash() {
 }
 
 export function CashProvider({ children }) {
-  const [cash, setCash] = useState(500);
+  const [cash, setCash] = useState(5);
 
   // Track a single pending wager at a time
   const [pendingWager, setPendingWager] = useState(null); 

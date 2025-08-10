@@ -412,28 +412,30 @@ export default function Board({
   };
 
 
-  const renderEmptyRow = (rowIndex) => {
+  const renderEmptyRow = (rowIndex, forceInactive = false) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);
-
     const locked = lockedLetterByRow.current?.[rowIndex];
-
+  
     const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
-      const isLocked = locked?.index === i;
+      const isLocked = !forceInactive && locked?.index === i; // no locks when forced inactive
       const letter = isLocked ? locked.letter : '';
-
+  
+      const inactiveClass = forceInactive
+        ? 'inactive'
+        : (!rowActiveIndices.includes(i) ? 'inactive' : '');
+  
       return (
         <div
-          className={`letter ${!rowActiveIndices.includes(i) ? 'inactive' : ''} ${isLocked ? 'locked' : ''}`}
+          className={`letter ${inactiveClass} ${isLocked ? 'locked' : ''}`}
           key={i}
         >
           {letter}
         </div>
       );
     });
-
+  
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
-
 
   const rows = useMemo(() => {
     const renderedRows = [
@@ -443,25 +445,29 @@ export default function Board({
         rowActiveIndices.forEach((idx, j) => {
           guessArray[idx] = guessStr[j];
         });
-
-        const sixerThisRow = sixerMeta[i]; // e.g. { start: 0 } or null
-
+  
+        const sixerThisRow = sixerMeta[i];
         return renderRow(guessArray, i, true, rowActiveIndices, sixerThisRow);
       })
     ];
-
+  
+    // current editing row (if not game over)
     if (!isGameOver) {
       renderedRows.push(renderRow(currentGuess, guesses.length, false));
     }
-
-    const totalRows = isGameOver ? guesses.length : guesses.length + 1;
-    const remaining = maxGuesses - totalRows;
-
-    for (let i = 0; i < remaining; i++) {
-      const globalRowIndex = totalRows + i;
-      renderedRows.push(renderEmptyRow(globalRowIndex));
+  
+    const totalRowsRendered = isGameOver ? guesses.length : guesses.length + 1;
+  
+    // First: normal empty rows up to maxGuesses
+    for (let r = totalRowsRendered; r < Math.min(maxGuesses, 6); r++) {
+      renderedRows.push(renderEmptyRow(r, /*forceInactive*/ false));
     }
-
+  
+    // Then: force inactive rows to fill to 6 rows
+    for (let r = Math.max(totalRowsRendered, maxGuesses); r < 6; r++) {
+      renderedRows.push(renderEmptyRow(r, /*forceInactive*/ true));
+    }
+  
     return renderedRows;
   }, [
     guesses,
@@ -472,8 +478,10 @@ export default function Board({
     sixerMode,
     sixerMeta,
     maxGuesses,
-    getRowActiveIndices
+    getRowActiveIndices,
+    guessRanges
   ]);
+  
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {

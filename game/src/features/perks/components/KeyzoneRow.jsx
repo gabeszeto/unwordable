@@ -10,7 +10,7 @@ export default function KeyzoneRow({ perkKey = 'KeyzoneRow', onKBActivate, isKey
     if (used || quantity <= 0) return;
     onKBActivate?.('row'); // Pass which segmentation to highlight
     markAsUsed(perkKey)
-    usePerks(perkKey)
+    usePerk(perkKey)
   };
 
   return (
