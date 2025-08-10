@@ -2,7 +2,6 @@
 import React, { useState, useMemo } from 'react';
 import { getItemMeta } from '../../getItemMeta';
 import { usePerks } from '../../../contexts/perks/PerksContext';
-import { usePerkActions } from '../../perks/usePerkActions';
 import './popupScreenStyles.css';
 
 export default function ItemDescriptionScreen({ itemKey, runtime, onClose }) {
@@ -11,7 +10,6 @@ export default function ItemDescriptionScreen({ itemKey, runtime, onClose }) {
 
     const { type, name, description, stackable, maxStacks, requires } = meta;
     const { perks } = usePerks();
-    const { runPerk } = usePerkActions();
 
     const qty = type === 'perk' ? (perks?.[itemKey] || 0) : null;
     const [err, setErr] = useState(null);
@@ -25,7 +23,8 @@ export default function ItemDescriptionScreen({ itemKey, runtime, onClose }) {
     };
 
     return (
-            <div onClick={(e) => e.stopPropagation()}>
+        <div className="popup-overlay" onClick={() => onClose()}>
+            <div className="popup-content" onClick={(e) => e.stopPropagation()}>
                 <header className="itemTopPart">
                     <div className="itemName">
                         {name}
@@ -52,5 +51,6 @@ export default function ItemDescriptionScreen({ itemKey, runtime, onClose }) {
                     )}
                 </div>
             </div>
+        </div>
     );
 }
