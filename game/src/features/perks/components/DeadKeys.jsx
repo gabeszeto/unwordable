@@ -1,5 +1,6 @@
 import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import useShiftHeld from '../useShiftHeld';
 
 function pickDeadLetters(targetWord, usedKeys, count = 2) {
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -21,17 +22,22 @@ export default function DeadKeys({
   usedPerks,
   markAsUsed,
   remaining,
+
   // from sharedProps
   targetWord,
   usedKeys,
   setUsedKeys,
+  setItemDescriptionKey
 }) {
   const { perks, usePerk } = usePerks();
+  const shiftHeld = useShiftHeld();
+
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
+  const disabled = used || quantity <= 0;
 
-  const handleClick = () => {
-    if (used || quantity <= 0) return;
+  const activate = () => {
+    if (disabled) return;
 
     // choose 2 letters to gray out
     const picks = pickDeadLetters(targetWord, usedKeys, 2);
@@ -49,8 +55,24 @@ export default function DeadKeys({
     usePerk(perkKey);
   };
 
+  const handleClick = (e) => {
+    if (disabled) return;
+    if (e.shiftKey) {
+      // Shift+Click -> use perk
+      activate();
+    } else {
+      // Normal click -> show info
+      setItemDescriptionKey?.(perkKey);
+    }
+  };
+
   return (
-    <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
+    <button
+      className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
+      onClick={handleClick}
+      disabled={disabled}
+      title="Click for details · Shift+Click to use"
+    >
       ⬜️ Dead Keys ×{remaining}
     </button>
   );

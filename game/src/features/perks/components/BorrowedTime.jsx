@@ -1,5 +1,6 @@
 import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import useShiftHeld from '../useShiftHeld';
 
 export default function BorrowedTime({
   perkKey = 'BorrowedTime',
@@ -12,8 +13,11 @@ export default function BorrowedTime({
   maxGuesses,
   setMaxGuesses,
   bankGuessToNextRound,
+
+  setItemDescriptionKey
 }) {
   const { perks, usePerk } = usePerks();
+  const shiftHeld = useShiftHeld();
   const qty = perks[perkKey] || 0;
   const alreadyUsed = usedPerks.includes(perkKey);
 
@@ -28,13 +32,13 @@ export default function BorrowedTime({
 
   const disabled = alreadyUsed || qty <= 0 || cannotSpare;
 
-  const handleUse = () => {
+  const activate = () => {
     if (disabled) return;
 
     // -1 this round (clamped)
     setMaxGuesses(prev => Math.max(MIN_THIS_ROUND, prev - 1));
 
-    // +1 next round (your GameScreen clamps to 6 on round start)
+    // +1 next round (GameScreen applies cap on round start)
     bankGuessToNextRound();
 
     // consume
@@ -42,14 +46,22 @@ export default function BorrowedTime({
     usePerk(perkKey);
   };
 
+  const handleClick = (e) => {
+    if (disabled) return;
+    if (e.shiftKey) {
+      // Shift+Click -> use it
+      activate();
+    } else {
+      // Click -> show info
+      setItemDescriptionKey?.(perkKey);
+    }
+  };
+
   return (
     <button
-      className="perk-button"
-      onClick={handleUse}
+      className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
+      onClick={handleClick}
       disabled={disabled}
-      title={
-        cannotSpare ? 'You can’t spare a guess this round' : undefined
-      }
     >
       ⌛️ Borrowed Time ×{remaining}
     </button>

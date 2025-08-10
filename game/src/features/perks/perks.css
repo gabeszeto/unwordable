@@ -2,3 +2,32 @@ button {
     font-family: 'Zilla Slab';
     font-size: 0.7rem;
 }
+
+@keyframes perkPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, .25);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.06);
+        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.4);
+        filter: brightness(1.25);
+    }
+    70% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+        filter: brightness(1.15);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        filter: brightness(1);
+    }
+}
+
+.perk-button.perk-shift-held {
+    animation: perkPulse 900ms ease-out infinite;
+    /* outline: 2px dashed rgba(255, 255, 255, 0.45); */
+    /* outline-offset: 2px; */
+}

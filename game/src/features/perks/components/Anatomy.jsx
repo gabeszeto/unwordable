@@ -1,5 +1,6 @@
 import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import useShiftHeld from '../useShiftHeld';
 
 export default function Anatomy({
   perkKey = 'Anatomy',
@@ -10,6 +11,7 @@ export default function Anatomy({
   setItemDescriptionKey
 }) {
   const { perks, usePerk } = usePerks();
+  const shiftHeld = useShiftHeld();
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
   const disabled = used || quantity <= 0;
@@ -34,10 +36,9 @@ export default function Anatomy({
 
   return (
     <button
-      className="perk-button"
+      className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
       onClick={handleClick}
       disabled={disabled}
-      title="Click for details · Shift+Click to use"
     >
       🧪 Anatomy ×{remaining}
     </button>
