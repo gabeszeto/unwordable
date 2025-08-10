@@ -6,7 +6,11 @@ export const PerksProvider = ({ children }) => {
     const [perks, setPerks] = useState({
         DeadKeys: 4,
         Jybrish: 4,
-        Anatomy: 4
+        Anatomy: 4,
+        KeyzoneRow: 4,
+        KeyzoneGrid: 4,
+        KeyzoneSegment: 4,
+        Sixer: 4,
     });
 
     // Perk states

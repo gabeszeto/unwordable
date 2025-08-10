@@ -1,5 +1,7 @@
 // Wager.jsx
 import React from 'react';
+import '../perks.css';
+import useShiftHeld from '../useShiftHeld';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 import { useCash } from '../../../contexts/cash/CashContext';
 
@@ -8,9 +10,11 @@ export default function Wager({
   usedPerks,
   markAsUsed,
   remaining,
+  setItemDescriptionKey // 👈 added
 }) {
   const { perks, usePerk } = usePerks();
   const { cash, placeWager, pendingWager } = useCash();
+  const shiftHeld = useShiftHeld();
 
   const used = usedPerks.includes(perkKey);
   const quantity = perks[perkKey] || 0;
@@ -20,19 +24,30 @@ export default function Wager({
   const disabled =
     used || quantity <= 0 || !canAfford || !!pendingWager; // prevent stacking
 
-  const handleClick = () => {
+  const activate = () => {
     if (disabled) return;
-
-    const ok = placeWager({ stake: 5, payout: 5 });
+    const ok = placeWager({ stake: cost, payout: cost });
     if (!ok) return;
-
-    // Mark perk usage (UI) and decrement inventory
     markAsUsed(perkKey);
     usePerk(perkKey);
   };
 
+  const handleClick = (e) => {
+    if (disabled) return;
+    if (e.shiftKey) {
+      activate();
+    } else {
+      setItemDescriptionKey?.(perkKey);
+    }
+  };
+
   return (
-    <button className="perk-button" onClick={handleClick} disabled={disabled} title="Bet 5 Cash on your next guess. Win 10 if correct; lose the stake if wrong.">
+    <button
+      className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
+      onClick={handleClick}
+      disabled={disabled}
+      title="Click for details · Shift+Click to use"
+    >
       💸 Wager ×{remaining}
     </button>
   );
