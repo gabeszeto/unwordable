@@ -12,10 +12,10 @@ export const debuffRegistry = {
     description: "Correct letters in the wrong place won't show up yellow.",
     weight: 1,
   },
-  DelayedFeedback: {
+  GreyReaper: {
     type: 'active',
-    name: 'Delayed Feedback',
-    description: 'No feedback until after your first 2 guesses.',
+    name: 'Grey Reaper',
+    description: 'Guessing a word with no colors ends your run instantly.',
     weight: 1,
   },
   BlurredVision: {
@@ -32,10 +32,10 @@ export const debuffRegistry = {
   },
 
   // 💤 PASSIVE DEBUFFS 
-  GreyReaper: {
+  DelayedFeedback: {
     type: 'passive',
-    name: 'Grey Reaper',
-    description: 'Guessing a word with no colors ends your run instantly.',
+    name: 'Delayed Feedback',
+    description: 'No feedback until after your first 2 guesses.',
     weight: 1,
   },
   LetterLock: {

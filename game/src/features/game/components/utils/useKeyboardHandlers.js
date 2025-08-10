@@ -43,7 +43,7 @@ export default function useKeyboardHandlers({
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
 
     // Determine if we should delay feedback
-    const delayFeedback = activeDebuffs.includes('DelayedFeedback');
+    const delayFeedback = (passiveDebuffs.DelayedFeedback ?? 0) > 0
     const feedbackSuppressed = delayFeedback && guesses.length < FEEDBACK_DELAY_THRESHOLD;
 
     // Apply delayed feedback when threshold is passed
@@ -152,7 +152,7 @@ export default function useKeyboardHandlers({
 
 
         // Handle Gray Reaper instant death
-        if ((passiveDebuffs.GreyReaper ?? 0) > 0 && !hasColor) {            setUsedKeys(newUsed);
+        if (activeDebuffs.includes('GreyReaper') && !hasColor) {            setUsedKeys(newUsed);
             setIsGameOver(true);
             onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
             return;

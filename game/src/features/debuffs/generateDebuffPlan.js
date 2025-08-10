@@ -1,92 +1,122 @@
 import { debuffRegistry } from './debuffRegistry';
 import { pickWeightedDebuff } from './pickWeightedDebuff';
-import { debuffMilestones } from './debuffConfig';
+
+// Milestones per your spec
+export const debuffMilestones = {
+  passiveRounds: [1, 4, 7, 10],           // add one passive before these rounds
+  activeRounds: { 3: 1, 6: 1, 9: 1, 10: 2 } // add this many actives on these rounds
+};
 
 export function generateDebuffPlan() {
   const plan = {};
 
+  // persistent passives + counts across the whole run
   const passiveCounts = {};
-  const passiveStackLimit = 3;
   const persistentPassives = [];
 
-  // Build passive pool with conditional filters
+  const passiveStackLimit = 3; // global default if a passive doesn't specify maxStacks
+
+  const canAddPassive = (key) => {
+    const def = debuffRegistry[key];
+    if (!def || def.type !== 'passive') return false;
+
+    // Hidden needs 'requires' already present in persistentPassives
+    if (def.hidden && !def.requires) return false;
+    if (def.requires && !persistentPassives.includes(def.requires)) return false;
+
+    const count = passiveCounts[key] || 0;
+    return def.stackable
+      ? count < (def.maxStacks || passiveStackLimit)
+      : count === 0;
+  };
+
   const getFilteredPassivePool = () =>
-    Object.entries(debuffRegistry)
-      .filter(([key, v]) => {
-        if (v.type !== 'passive') return false;
+    Object.entries(debuffRegistry).filter(([key, v]) => v.type === 'passive' && canAddPassive(key));
 
-        const count = passiveCounts[key] || 0;
+  // We’ll mutate this so actives don’t repeat across rounds
+  const activePool = Object.entries(debuffRegistry).filter(([_, v]) => v.type === 'active');
 
-        // Don't include hidden unless it has a valid 'requires' met
-        if (v.hidden && !v.requires) return false;
-
-        // If it has a requirement (like an upgrade), skip if not unlocked yet
-        if (v.requires && !persistentPassives.includes(v.requires)) return false;
-
-        // Stackable logic
-        return v.stackable
-          ? count < (v.maxStacks || passiveStackLimit)
-          : count === 0;
-      });
-
-  const activePool = Object.entries(debuffRegistry)
-    .filter(([_, v]) => v.type === 'active');
+  // Helpers for final-round mutual exclusion
+  const MUTUAL_EXCLUSION = {
+    Grellow: 'Yellowless',
+    Yellowless: 'Grellow',
+  };
 
   for (let round = 1; round <= 10; round++) {
     plan[round] = {
-      passive: [...persistentPassives],
-      active: []
+      passive: [...persistentPassives], // snapshot at the start of the round
+      active: [],
     };
 
-    // Passive debuff selection
+    // ----- PASSIVE SELECTION (before this round) -----
     if (debuffMilestones.passiveRounds.includes(round)) {
-      const filtered = getFilteredPassivePool();
-      const selected = pickWeightedDebuff(Object.fromEntries(filtered));
+      let selected;
+
+      // Round 10: prefer "CutShort" if we can still add a stack
+      if (round === 10 && canAddPassive('CutShort')) {
+        selected = 'CutShort';
+      } else {
+        const filtered = getFilteredPassivePool();
+        selected = pickWeightedDebuff(Object.fromEntries(filtered));
+      }
 
       if (selected) {
         const def = debuffRegistry[selected];
         const currentCount = passiveCounts[selected] || 0;
 
+        // Handle upgradable passives (if you use this pattern)
         const upgrade = def.upgradableTo;
-
         if (upgrade && currentCount >= 1) {
-          // Upgrade: replace existing with upgraded version
-          const index = persistentPassives.indexOf(selected);
-          if (index !== -1) {
-            persistentPassives.splice(index, 1, upgrade);
+          // replace existing with upgraded version
+          const idx = persistentPassives.indexOf(selected);
+          if (idx !== -1) {
+            persistentPassives.splice(idx, 1, upgrade);
           } else {
             persistentPassives.push(upgrade);
           }
           passiveCounts[upgrade] = (passiveCounts[upgrade] || 0) + 1;
         } else {
-          // Normal stack or first-time
           persistentPassives.push(selected);
           passiveCounts[selected] = currentCount + 1;
         }
 
+        // reflect newly added passive in this round's plan
         plan[round].passive = [...persistentPassives];
       }
     }
 
-    // Active debuffs: fresh each time
+    // ----- ACTIVE SELECTION (for this round only) -----
     const activeCount = debuffMilestones.activeRounds[round] || 0;
-    for (let i = 0; i < activeCount; i++) {
-      const activePoolMap = Object.fromEntries(activePool);
-      const selected = pickWeightedDebuff(activePoolMap);
+    if (activeCount > 0) {
+      // copy pool to map for pick func
+      const poolMap = () => Object.fromEntries(activePool);
 
-      if (selected) {
-        plan[round].active.push(selected);
+      for (let i = 0; i < activeCount; i++) {
+        let selected = pickWeightedDebuff(poolMap());
 
-        // ❌ Remove selected active debuff from the pool permanently
-        const indexToRemove = activePool.findIndex(([key]) => key === selected);
-        if (indexToRemove !== -1) activePool.splice(indexToRemove, 1);
+        // Final round: enforce Grellow/Yellowless mutual exclusion
+        if (round === 10 && selected) {
+          const already = plan[round].active[0]; // only matters on second pick
+          if (already && MUTUAL_EXCLUSION[already] === selected) {
+            // re-pick avoiding the conflicting one
+            const filteredActivePool = activePool.filter(([key]) => key !== MUTUAL_EXCLUSION[already]);
+            const filteredMap = Object.fromEntries(filteredActivePool);
+            selected = pickWeightedDebuff(filteredMap);
+          }
+        }
+
+        if (selected) {
+          plan[round].active.push(selected);
+          // remove from global active pool to avoid repeats in later rounds
+          const idx = activePool.findIndex(([key]) => key === selected);
+          if (idx !== -1) activePool.splice(idx, 1);
+        }
       }
     }
   }
 
   return plan;
 }
-
 
 export function generateDebugDebuffPlan({
   forcePassive = {},

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePerks } from '../../contexts/perks/PerksContext';
 import { useSkills } from '../../contexts/skills/SkillsContext';
 import { perkRegistry } from '../perks/perkRegistry';
+import { skillsRegistry } from '../skills/skillsRegistry';
 
 // small helper for roman numerals
 const toRoman = (num) => {
@@ -102,9 +103,11 @@ export default function ShopInventoryPanel() {
                     ) : (
                         skillEntries.map(([key, lvl]) => {
                             const changed = changedSkills.has(key);
+                            const meta = skillsRegistry[key] || {};
+                            const label = meta?.name || key
                             return (
                                 <button className={`inv-chip skill ${changed ? 'changed' : ''}`} key={`skill-${key}`}>
-                                    {key} {lvl > 0 ? toRoman(lvl) : ''}
+                                    {label} {lvl > 0 ? toRoman(lvl) : ''}
                                 </button>
                             );
                         })

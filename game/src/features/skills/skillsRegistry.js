@@ -21,9 +21,9 @@ export const skillsRegistry = {
       { level: 2, cost: 12, weight: 2, description: 'Also tells how many letters repeat.' },
     ],
   },
-  Insight: {
-    id: 'Insight',
-    name: '🧠 Insight',
+  Analysis: {
+    id: 'Analysis',
+    name: '🧠 Analysis',
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },
     levels: [

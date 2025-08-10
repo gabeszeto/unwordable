@@ -59,7 +59,7 @@ export default function Board({
   const goldenLieInjectedIndex = useRef({});
 
   // Delayed feedback
-  const isFeedbackDelayActive = activeDebuffs.includes('DelayedFeedback');
+  const isFeedbackDelayActive = (passiveDebuffs.DelayedFeedback ?? 0) > 0;
   const FEEDBACK_DELAY_THRESHOLD = 2; // First 2 guesses are delayed
 
   const baseIndices = (len, maxLen) => {
@@ -78,8 +78,6 @@ export default function Board({
   }
 
   // Initial render logic
-  const shiftedGuessRowRef = useRef(null);
-  const shiftDirectionRef = useRef(null);
   const lockedLetterByRow = useRef({});
 
   // Local Perks
@@ -138,7 +136,7 @@ export default function Board({
     setRowsAfterDebuffs(rows);
 
     // ----- seed LetterLock once (uses the frozen rows)
-    if ('LetterLock' in passiveDebuffs) {
+    if ((passiveDebuffs.LetterLock ?? 0) > 0) {
       const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
       const eligibleRows = [0, 1, 2].filter(r => r < rows.length);
       if (eligibleRows.length) {

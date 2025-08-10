@@ -11,7 +11,7 @@ function hash01(str) {
     return (h >>> 0) / 2 ** 32;
 }
 
-export function getInsightHint(word, level = 1) {
+export function getAnalysisHint(word, level = 1) {
     if (!word || level <= 0) return null;
     const W = String(word).toUpperCase();
 

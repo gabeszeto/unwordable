@@ -1,14 +1,13 @@
-// src/features/skills/ui/InsightInfo.jsx
 import React from 'react';
 import { useSkills } from '../../contexts/skills/SkillsContext';
-import { getInsightHint } from './helpers/getInsightHint';
+import { getAnalysisHint } from './helpers/getAnalysisHint';
 
-export default function InsightInfo({ targetWord }) {
+export default function AnalysisInfo({ targetWord }) {
   const { getSkillLevel } = useSkills();
-  const level = getSkillLevel('Insight');
+  const level = getSkillLevel('Analysis');
   if (!level) return null;
 
-  const hint = getInsightHint(targetWord, level);
+  const hint = getAnalysisHint(targetWord, level);
   if (!hint) return null;
 
   const { tries, usage } = hint;
@@ -20,7 +19,7 @@ export default function InsightInfo({ targetWord }) {
 
   return (
     <div className="info-chip">
-      <strong>Insight L{level}:</strong>{' '}
+      <strong>Analysis L{level}:</strong>{' '}
       {`Gabe ${triesText}`}
       {level >= 2 && usage ? (
         <>

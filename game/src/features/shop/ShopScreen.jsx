@@ -56,7 +56,7 @@ export default function ShopScreen() {
       debuffs: { activeDebuffs, passiveDebuffs } // 👈 pass through
     }));
     setPurchasedSet(new Set());
-  }, [stage, activeSkills, activeDebuffs, passiveDebuffs, shopVersion]);
+  }, [stage, shopVersion]);
 
   const handleBuy = async (offer) => {
     const { id, type, cost } = offer;

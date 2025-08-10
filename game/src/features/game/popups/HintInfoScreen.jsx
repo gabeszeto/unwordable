@@ -4,7 +4,7 @@ import LetterLensInfo from '../../skills/LetterLensInfo'; // <-- fix path
 import { useSkills } from '../../../contexts/skills/SkillsContext';
 import { getLetterLensHint } from '../../skills/helpers/getLetterLensHint'; // <-- compute hint upfront
 import RepeaterInfo from '../../skills/RepeaterInfo';
-import InsightInfo from '../../skills/InsightInfo';
+import AnalysisInfo from '../../skills/AnalysisInfo';
 
 export default function HintInfoScreen({ perkKey, targetWord }) {
   // --- Perk-specific block ---
@@ -18,15 +18,15 @@ export default function HintInfoScreen({ perkKey, targetWord }) {
 
   const letterLensLevel = getSkillLevel('LetterLens');
   const repeaterLevel = getSkillLevel('Repeater');
-  const insightLevel = getSkillLevel('Insight');
+  const analysisLevel = getSkillLevel('Analysis');
 
   const letterLensHint = letterLensLevel ? getLetterLensHint(targetWord, letterLensLevel) : null;
 
   const showLetterLens = !!letterLensHint;
   const showRepeater = repeaterLevel > 0;
-  const showInsight = insightLevel > 0;
+  const showAnalysis = analysisLevel > 0;
 
-  const showAnySkill = showLetterLens || showRepeater || showInsight;
+  const showAnySkill = showLetterLens || showRepeater || showAnalysis;
 
   const hasInfo = !!perkContent || showAnySkill;
 
@@ -39,7 +39,7 @@ export default function HintInfoScreen({ perkKey, targetWord }) {
             <div className="skills-info-block" style={{ marginTop: 12 }}>
               {showLetterLens && <LetterLensInfo targetWord={targetWord} />}
               {showRepeater && <RepeaterInfo targetWord={targetWord} />}
-              {showInsight && <InsightInfo targetWord={targetWord} />}
+              {showAnalysis && <AnalysisInfo targetWord={targetWord} />}
             </div>
           )}
         </>
