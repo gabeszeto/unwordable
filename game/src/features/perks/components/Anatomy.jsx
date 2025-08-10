@@ -6,21 +6,39 @@ export default function Anatomy({
   usedPerks,
   markAsUsed,
   remaining,
-  setInfoPerkKey
+  setInfoPerkKey,
+  setItemDescriptionKey
 }) {
   const { perks, usePerk } = usePerks();
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
+  const disabled = used || quantity <= 0;
 
-  const handleClick = () => {
-    if (used || quantity <= 0) return;
-    setInfoPerkKey?.(perkKey); 
+  const activate = () => {
+    if (disabled) return;
     markAsUsed(perkKey);
-    usePerk(perkKey)
+    usePerk(perkKey);
+    setInfoPerkKey?.(perkKey);
+  };
+
+  const handleClick = (e) => {
+    if (disabled) return;
+    if (e.shiftKey) {
+      // Shift+Click -> use it
+      activate();
+    } else {
+      // Click -> show info
+      setItemDescriptionKey('Anatomy')
+    }
   };
 
   return (
-    <button className="perk-button" onClick={handleClick} disabled={used || quantity <= 0}>
+    <button
+      className="perk-button"
+      onClick={handleClick}
+      disabled={disabled}
+      title="Click for details · Shift+Click to use"
+    >
       🧪 Anatomy ×{remaining}
     </button>
   );

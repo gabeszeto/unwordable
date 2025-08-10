@@ -4,6 +4,9 @@ const PerksContext = createContext();
 
 export const PerksProvider = ({ children }) => {
     const [perks, setPerks] = useState({
+        DeadKeys: 4,
+        Jybrish: 4,
+        Anatomy: 4
     });
 
     // Perk states

@@ -19,6 +19,7 @@ import './popups/popupScreenStyles.css'
 import HintInfoScreen from './popups/HintInfoScreen.jsx'
 
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
+import ItemDescriptionScreen from './popups/ItemDescriptionScreen.jsx';
 
 export default function GameScreen() {
   const { stage, setStage, advanceStage, isGameStage, bankGuess, consumeGuessBank } = useLevel();
@@ -41,7 +42,7 @@ export default function GameScreen() {
 
   // Saved time for next round
   const [maxGuesses, setMaxGuesses] = useState(BASE_MAX_GUESSES);
-  
+
   // ⬇️ Recompute only when entering a GAME stage
   useEffect(() => {
     if (!isGameStage(stage)) return; // skip shop screens
@@ -52,10 +53,7 @@ export default function GameScreen() {
     setMaxGuesses(applied);
   }, [stage, cutShortStacks]);
 
-  // debugger
-  useEffect(() => {
-    console.log(`maxguesses changed to ${maxGuesses}`)
-  }, [maxGuesses])
+  const [itemDescriptionKey, setItemDescriptionKey] = useState(null);
 
   // Perk states
   const [usedPerks, setUsedPerks] = useState([]);
@@ -104,6 +102,8 @@ export default function GameScreen() {
     maxGuesses,
     setMaxGuesses, // to decrement this round by 1
     bankGuessToNextRound: () => bankGuess(1, BASE_MAX_GUESSES), // <-- from context
+    itemDescriptionKey,
+    setItemDescriptionKey
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
@@ -331,6 +331,13 @@ export default function GameScreen() {
             <HintInfoScreen perkKey={infoPerkKey} targetWord={targetWord} />
           </div>
         </div>
+      )}
+
+      {itemDescriptionKey && (
+        <ItemDescriptionScreen
+          itemKey={itemDescriptionKey}
+          onClose={() => setItemDescriptionKey(null)}
+        />
       )}
 
     </div>
