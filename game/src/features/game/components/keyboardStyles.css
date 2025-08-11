@@ -1,3 +1,5 @@
+/* ===== Keyboard (tokenized neutrals + hard feedback) ===== */
+
 .keyboard {
     display: flex;
     flex-direction: column;
@@ -5,6 +7,7 @@
     margin-top: auto;
     font-family: 'Zilla Slab';
     margin-bottom: 0.5rem;
+    color: var(--surface-text);
 }
 
 .keyboard-row {
@@ -25,14 +28,15 @@
     width: 40px;
     height: 40px;
     padding: 0;
-    border: none;
+    border: 1px solid var(--surface-border);
     border-radius: 4px;
     font-size: 1rem;
+    font-family: 'Zilla Slab';
     font-weight: bold;
-    background-color: #d3d6da;
-    color: black;
+    background-color: color-mix(in srgb, var(--surface-bg) 85%, var(--surface-text) 15%);
+    color: var(--surface-text);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.08s ease, border-color 0.2s, box-shadow 0.2s;
     position: relative;
 
     display: flex;
@@ -40,48 +44,51 @@
     justify-content: center;
 }
 
+.key:hover {
+    background-color: color-mix(in srgb, var(--surface-bg) 78%, var(--surface-text) 22%);
+}
+
+.key:active {
+    transform: translateY(1px);
+}
+
+/* Feedback states — use HARD colours for clarity */
 .key.correct {
-    background-color: #6aaa64;
-    color: white;
+    background-color: var(--green-hard);
+    border-color: color-mix(in srgb, var(--green-hard) 55%, var(--surface-border));
+    color: var(--on-green-hard, #fff);
 }
 
 .key.present {
-    background-color: #c9b458;
-    color: white;
+    background-color: var(--yellow-hard);
+    border-color: color-mix(in srgb, var(--yellow-hard) 55%, var(--surface-border));
+    color: var(--on-yellow-hard, #222);
 }
 
 .key.absent {
-    background-color: #787c7e;
-    color: white;
+    background-color: color-mix(in srgb, var(--surface-text) 50%, var(--surface-bg));
+    border-color: color-mix(in srgb, var(--surface-text) 60%, var(--surface-bg));
+    color: #fff;
 }
 
+/* Special keys (Enter / Backspace etc.) */
 .key.special {
     width: auto;
     padding: 0 16px;
-    background-color: #a4a4a4;
     font-weight: bold;
+    background-color: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
+    border-color: color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
+    color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);
 }
 
-/* Keyzone styling */
-.keyzone {
-    opacity: 0.4;
+/* Keyboard focus ring */
+.key:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-soft) 55%, transparent);
+    border-color: color-mix(in srgb, var(--blue-soft) 60%, var(--surface-border));
 }
 
-.keyzone-row-0,
-.keyzone-segment-0,
-.keyzone-grid-0,
-.keyzone-row-1,
-.keyzone-segment-1,
-.keyzone-grid-1,
-.keyzone-row-2,
-.keyzone-segment-2,
-.keyzone-grid-2,
-.keyzone-grid-3,
-.keyzone-grid-4,
-.keyzone-grid-5 {
-    opacity: 1;
-}
-
+/* Zone counts badge — replace pure black/white */
 .key .zone-count {
     position: absolute;
     top: -4px;
@@ -91,8 +98,8 @@
     height: 16px;
     border-radius: 50%;
 
-    background-color: black;
-    color: white;
+    background-color: var(--surface-text);
+    color: var(--surface-bg);
     font-size: 0.6rem;
     font-weight: bold;
 
@@ -102,62 +109,85 @@
 
     pointer-events: none;
     opacity: 0.85;
+    border: 1px solid color-mix(in srgb, var(--surface-text) 60%, transparent);
 }
 
-/* Row-based coloring */
+/* ===============================
+     KEEPING YOUR KEYZONE COLOURS
+     (unchanged on purpose)
+     =============================== */
+
+/* Keyzone styling */
+.keyzone {
+    opacity: 0.4;
+}
+
+.keyzone-row-0,
+.keyzone-halves-0,
+.keyzone-grid-0,
+.keyzone-row-1,
+.keyzone-halves-1,
+.keyzone-grid-1,
+.keyzone-row-2,
+.keyzone-halves-2,
+.keyzone-grid-2,
+.keyzone-grid-3,
+.keyzone-grid-4,
+.keyzone-grid-5 {
+    opacity: 1;
+}
+
 .keyzone-row-0 {
-    background-color: #f3e5f5 !important; /* light purple */
+    background-color: #f3e5f5 !important;
     color: black !important;
 }
 
 .keyzone-row-1 {
-    background-color: #e0f7fa !important; /* light cyan */
+    background-color: #e0f7fa !important;
     color: black !important;
 }
 
 .keyzone-row-2 {
-    background-color: #ffe0b2 !important; /* light orange */
+    background-color: #ffe0b2 !important;
     color: black !important;
 }
 
-/* Segment-based coloring */
-.keyzone-segment-0 {
-    background-color: #dcedc8 !important; /* light green */
+.keyzone-halves-0 {
+    background-color: #dcedc8 !important;
     color: black !important;
 }
 
-.keyzone-segment-1 {
-    background-color: #ffcdd2 !important; /* light red */
+.keyzone-halves-1 {
+    background-color: #ffcdd2 !important;
     color: black !important;
 }
 
-/* Grid-based blended coloring (row + segment) */
 .keyzone-grid-0 {
-    background-color: #e6f1db !important; /* blend of light purple + light green */
+    background-color: #e6f1db !important;
     color: black !important;
 }
 
 .keyzone-grid-1 {
-    background-color: #f9d9e8 !important; /* blend of light purple + light red */
+    background-color: #f9d9e8 !important;
     color: black !important;
 }
 
 .keyzone-grid-2 {
-    background-color: #d9f6e9 !important; /* blend of light cyan + light green */
+    background-color: #d9f6e9 !important;
     color: black !important;
 }
 
 .keyzone-grid-3 {
-    background-color: #f5eef6 !important; /* blend of light cyan + light red */
+    background-color: #f5eef6 !important;
     color: black !important;
 }
 
 .keyzone-grid-4 {
-    background-color: #f4f1d5 !important; /* blend of light orange + light green */
+    background-color: #f4f1d5 !important;
     color: black !important;
 }
 
 .keyzone-grid-5 {
-    background-color: #ffe2da !important; /* blend of light orange + light red */
+    background-color: #ffe2da !important;
     color: black !important;
 }

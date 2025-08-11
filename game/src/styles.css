@@ -1,11 +1,89 @@
 body {
-    font-family: 'Zilla Slab';
-    margin: 0;
-    padding: 0;
+  font-family: 'Zilla Slab';
+  margin: 0;
+  padding: 0;
 }
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* ===== THEME TOKENS ===== */
+:root {
+  /* Hard (vivid) */
+  --green-hard: #00C853;
+  /* Vivid Emerald */
+  --yellow-hard: #FFD600;
+  /* Golden Yellow */
+  --blue-hard: #2979FF;
+  /* Bright Azure */
+  --red-hard: #D50000;
+  /* Crimson Red */
+
+  /* Soft (pastel) */
+  --green-soft: #A5D6A7;
+  /* Mint */
+  --yellow-soft: #FFF59D;
+  /* Butter */
+  --blue-soft: #90CAF9;
+  /* Sky */
+  --red-soft: #EF9A9A;
+  /* Blush */
+
+  /* Text-on-colour (ensures legibility) */
+  --on-green-hard: #FFFFFF;
+  --on-yellow-hard: #222222;
+  /* yellow needs dark text */
+  --on-blue-hard: #FFFFFF;
+  --on-red-hard: #FFFFFF;
+
+  --on-green-soft: #222222;
+  --on-yellow-soft: #222222;
+  --on-blue-soft: #222222;
+  --on-red-soft: #222222;
+
+  /* Light neutrals (default) */
+  --bg-light: #FAFAFA;
+  --border-light: #E0E0E0;
+  --text-light: #222222;
+  --scrim-light: rgba(0, 0, 0, 0.60);
+
+  /* Dark neutrals */
+  --bg-dark: #121212;
+  --border-dark: #2A2A2A;
+  --text-dark: #EDEDED;
+  --scrim-dark: rgba(0, 0, 0, 0.50);
+
+  /* Active surfaces (defaults to LIGHT) */
+  --surface-bg: var(--bg-light);
+  --surface-border: var(--border-light);
+  --surface-text: var(--text-light);
+  --overlay-scrim: var(--scrim-light);
+}
+
+/* Auto dark mode (respects OS setting) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-bg: var(--bg-dark);
+    --surface-border: var(--border-dark);
+    --surface-text: var(--text-dark);
+    --overlay-scrim: var(--scrim-dark);
+  }
+}
+
+/* Manual force: add .theme-dark on <body> to override */
+.theme-dark {
+  --surface-bg: var(--bg-dark);
+  --surface-border: var(--border-dark);
+  --surface-text: var(--text-dark);
+  --overlay-scrim: var(--scrim-dark);
+}
+
+.theme-light {
+  --surface-bg:     var(--bg-light);
+  --surface-border: var(--border-light);
+  --surface-text:   var(--text-light);
+  --overlay-scrim:  var(--scrim-light);
 }

@@ -75,7 +75,7 @@ export default function GameScreen() {
   const [feedbackShownUpToRow, setFeedbackShownUpToRow] = useState(-1);
 
   // KB stuff
-  const [keyzoneType, setKeyzoneType] = useState(null); // 'row' | 'segment' | 'grid' | null
+  const [keyzoneType, setKeyzoneType] = useState(null);
   const [keyzoneOverlayVisible, setKeyzoneOverlayVisible] = useState(false);
 
   // Perk Info stuff

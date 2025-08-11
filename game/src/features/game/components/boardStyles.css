@@ -1,25 +1,19 @@
-/* boardStyles.css */
+/* ===== boardStyles.css (tokenized) ===== */
 
 .board-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* margin-top: 1rem; */
     font-family: 'Zilla Slab';
-    /* border: 2px solid red; */
+    color: var(--surface-text);
 }
-/* 
-.board {
-    display: grid;
-    grid-template-rows: repeat(6, 1fr);
-    gap: 0.5rem;
-} */
 
+/* Board grid */
 .board {
     display: flex;
     flex-direction: column;
     gap: 6px;
-  }
+}
 
 .guess-row {
     display: grid;
@@ -27,75 +21,74 @@
     gap: 0.4rem;
 }
 
+/* Tile */
 .letter {
     width: 3rem;
     height: 3rem;
-    border: 2px solid #d3d3d3;
+    border: 2px solid var(--surface-border);
+    background-color: var(--surface-bg);
+    color: var(--surface-text);
     display: flex;
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
     font-size: 1.5rem;
     font-weight: bold;
-    background-color: white;
     transition: all 0.2s ease-in-out;
     border-radius: 4px;
 }
 
+/* Current input focus cue */
 .letter.current-input {
     transform: scale(1.1);
-    border-color: #999;
+    border-color: color-mix(in srgb, var(--blue-hard) 55%, var(--surface-border));
     transition: transform 0.1s ease;
 }
 
-.letter.inactive {
-    opacity: 0.2;
-    /* pointer-events: none; */
-}
-
+/* Inactive / blocked tiles */
+.letter.inactive,
 .letter.blocked {
-    opacity: 0.2;
-    /* pointer-events: none; */
+    opacity: 0.25;
 }
 
+/* Keep first-row blocked reveal visible when loaded */
 .board .guess-row:first-child .letter.blocked.loaded {
     visibility: visible;
-    opacity: 0.3;
+    opacity: 0.35;
 }
 
-/* Feedback colors */
+/* ===== Feedback states (use HARD colours for clarity) ===== */
 .correct {
-    background-color: #6aaa64;
-    /* green */
-    border-color: #6aaa64;
-    color: white;
+    background-color: var(--green-hard);
+    border-color: var(--green-hard);
+    color: var(--on-green-hard, #fff);
 }
 
 .present {
-    background-color: #c9b458;
-    /* yellow */
-    border-color: #c9b458;
-    color: white;
+    background-color: var(--yellow-hard);
+    border-color: var(--yellow-hard);
+    color: var(--on-yellow-hard, #222);
 }
 
+/* Absent = adaptive neutral (dark-mode friendly) */
 .absent {
-    background-color: #787c7e;
-    /* grey */
-    border-color: #787c7e;
-    color: white;
+    background-color: color-mix(in srgb, var(--surface-text) 48%, var(--surface-bg));
+    border-color: color-mix(in srgb, var(--surface-text) 48%, var(--surface-bg));
+    color: #fff;
 }
 
+/* Status text */
 .status-message {
     margin-top: 1.5rem;
     font-size: 1.2rem;
-    color: #333;
+    color: var(--surface-text);
 }
 
 .devWord {
     font-family: 'Zilla Slab';
 }
 
-/* shake */
+/* ===== Animations ===== */
 @keyframes shake {
     0% {
         transform: translateX(0);
@@ -126,7 +119,6 @@
     animation: shake 0.4s ease-in-out;
 }
 
-/* bobble */
 @keyframes bounce-up-down {
     0% {
         transform: translateY(0);
@@ -149,11 +141,12 @@
     animation: bounce-up-down 0.6s ease;
 }
 
-/* Sixer */
+/* ===== Sixer affordances (use SOFT yellow for hint, HARD for border) ===== */
 .sixer-entry {
-    background-color: #f0d96a !important;
+    background-color: var(--yellow-soft) !important;
+    color: var(--on-yellow-soft, #222);
     cursor: pointer;
-    border: 2px solid #b89d00;
+    border: 2px solid color-mix(in srgb, var(--yellow-hard) 60%, var(--surface-border));
     animation: pulse 1.5s infinite;
 }
 
@@ -173,4 +166,16 @@
 
 .sixer-locked {
     opacity: 1 !important;
+}
+
+/* Optional: reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .letter.current-input,
+    .shake,
+    .letter.correct.bounce,
+    .sixer-entry {
+        animation: none !important;
+        transform: none !important;
+    }
 }

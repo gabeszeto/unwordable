@@ -62,7 +62,7 @@ export function usePerkActions() {
             if (runtime?.isKeyzoneUsed) {
                 return { ok: false, error: 'A Keyzone perk was already used this round' };
             }
-            runtime?.onKBActivate?.(mode); // 'grid' | 'segment' | 'row'
+            runtime?.onKBActivate?.(mode);
             consume(perkKey, runtime);
             return { ok: true };
         };
@@ -125,8 +125,8 @@ export function usePerkActions() {
 
             case 'KeyzoneGrid':
                 return runKeyzone('grid');
-            case 'KeyzoneSegment':
-                return runKeyzone('segment');
+            case 'KeyzoneHalves':
+                return runKeyzone('halves');
             case 'KeyzoneRow':
                 return runKeyzone('row');
 

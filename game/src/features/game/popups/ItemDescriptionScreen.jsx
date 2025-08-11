@@ -54,9 +54,9 @@ export default function ItemDescriptionScreen({ itemKey, runtime, onClose }) {
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           {type === 'perk' && (
-            <button onClick={handleUse} disabled={!canUse} title={!canUse ? 'No copies left' : 'Use now'}>
+            <div className="useButton" onClick={handleUse} disabled={!canUse} >
               Use
-            </button>
+            </div>
           )}
         </div>
       </div>

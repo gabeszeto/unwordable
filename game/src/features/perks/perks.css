@@ -1,38 +1,139 @@
+/* ===== Perk buttons (tokenized + uniform) ===== */
+
+:root {
+    /* tweak globally if you want taller/shorter perk chips */
+    --perk-height: 20px;
+    --perk-radius: 10px;
+}
+
+/* Base */
 .perk-button {
     font-family: 'Zilla Slab';
     font-size: 0.7rem;
     margin: 2px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: var(--perk-height);
+    line-height: 1;
+    padding: 0 10px;
+    min-width: 0;
+    /* avoid weird growth */
+    border-radius: var(--perk-radius);
+
+    border: 1px solid var(--surface-border);
+    background: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
+    color: var(--surface-text);
+
+    cursor: pointer;
+    transition: transform 120ms ease, filter 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .perk-button:hover {
-    cursor: pointer;
+    filter: brightness(0.98);
 }
+
+.perk-button:active {
+    transform: translateY(1px);
+}
+
+.perk-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-soft) 55%, transparent);
+    border-color: color-mix(in srgb, var(--blue-soft) 55%, var(--surface-border));
+}
+
+/* Uniform icon sizing if you include svgs/emojis inside */
+.perk-button .perk-ico {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Variants (pick soft for UI; hard for high-signal states) */
+.perk-button.--green {
+    background: var(--green-soft);
+    color: var(--on-green-soft, #222);
+    border-color: color-mix(in srgb, var(--green-soft) 40%, var(--surface-border));
+}
+
+.perk-button.--yellow {
+    background: var(--yellow-soft);
+    color: var(--on-yellow-soft, #222);
+    border-color: color-mix(in srgb, var(--yellow-soft) 40%, var(--surface-border));
+}
+
+.perk-button.--blue {
+    background: var(--blue-soft);
+    color: var(--on-blue-soft, #222);
+    border-color: color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
+}
+
+.perk-button.--red {
+    background: var(--red-soft);
+    color: var(--on-red-soft, #222);
+    border-color: color-mix(in srgb, var(--red-soft) 40%, var(--surface-border));
+}
+
+.perk-button.--confirm {
+    background: var(--green-hard);
+    color: var(--on-green-hard, #fff);
+    border-color: color-mix(in srgb, var(--green-hard) 55%, var(--surface-border));
+}
+
+.perk-button.--danger {
+    background: var(--red-hard);
+    color: var(--on-red-hard, #fff);
+    border-color: color-mix(in srgb, var(--red-hard) 55%, var(--surface-border));
+}
+
+/* Disabled/locked state */
+.perk-button[disabled],
+.perk-button.is-locked {
+    opacity: 0.5;
+    cursor: default;
+    filter: none;
+}
+
+/* ===== Pulse (uses currentColor so it adapts to variant + dark mode) ===== */
 
 @keyframes perkPulse {
     0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, .25);
         filter: brightness(1);
     }
+
     50% {
         transform: scale(1.04);
-        box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.4);
-        filter: brightness(1.25);
+        filter: brightness(1.06);
     }
+
     70% {
         transform: scale(1.03);
-        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-        filter: brightness(1.15);
+        filter: brightness(1.03);
     }
+
     100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
         filter: brightness(1);
     }
 }
 
 .perk-button.perk-shift-held {
     animation: perkPulse 900ms ease-out infinite;
-    /* outline: 2px dashed rgba(255, 255, 255, 0.45); */
-    /* outline-offset: 2px; */
+}
+
+/* Optional: compact size variant */
+.perk-button.--sm {
+    --perk-height: 26px;
+    font-size: 0.72rem;
+    padding: 0 8px;
+}
+
+/* Optional: equal-width grid (if you want perfectly aligned rows) */
+.perk-row.equal .perk-button {
+    flex: 1 1 120px;
+    /* wraps nicely */
+    justify-content: center;
 }

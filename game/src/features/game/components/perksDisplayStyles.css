@@ -1,10 +1,12 @@
+/* ===== PerkDisplay (tokenized) ===== */
+
 .perkDisplay {
     box-sizing: border-box;
     width: 100%;
     padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--surface-border);
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
     display: flex;
     flex-direction: column;
 }
@@ -14,16 +16,20 @@
     justify-content: space-between;
     align-items: center;
     padding-bottom: 0.5rem;
+    border-bottom: 1px dashed color-mix(in srgb, var(--surface-border) 70%, transparent);
+    margin-bottom: 0.5rem;
 }
 
 .inventoryTitle {
     font-size: 1rem;
-    color: #333;
+    color: var(--surface-text);
     font-weight: 600;
 }
 
+/* Grid container for perk components */
 .perkGrid {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
+    gap: 2px;
 }

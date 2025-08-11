@@ -1,11 +1,11 @@
-// KeyzoneSegment.jsx
+
 import React from 'react';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 import { usePerkActions } from '../usePerkActions';
 import useShiftHeld from '../useShiftHeld';
 
-export default function KeyzoneSegment({
-  perkKey = 'KeyzoneSegment',
+export default function KeyzoneHalves({
+  perkKey = 'KeyzoneHalves',
   onKBActivate,
   isKeyzoneUsed,
   markAsUsed,
@@ -40,7 +40,7 @@ export default function KeyzoneSegment({
       disabled={disabled}
       title="Click for details · Shift+Click to use"
     >
-      ➗ Keyzones (Segment) ×{remaining}
+      ½ Keyzones (Halves) ×{remaining}
     </button>
   );
 }

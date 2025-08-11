@@ -1,3 +1,5 @@
+/* ===== Shop (tokenized) ===== */
+
 .shop-container {
     display: flex;
     flex-direction: column;
@@ -7,6 +9,13 @@
     margin: 0 auto;
     font-family: 'Zilla Slab', serif;
     width: 100%;
+    color: var(--surface-text);
+}
+
+.shopHeader {
+    font-size: 1.4rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .perk-options {
@@ -26,6 +35,7 @@
     gap: 8px;
     margin-bottom: 12px;
     font-size: 1.1rem;
+    color: var(--surface-text);
 }
 
 .cash-emoji {
@@ -49,11 +59,11 @@
 }
 
 .cash-delta.pos {
-    color: #2e7d32;
+    color: var(--green-hard);
 }
 
 .cash-delta.neg {
-    color: #c62828;
+    color: var(--red-hard);
 }
 
 @keyframes cashFloat {
@@ -75,22 +85,23 @@
 
 /* Perk cards as buttons */
 .perk-card {
-    background: #222;
-    color: white;
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--surface-text) 15%);
+    color: var(--surface-text);
+    font-family: 'Zilla Slab';
     padding: 16px 16px 18px;
     border-radius: 10px;
     width: 100%;
     font-size: 1rem;
-    border: 1px solid #2a2a2a;
-    transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    border: 1px solid var(--surface-border);
+    transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease, border-color 140ms ease, color 140ms ease;
     position: relative;
     text-align: left;
 }
 
 .perk-card:hover:not(.is-disabled) {
     cursor: pointer;
-    background: #2a2a2a;
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+    background: color-mix(in srgb, var(--surface-bg) 78%, var(--surface-text) 22%);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--surface-text) 20%, transparent);
     transform: scale(1.03);
 }
 
@@ -98,7 +109,7 @@
 .perk-card.is-disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    filter: grayscale(0.1);
+    filter: grayscale(0.06);
 }
 
 /* Purchase pop */
@@ -120,8 +131,7 @@
     }
 }
 
-/* Purchased check badge (slides in and fades) */
-/* Base (hidden) */
+/* Purchased check badge */
 .perk-badge {
     position: absolute;
     right: 12px;
@@ -129,22 +139,16 @@
     padding: 4px 8px;
     border-radius: 999px;
     font-size: 0.8rem;
-    background: #1b5e20;
-    color: #d8ffd8;
-    border: 1px solid #2e7d32;
+    background: var(--green-hard);
+    color: var(--on-green-hard, #fff);
+    border: 1px solid color-mix(in srgb, var(--green-hard) 55%, var(--surface-border));
     opacity: 0;
     transform: translateY(6px);
     pointer-events: none;
     transition: opacity 400ms ease, transform 400ms ease;
 }
 
-/* 1) Animate in when just bought */
-.perk-card.is-bought .perk-badge {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* 2) Stay visible while locked (after animation ends) */
+.perk-card.is-bought .perk-badge,
 .perk-card.is-locked .perk-badge {
     opacity: 1;
     transform: translateY(0);
@@ -163,7 +167,7 @@
     top: 0;
     width: 30%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, currentColor 25%, transparent), transparent);
     animation: shimmer 700ms ease-out forwards;
 }
 
@@ -181,29 +185,29 @@
 
 .perk-description {
     margin-top: 0.5rem;
-    color: #f0f0f0;
+    color: color-mix(in srgb, var(--surface-text) 90%, var(--surface-bg));
     opacity: 0.9;
 }
 
-
+/* Next button */
 .nextButton {
     margin-top: 0.5rem;
     padding: 12px 24px;
     font-size: 1rem;
-    background: #222;
-    color: white;
-    border: none;
+    background: color-mix(in srgb, var(--surface-bg) 88%, var(--blue-soft) 12%);
+    color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);
+    border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
     border-radius: 8px;
-    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .nextButton:hover {
     cursor: pointer;
-    background: #333333;
+    background: color-mix(in srgb, var(--surface-bg) 80%, var(--blue-soft) 20%);
     transform: scale(1.03);
 }
 
-/* -------- Inventory panel (below the shop list) -------- */
+/* -------- Inventory panel -------- */
 .shop-inventory-panel {
     width: 100%;
     margin-top: 1rem;
@@ -218,15 +222,16 @@
     font-weight: 600;
     margin-bottom: 0.5rem;
     text-decoration: underline;
+    color: var(--surface-text);
 }
 
 .inv-section {
     box-sizing: border-box;
     width: 100%;
     padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--surface-border);
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
     display: flex;
     flex-direction: column;
     margin-bottom: 0.5rem;
@@ -234,26 +239,47 @@
 
 .inv-title {
     font-size: 1rem;
-    color: #333;
+    color: var(--surface-text);
     font-weight: 600;
 }
 
 .inv-grid {
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2px;
 }
 
 .inv-empty {
-    opacity: 0.6;
+    opacity: 0.7;
     font-style: italic;
     padding: 4px 0;
+    color: color-mix(in srgb, var(--surface-text) 75%, var(--surface-bg));
 }
 
-/* Chips */
-button {
+/* Chips baseline (reuse your perk-button tokens if you want) */
+.inv-chip {
     font-family: 'Zilla Slab';
     font-size: 0.7rem;
+    margin: 2px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: var(--perk-height);
+    line-height: 1;
+    padding: 0 10px;
+    min-width: 0;
+    /* avoid weird growth */
+    border-radius: var(--perk-radius);
+
+    border: 1px solid var(--surface-border);
+    background: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
+    color: var(--surface-text);
+
+    cursor: pointer;
+    transition: transform 120ms ease, filter 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 /* Pulse when quantity/level increases */
@@ -264,17 +290,21 @@ button {
 @keyframes invPulse {
     0% {
         transform: scale(1);
+        box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 25%, transparent);
     }
 
     40% {
         transform: scale(1.06);
+        box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 25%, transparent);
     }
 
     100% {
         transform: scale(1);
+        box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent);
     }
 }
 
+/* Reroll */
 .shop-reroll {
     display: flex;
     justify-content: center;
@@ -284,18 +314,18 @@ button {
 .rerollButton {
     padding: 8px 14px;
     border-radius: 10px;
-    border: 1px solid #333;
-    background: #262626;
-    color: #fff;
+    border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
+    background: color-mix(in srgb, var(--surface-bg) 90%, var(--blue-soft) 10%);
+    color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);
     font-size: 0.95rem;
-    transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
     cursor: pointer;
 }
 
 .rerollButton:hover:not(:disabled) {
-    background: #2f2f2f;
+    background: color-mix(in srgb, var(--surface-bg) 82%, var(--blue-soft) 18%);
     transform: translateY(-1px);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--surface-text) 18%, transparent);
 }
 
 .rerollButton:disabled {

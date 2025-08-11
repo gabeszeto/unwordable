@@ -29,8 +29,8 @@ export default function Keyboard({ usedKeys, onKeyPress, keyzoneType, targetWord
 
       if (keyzoneType === 'row') {
         zone = `row-${rowIdx}`;
-      } else if (keyzoneType === 'segment') {
-        zone = `segment-${Math.floor((colIdx / row.length) * 2)}`;
+      } else if (keyzoneType === 'halves') {
+        zone = `halves-${Math.floor((colIdx / row.length) * 2)}`;
       } else if (keyzoneType === 'grid') {
         const seg = Math.floor((colIdx / row.length) * 2);
         zone = `grid-${rowIdx * 2 + seg}`;

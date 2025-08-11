@@ -1,3 +1,5 @@
+/* ===== GameScreen (tokenized) ===== */
+
 /* Base layout */
 .game-screen {
     display: flex;
@@ -8,219 +10,212 @@
     margin: 0 auto;
     font-family: 'Zilla Slab', serif;
     width: 100%;
-}
-
-/* modifiers display */
-/* Center the unified strip + give it breathing room */
-.modifiersDisplay {
+    color: var(--surface-text);
+  }
+  
+  /* modifiers display */
+  /* Centered strip + breathing room; subtle bg tint from text toward bg */
+  .modifiersDisplay {
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    background: rgba(0, 0, 0, 0.02);
+    background: color-mix(in srgb, var(--surface-text) 4%, var(--surface-bg));
     border-radius: 10px;
     width: 100%;
     padding: 8px 12px;
     margin-top: 0.5rem;
-}
-
-/* Optional: tiny boss cue without text */
-.modifiersDisplay.is-boss {
-    box-shadow: inset 0 0 0 2px rgba(200, 0, 0, 0.06);
-}
-
-/* New grouping primitives (good = skills, bad = debuffs) */
-.mod-group {
+    border: 1px solid var(--surface-border);
+  }
+  
+  /* Tiny boss cue without text */
+  .modifiersDisplay.is-boss {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--red-hard) 12%, transparent);
+  }
+  
+  /* Groups */
+  .mod-group {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
     padding: 2px 0px;
-}
-
-/* Small pill label for each group (hide on mobile if you want later) */
-.mod-label {
+  }
+  
+  /* Group labels */
+  .mod-label {
     font-weight: 600;
     font-size: 0.85rem;
-    opacity: 0.8;
+    opacity: 0.9;
     padding: 2px 8px;
     border-radius: 999px;
-    border: 1px solid transparent;
-}
-
-.mod-label.good {
-    background: #e8f7ee;
-    border-color: #cbead6;
-}
-
-/* Hairline separator when both groups present */
-.mod-sep {
+    border: 1px solid var(--surface-border);
+    color: var(--surface-text);
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--blue-soft) 15%);
+  }
+  
+  .mod-label.good {
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--green-soft) 15%);
+  }
+  
+  /* Hairline separator */
+  .mod-sep {
     width: 1px;
     height: 18px;
-    background: #ddd;
-}
-
-/* New neutral chip style (re-usable) */
-.mod-chip {
+    background: var(--surface-border);
+  }
+  
+  /* Chips */
+  .mod-chip {
     padding: 4px 10px;
     border-radius: 999px;
     font-size: 0.85rem;
     line-height: 1;
-    border: 1px solid transparent;
+    border: 1px solid var(--surface-border);
     white-space: nowrap;
     user-select: none;
-    transition: transform 120ms ease, box-shadow 120ms ease;
-}
-
-.mod-chip:hover {
+    transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    color: var(--surface-text);
+    background: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
+  }
+  
+  .mod-chip:hover {
     transform: translateY(-1px);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
-}
-
-/* Good chips (skills) */
-.mod-chip.good {
-    background: #eef9ff;
-    border-color: #d3efff;
-    color: #16425b;
-}
-
-/* Bad chips (debuffs) — map to your existing colors */
-.mod-chip.bad.passive {
-    /* passive debuffs */
-    background: #fff7e8;
-    border-color: #ffe1b0;
-    color: #7a4b00;
-}
-
-.mod-chip.bad.active {
-    /* active debuffs */
-    background: #ffefef;
-    border-color: #ffcaca;
-    color: #7a0000;
-}
-
-/* Keep your upgraded highlight vibe */
-.mod-upgraded {
-    box-shadow: inset 0 0 0 2px rgba(255, 180, 60, 0.22);
-}
-
-/* Keep your "no modifiers" style consistent */
-.mod-none {
-    color: #777;
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--surface-text) 6%, transparent);
+  }
+  
+  /* Good chips (skills) */
+  .mod-chip.good {
+    background: color-mix(in srgb, var(--surface-bg) 90%, var(--green-soft) 10%);
+    border-color: color-mix(in srgb, var(--green-soft) 35%, var(--surface-border));
+    color: color-mix(in srgb, var(--surface-text), var(--green-hard) 8%);
+  }
+  
+  /* Bad chips (debuffs) */
+  .mod-chip.bad.passive {
+    background: color-mix(in srgb, var(--surface-bg) 88%, var(--yellow-soft) 12%);
+    border-color: color-mix(in srgb, var(--yellow-soft) 35%, var(--surface-border));
+    color: color-mix(in srgb, var(--surface-text), var(--yellow-hard) 10%);
+  }
+  
+  .mod-chip.bad.active {
+    background: color-mix(in srgb, var(--surface-bg) 86%, var(--red-soft) 14%);
+    border-color: color-mix(in srgb, var(--red-soft) 40%, var(--surface-border));
+    color: color-mix(in srgb, var(--surface-text), var(--red-hard) 12%);
+  }
+  
+  /* Upgraded highlight */
+  .mod-upgraded {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--yellow-hard) 22%, transparent);
+  }
+  
+  /* "No modifiers" */
+  .mod-none {
+    color: color-mix(in srgb, var(--surface-text) 55%, var(--surface-bg));
     font-style: italic;
-}
-
-
-/* HUD and Perks */
-.hud {
+  }
+  
+  /* HUD and Perks */
+  .hud {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin: 0.5rem 0;
     width: 100%;
-}
-
-.active-perks {
+    color: var(--surface-text);
+  }
+  
+  .active-perks {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
     margin-top: 0.5rem;
-}
-
-.perk-tag {
-    background: #f0f0f0;
+  }
+  
+  .perk-tag {
+    background: color-mix(in srgb, var(--surface-bg) 90%, var(--blue-soft) 10%);
+    border: 1px solid color-mix(in srgb, var(--blue-soft) 35%, var(--surface-border));
+    color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);
     border-radius: 8px;
     padding: 0.25rem 0.6rem;
     font-size: 0.9rem;
     font-weight: 500;
-}
-
-/* Board */
-.board-container {
+  }
+  
+  /* Board */
+  .board-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     width: 100%;
     margin-bottom: 1rem;
-}
-
-/* buttons for perks */
-/* Command strip */
-.gameButtons {
+  }
+  
+  /* Command strip */
+  .gameButtons {
     display: flex;
     gap: 8px;
     align-items: center;
     justify-content: center;
     margin: 6px 0 8px;
     height: auto;
-    /* was fixed 20px; let buttons breathe */
-}
-
-/* Button base */
-.gb-btn {
+  }
+  
+  /* Buttons */
+  .gb-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 6px 10px;
     border-radius: 10px;
-    border: 1px solid #e6e6e6;
-    background: #fafafa;
+    border: 1px solid var(--surface-border);
+    background: color-mix(in srgb, var(--surface-bg) 94%, var(--blue-soft) 6%);
+    color: var(--surface-text);
     font-size: 0.9rem;
     font-family: 'Zilla Slab';
     cursor: pointer;
     transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
-}
-
-.gb-btn:hover {
-    background: #f2f2f2;
-}
-
-/* Active/pressed state */
-.gb-btn.is-active {
-    background: #eef9ff;
-    border-color: #d3efff;
-    box-shadow: inset 0 0 0 2px rgba(45, 145, 255, 0.12);
-}
-
-/* Icon + label + keyboard hint */
-.gb-ico {
-    font-size: 1rem;
-    line-height: 1;
-}
-
-.gb-label {
-    line-height: 1;
-}
-
-.gb-kbd {
+  }
+  
+  .gb-btn:hover {
+    background: color-mix(in srgb, var(--surface-bg) 90%, var(--blue-soft) 10%);
+  }
+  
+  /* Active/pressed state */
+  .gb-btn.is-active {
+    background: color-mix(in srgb, var(--surface-bg) 82%, var(--blue-soft) 18%);
+    border-color: color-mix(in srgb, var(--blue-soft) 45%, var(--surface-border));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--blue-hard) 18%, transparent);
+  }
+  
+  /* Icon + label + keyboard hint */
+  .gb-ico { font-size: 1rem; line-height: 1; }
+  .gb-label { line-height: 1; }
+  
+  .gb-kbd {
     margin-left: 4px;
     font-size: 0.7rem;
     padding: 1px 6px;
-    border: 1px solid #e2e2e2;
+    border: 1px solid var(--surface-border);
     border-bottom-width: 2px;
     border-radius: 6px;
-    background: white;
-    opacity: 0.8;
+    background: var(--surface-bg);
+    color: var(--surface-text);
+    opacity: 0.85;
     font-family: 'Zilla Slab';
-}
-
-/* Focus ring for keyboard users */
-.gb-btn:focus-visible {
+  }
+  
+  /* Focus ring (blue soft for accessibility) */
+  .gb-btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, .45);
-    border-color: #b6daff;
-}
-
-/* Compact on small screens */
-@media (max-width: 420px) {
-    .gb-label {
-        display: none;
-    }
-
-    /* icons + kbd only */
-    .gb-btn {
-        padding: 6px 8px;
-    }
-}
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-soft) 45%, transparent);
+    border-color: color-mix(in srgb, var(--blue-soft) 55%, var(--surface-border));
+  }
+  
+  /* Compact on small screens */
+  @media (max-width: 420px) {
+    .gb-label { display: none; }
+    .gb-btn { padding: 6px 8px; }
+  }
+  

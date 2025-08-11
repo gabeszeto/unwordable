@@ -1,7 +1,10 @@
+/* ===== Round Tracker (tokenized) ===== */
+
 .gameContainer {
     display: flex;
     flex-direction: column;
     height: 100svh;
+    background-color: var(--surface-bg);
 }
 
 /* Round tracker container */
@@ -9,21 +12,23 @@
     padding: 0.5rem 0;
     text-align: center;
     width: 100%;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--surface-border);
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* <-- centres both label + bar */
+    /* centres both label + bar */
     gap: 0.3rem;
+    color: var(--surface-text);
 }
 
-/* Title badge pills */
+/* Title + badge */
 .round-label {
     font-size: 1.1rem;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+    color: var(--surface-text);
 }
 
 .round-badge {
@@ -34,49 +39,32 @@
     border-radius: 999px;
     font-size: 0.8rem;
     line-height: 1;
-    border: 1px solid transparent;
+    border: 1px solid var(--surface-border);
     vertical-align: middle;
+    color: var(--surface-text);
+    background: color-mix(in srgb, var(--surface-bg) 88%, var(--blue-soft) 12%);
 }
 
-/* Variants */
+/* Variants (use soft fills with surface border for subtlety) */
 .round-badge.boss {
-    background: #fff4d6;
-    border-color: #ffe4a3;
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--yellow-soft) 15%);
+    border-color: color-mix(in srgb, var(--yellow-soft) 35%, var(--surface-border));
 }
 
 .round-badge.final {
-    background: #ffe9ec;
-    border-color: #ffd0d6;
+    background: color-mix(in srgb, var(--surface-bg) 82%, var(--red-soft) 18%);
+    border-color: color-mix(in srgb, var(--red-soft) 40%, var(--surface-border));
 }
 
 .round-badge.shop {
-    background: #eaf7ff;
-    border-color: #d6efff;
+    background: color-mix(in srgb, var(--surface-bg) 86%, var(--blue-soft) 14%);
+    border-color: color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
 }
 
-/* Clean up old overlay approach (optional: delete the rules entirely) */
+/* Clean up old overlay approach */
 .round-step.boss::after,
 .round-step.finalBoss::after {
     content: none !important;
-}
-
-/* You can keep boss/final sizes if you like the rhythm */
-.round-step.boss {
-    width: 1.2rem;
-    height: 1.2rem;
-    background: #999;
-}
-
-.round-step.finalBoss {
-    width: 1.3rem;
-    height: 1.3rem;
-    background: #505050;
-}
-
-.round-step.boss.active,
-.round-step.finalBoss.active {
-    background: #6aaa64;
-    transform: scale(1.2);
 }
 
 /* Progress bar */
@@ -90,76 +78,70 @@
 /* Base dot */
 .round-step {
     position: relative;
-    /* for emoji overlay */
     display: inline-block;
     width: 1rem;
     height: 1rem;
-    background: #ddd;
     border-radius: 50%;
-    transition: background 0.3s, transform 0.2s;
-}
-
-/* Active regular level */
-.round-step.active {
-    background: #6aaa64;
-    transform: scale(1.1);
-}
-
-/* Boss rounds */
-.round-step.boss {
-    width: 1.2rem;
-    height: 1.2rem;
-    background: #999;
-}
-
-.round-step.boss::after {
-    content: '⚠️';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.5rem;
-    pointer-events: none;
-}
-
-.round-step.boss.active {
-    background: #6aaa64;
-    transform: scale(1.2);
-}
-
-/* Final boss */
-.round-step.finalBoss {
-    width: 1.3rem;
-    height: 1.3rem;
-    background: #505050;
-}
-
-.round-step.finalBoss::after {
-    content: '💀';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -58%);
-    font-size: 0.6rem;
-    pointer-events: none;
-}
-
-.round-step.finalBoss.active {
-    background: #6aaa64;
-}
-
-/* Shop round */
-.round-step.shop-outline {
-    border: 2px solid #333;
+    transition: background 0.3s, transform 0.2s, border-color 0.2s;
+    background: color-mix(in srgb, var(--surface-bg) 70%, var(--surface-border) 30%);
+    border: 1px solid var(--surface-border);
     box-sizing: border-box;
 }
 
+/* Active regular level (current) */
+.round-step.active {
+    background: var(--green-hard);
+    border-color: color-mix(in srgb, var(--green-hard) 45%, var(--surface-border));
+    transform: scale(1.1);
+}
+
+/* Completed levels */
 .round-step.complete {
-    background: #c9b458;
-    border: 2px solid #333;
+    background: var(--yellow-hard);
+    border-color: color-mix(in srgb, var(--yellow-hard) 45%, var(--surface-border));
 }
 
 /* Death round */
 .round-step.died {
-    background: #d06363;
+    background: var(--red-hard);
+    border-color: color-mix(in srgb, var(--red-hard) 45%, var(--surface-border));
+}
+
+/* Boss rounds (larger dot + neutral base) */
+.round-step.boss {
+    width: 1.2rem;
+    height: 1.2rem;
+    background: color-mix(in srgb, var(--surface-bg) 60%, var(--surface-text) 40%);
+    border-color: color-mix(in srgb, var(--surface-text) 40%, var(--surface-border));
+}
+
+.round-step.boss.active {
+    background: var(--green-hard);
+    border-color: color-mix(in srgb, var(--green-hard) 45%, var(--surface-border));
+    transform: scale(1.2);
+}
+
+/* Final boss (largest + darker neutral) */
+.round-step.finalBoss {
+    width: 1.3rem;
+    height: 1.3rem;
+    background: color-mix(in srgb, var(--surface-bg) 40%, var(--surface-text) 60%);
+    border-color: color-mix(in srgb, var(--surface-text) 55%, var(--surface-border));
+}
+
+.round-step.finalBoss.active {
+    background: var(--green-hard);
+    border-color: color-mix(in srgb, var(--green-hard) 55%, var(--surface-border));
+    transform: scale(1.18);
+}
+
+/* Shop round (outlined cue) */
+.round-step.shop-outline {
+    background: var(--surface-bg);
+    border: 2px solid color-mix(in srgb, var(--blue-soft) 55%, var(--surface-border));
+}
+
+/* Hover affordance (optional) */
+.round-step:hover {
+    transform: translateY(-1px);
 }

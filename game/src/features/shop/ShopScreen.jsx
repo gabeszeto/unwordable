@@ -9,7 +9,7 @@ import { pickUniqueOffers, pickWeightedKeyzone } from './shopUtils'; // perks + 
 import ShopInventoryPanel from './ShopInventoryPanel';
 import './shopStyles.css';
 
-const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
+const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneHalves', 'KeyzoneGrid'];
 
 export default function ShopScreen() {
   const { cash, spendCash } = useCash();
@@ -108,8 +108,7 @@ export default function ShopScreen() {
   };
   return (
     <div className="shop-container">
-      <h2>🛒 Shop</h2>
-
+      <div className="shopHeader">🛒 Shop</div>
       {/* Cash display with animated number + floating delta */}
       <div className="cash-display">
         <span className="cash-emoji">💰</span>

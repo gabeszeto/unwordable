@@ -9,7 +9,7 @@ export const PerksProvider = ({ children }) => {
         Anatomy: 4,
         KeyzoneRow: 4,
         KeyzoneGrid: 4,
-        KeyzoneSegment: 4,
+        KeyzoneHalves: 4,
         Sixer: 4,
         BorrowedTime: 3,
         Revelation: 3,

@@ -1,5 +1,5 @@
 import KeyzoneRow from './components/KeyzoneRow';
-import KeyzoneSegment from './components/KeyzoneSegment';
+import KeyzoneHalves from './components/KeyzoneHalves';
 import KeyzoneGrid from './components/KeyzoneGrid';
 import Revelation from './components/Revelation';
 import Anatomy from './components/Anatomy';
@@ -30,11 +30,11 @@ export const perkRegistry = {
     weight: 5,
     component: KeyzoneRow,
   },
-  KeyzoneSegment: {
-    name: "↕️ Keyzones (Segment)",
-    description: "Splits keyboard into vertical thirds and shows letter counts.",
+  KeyzoneHalves: {
+    name: "½ Keyzones (Halves)",
+    description: "Splits keyboard into two halves.",
     weight: 4,
-    component: KeyzoneSegment,
+    component: KeyzoneHalves,
   },
   KeyzoneGrid: {
     name: "#️⃣ Keyzones (Grid)",

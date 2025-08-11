@@ -3,7 +3,7 @@ import { perkRegistry } from '../perks/perkRegistry';
 import { skillsRegistry } from '../skills/skillsRegistry';
 
 // Keyzone perks we don't sell directly
-const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneSegment', 'KeyzoneGrid'];
+const keyzonePerkIds = ['KeyzoneRow', 'KeyzoneHalves', 'KeyzoneGrid'];
 
 // Virtual shop-only entry
 const virtualShopEntries = {
