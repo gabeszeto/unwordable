@@ -1,3 +1,4 @@
+import '../styles.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../features/home/components/Home';
@@ -11,7 +12,6 @@ import { CorrectnessProvider } from '../contexts/CorrectnessContext';
 import { RunStatsProvider } from '../contexts/RunStatsContext';
 
 import GameStageManager from '../features/GameStageManager';
-import '../styles.css';
 
 export default function App() {
   return (

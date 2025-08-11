@@ -5,7 +5,7 @@ export function calculateRoundCash({
     passiveDebuffs = {},
     maxGuesses = 6
   }) {
-    const base = 5
+    const base = 3
   
     const remainingGuessBonus = Math.max(maxGuesses - guessesUsed, 0);
   
