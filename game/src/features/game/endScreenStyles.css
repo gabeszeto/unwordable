@@ -1,0 +1,172 @@
+.endScreen-wrap {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    padding: 1.25rem;
+    min-height: calc(100svh - 56px);
+    /* leave room if navbar is sticky */
+    background: var(--surface-bg);
+    color: var(--surface-text);
+}
+
+.endScreen-card {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    background: color-mix(in srgb, var(--surface-bg) 90%, var(--blue-soft) 10%);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 1.25rem 1.25rem 1.1rem;
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--surface-text) 12%, transparent);
+}
+
+.endScreen-title {
+    margin: 0;
+    font-size: clamp(1.6rem, 3.6vw, 2.2rem);
+    line-height: 1.1;
+}
+
+.title-accent {
+    background: linear-gradient(90deg, var(--green-hard), var(--blue-hard), var(--yellow-hard));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--surface-text) 20%, transparent));
+    animation: hueShift 6s linear infinite;
+}
+
+@keyframes hueShift {
+    0% {
+        filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--surface-text) 20%, transparent));
+    }
+
+    50% {
+        filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--surface-text) 10%, transparent));
+    }
+
+    100% {
+        filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--surface-text) 20%, transparent));
+    }
+}
+
+.endScreen-sub {
+    opacity: 0.9;
+    margin: 0.35rem 0 0.8rem;
+}
+
+.endScreen-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0.9rem;
+}
+
+.stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-bg);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* tone variants (soft bg + hard accent text bias) */
+.tone-green {
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--green-soft) 15%);
+    color: color-mix(in srgb, var(--surface-text), var(--green-hard) 12%);
+}
+
+.tone-yellow {
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--yellow-soft)15%);
+    color: color-mix(in srgb, var(--surface-text), var(--yellow-hard)12%);
+}
+
+.tone-blue {
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--blue-soft) 15%);
+    color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 12%);
+}
+
+.tone-red {
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--red-soft) 15%);
+    color: color-mix(in srgb, var(--surface-text), var(--red-hard) 12%);
+}
+
+.stat-label {
+    opacity: 0.85;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Buttons */
+.endScreen-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn {
+    font-family: 'Zilla Slab';
+    font-size: 1rem;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid var(--surface-border);
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.btn-primary {
+    background: var(--green-hard);
+    color: var(--on-green-hard, #fff);
+    border-color: color-mix(in srgb, var(--green-hard) 55%, var(--surface-border));
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-ghost {
+    background: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
+    color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);
+    border-color: color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
+}
+
+.btn-ghost:hover {
+    background: color-mix(in srgb, var(--surface-bg) 85%, var(--blue-soft) 15%);
+    transform: translateY(-1px);
+}
+
+.btn-soft {
+    background: color-mix(in srgb, var(--surface-bg) 92%, var(--yellow-soft) 8%);
+    color: color-mix(in srgb, var(--surface-text), var(--yellow-hard) 10%);
+    border-color: color-mix(in srgb, var(--yellow-soft) 40%, var(--surface-border));
+}
+
+.btn-soft:hover {
+    background: color-mix(in srgb, var(--surface-bg) 86%, var(--yellow-soft) 14%);
+    transform: translateY(-1px);
+}
+
+/* Confetti */
+.confetti-stage {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.confetti-bit {
+    position: absolute;
+    top: -10px;
+    border-radius: 2px;
+    opacity: 0;
+}

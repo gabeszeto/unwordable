@@ -194,6 +194,7 @@
     margin-top: 0.5rem;
     padding: 12px 24px;
     font-size: 1rem;
+    font-family: 'Zilla Slab';
     background: color-mix(in srgb, var(--surface-bg) 88%, var(--blue-soft) 12%);
     color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);
     border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
@@ -314,6 +315,7 @@
 .rerollButton {
     padding: 8px 14px;
     border-radius: 10px;
+    font-family: 'Zilla Slab';
     border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
     background: color-mix(in srgb, var(--surface-bg) 90%, var(--blue-soft) 10%);
     color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 10%);

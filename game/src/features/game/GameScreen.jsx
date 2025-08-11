@@ -129,17 +129,6 @@ export default function GameScreen() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-
-  if (round > 10) {
-    return (
-      <div className="game-screen end-screen">
-        <h1>🏁 Game Over</h1>
-        <p>You earned {cash} cash!</p>
-        {/* Optionally, a "Play Again" button */}
-      </div>
-    );
-  }
-
   return (
     <div className="game-screen">
 

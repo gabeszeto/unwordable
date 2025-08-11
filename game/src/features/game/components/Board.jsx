@@ -136,7 +136,7 @@ export default function Board({
     setRowsAfterDebuffs(rows);
 
     // ----- seed LetterLock once (uses the frozen rows)
-    if ((passiveDebuffs.LetterLock ?? 0) > 0) {
+    if ((passiveDebuffs?.LetterLock ?? 0) > 0) {
       const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
       const eligibleRows = [0, 1, 2].filter(r => r < rows.length);
       if (eligibleRows.length) {
@@ -162,7 +162,8 @@ export default function Board({
     stage,
     passiveDebuffs?.NoThreedom,
     passiveDebuffs?.NoFoureedom,
-    passiveDebuffs?.ShiftedGuess
+    passiveDebuffs?.ShiftedGuess,
+    passiveDebuffs?.LetterLock,
   ]);
 
   // Rebuild rows if borrowed time

@@ -132,12 +132,6 @@
     transform: scale(1.1);
   }
   
-  /* Completed levels */
-  .round-step.complete {
-    background: var(--yellow-hard);
-    border-color: color-mix(in srgb, var(--yellow-hard) 45%, var(--surface-border));
-  }
-  
   /* Death round */
   .round-step.died {
     background: var(--red-hard);
@@ -168,6 +162,12 @@
     background: var(--green-hard);
     border-color: color-mix(in srgb, var(--green-hard) 55%, var(--surface-border));
     transform: scale(1.18);
+  }
+
+  /* Completed levels */
+  .round-step.complete {
+    background: var(--yellow-hard);
+    border-color: color-mix(in srgb, var(--yellow-hard) 45%, var(--surface-border));
   }
   
   /* Shop round (outlined cue) */

@@ -1,17 +1,21 @@
 import React, { useEffect } from 'react';
 import GameScreen from './game/GameScreen';
 import ShopScreen from './shop/ShopScreen';
+
 import { useLevel } from '../contexts/level/LevelContext';
 import { useDebuffs } from '../contexts/debuffs/DebuffsContext';
 import { useDeath } from '../contexts/death/DeathContext';
+import { useRunStats } from '../contexts/RunStatsContext';
+
+import { useNavigate } from 'react-router-dom';
 
 import ThemeToggle from './ThemeToggle';
-
-import { generateDebuffPlan, generateDebugDebuffPlan } from './debuffs/generateDebuffPlan';
+import { generateDebuffPlan /*, generateDebugDebuffPlan*/ } from './debuffs/generateDebuffPlan';
 
 import DeathScreen from './game/DeathScreen';
+import EndScreen from './game/EndScreen';
 
-import './gameStageManagerStyles.css'
+import './gameStageManagerStyles.css';
 import { useCorrectness } from '../contexts/CorrectnessContext';
 import { BoardHelperProvider } from '../contexts/BoardHelperContext';
 import { SkillsProvider } from '../contexts/skills/SkillsContext';
@@ -19,69 +23,115 @@ import { SkillsProvider } from '../contexts/skills/SkillsContext';
 const FINAL_STAGE = 18;
 
 export default function GameStageManager() {
-  const { stage } = useLevel();
-  const { resetCorrectness } = useCorrectness();
+  // Level/progression
+  const { stage, setStage, resetLevel, getRoundNumber } = useLevel();
+  const round = getRoundNumber(stage);
+  const isGameLevel = stage % 2 === 0;
+  const isShop = stage % 2 === 1;
+  const isDeath = stage === 100;
+  const isFinished = stage > FINAL_STAGE;
+  const appliedStageRef = React.useRef(-1);
+  const navigate = useNavigate()
 
+  // Debuffs
   const {
     addActiveDebuff,
     addPassiveDebuff,
     clearDebuffs,
     debuffPlan,
-    setDebuffPlan
+    setDebuffPlan,
   } = useDebuffs();
 
-  const { deathRound, reason } = useDeath();
+  // Death + correctness
+  const { deathRound /*, reason*/ } = useDeath();
+  const { resetCorrectness } = useCorrectness();
 
-  const round = Math.floor(stage / 2) + 1;
+  // Run stats
+  const { stats, resetRunStats, noteDebuffsFaced } = useRunStats();
 
-  // Initially set debuff plan
+  // Initial debuff plan (once)
   useEffect(() => {
-    // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      // const plan = generateDebuffPlan();
-      const plan = generateDebugDebuffPlan({
-        forcePassive: { CutShort: 2, ShiftedGuess: 1 },
-        forceActive: []
-      });
+      const plan = generateDebuffPlan();
+      // const plan = generateDebugDebuffPlan({ forcePassive: { CutShort: 2, ShiftedGuess: 1 }, forceActive: [] });
       setDebuffPlan(plan);
-      console.log(plan)
+      console.log('[Debuff Plan]', plan);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Add the correct debuffs based off plan
+  // Apply debuffs when stage changes
   useEffect(() => {
     clearDebuffs();
 
     const roundPlan = debuffPlan[round];
     if (!roundPlan) return;
 
-    for (const p of roundPlan.passive) addPassiveDebuff(p);
-    for (const a of roundPlan.active) addActiveDebuff(a);
-  }, [stage, debuffPlan]);
+    (roundPlan.passive || []).forEach(p => addPassiveDebuff(p));
+    (roundPlan.active || []).forEach(a => addActiveDebuff(a));
 
-  const isGameLevel = stage % 2 === 0;
-  const isDeath = stage === 100;
-  const isShop = stage % 2 === 1;
-  const isFinished = stage > FINAL_STAGE;
+    // record debuffs faced this run (unique set maintained in context)
+    noteDebuffsFaced([...(roundPlan.passive || []), ...(roundPlan.active || [])]);
+  }, [stage, debuffPlan, round]);
 
-  // Reset truly correct in each game round
+  // Reset correctness each new GAME round
   useEffect(() => {
-    if (isGameLevel) {
-      resetCorrectness();
-    }
-  }, [stage]);
+    if (isGameLevel) resetCorrectness();
+  }, [isGameLevel, resetCorrectness]);
 
+  useEffect(() => {
+    if (appliedStageRef.current === stage) return;
+    appliedStageRef.current = stage;
+
+    clearDebuffs();
+    const roundPlan = debuffPlan[round];
+    if (!roundPlan) return;
+
+    (roundPlan.passive || []).forEach(p => addPassiveDebuff(p));
+    (roundPlan.active || []).forEach(a => addActiveDebuff(a));
+
+    noteDebuffsFaced([...(roundPlan.passive || []), ...(roundPlan.active || [])]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, debuffPlan, round]);
+
+
+  // Round visuals
   const roundToUse = isDeath ? deathRound : round;
   const BOSS_STEPS = [3, 6, 9];
   const isBossRound = BOSS_STEPS.includes(roundToUse);
   const isFinalBoss = roundToUse === 10;
   const isShopThisRound = isShop && roundToUse === round;
 
+  // Time string from runStats
+  const runTimeString = stats?.runStartedAt
+    ? (() => {
+      const ms = Date.now() - stats.runStartedAt;
+      const m = Math.floor(ms / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      return `${m}m ${s}s`;
+    })()
+    : null;
+
+  // Restart handler
+  const restartRun = () => {
+    resetRunStats();
+    resetLevel();        // back to stage 0 (Round 1)
+    setDebuffPlan({});   // regenerate on next mount
+    clearDebuffs();
+    resetCorrectness();
+  };
+
+
+  const goToMenu = () => {
+    restartRun()
+    navigate('/')
+  }
   return (
     <div className="gameContainer">
+      {/* Sticky Navbar */}
       <div className="navBar">
         <div className="navContent">
-          <div className="nav-left"></div> {/* empty for balance */}
+          <div className="nav-left" />
           <div className="nav-center">
             <div className="round-visual">
               <span className="round-label">
@@ -100,24 +150,24 @@ export default function GameStageManager() {
                 {Array.from({ length: 10 }, (_, i) => {
                   const step = i + 1;
                   const isBoss = [3, 6, 9].includes(step);
-                  const isFinalBoss = step === 10;
+                  const isFinalBossStep = step === 10;
                   const isComplete = step < roundToUse;
                   const isActive = step === round;
-                  const isDeathRound = step === deathRound;
+                  const isDeathStep = step === deathRound;
                   const isShopRound = isShop && step === round;
 
                   return (
                     <div
-                      key={i}
-                      className={`
-            round-step
-            ${isFinalBoss ? 'finalBoss' : ''}
-            ${isBoss ? 'boss' : ''}
-            ${isComplete ? 'complete' : ''}
-            ${isActive ? 'active' : ''}
-            ${isShopRound ? 'shop-outline' : ''}
-            ${isDeathRound ? 'died' : ''}
-          `}
+                      key={step}
+                      className={[
+                        'round-step',
+                        isFinalBossStep && 'finalBoss',
+                        isBoss && 'boss',
+                        isComplete && 'complete',
+                        isActive && 'active',
+                        isShopRound && 'shop-outline',
+                        isDeathStep && 'died',
+                      ].filter(Boolean).join(' ')}
                     />
                   );
                 })}
@@ -130,14 +180,15 @@ export default function GameStageManager() {
         </div>
       </div>
 
-      {/* Render appropriate screen */}
+      {/* Stage routing */}
       {isDeath ? (
         <DeathScreen />
       ) : isFinished ? (
-        <div className="end-screen">
-          <h1>🏁 Game Over</h1>
-          <p>You survived. Congrats.</p>
-        </div>
+        <EndScreen
+          stats={{ ...stats, time: runTimeString }}
+          onPlayAgain={restartRun}
+          onMenu={goToMenu}
+        />
       ) : isGameLevel ? (
         <SkillsProvider>
           <BoardHelperProvider>
