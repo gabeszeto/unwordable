@@ -2,83 +2,21 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e14">
-
-  <style>
-    /* LIGHT defaults */
-    :root{
-      --surface-bg:#ffffff;
-      --surface-text:#0b0e14;
-      --surface-border:#dcdfe4;
-  
-      --green-hard:#6aaa64;
-      --yellow-hard:#c9b458;
-      --blue-soft:#7aa2ff;
-      --blue-hard:#2f6cf6;
-    }
-  
-    /* System dark fallback when user hasn’t explicitly chosen */
-    @media (prefers-color-scheme: dark){
-      :root{
-        --surface-bg:#0b0e14;
-        --surface-text:#e8e8e8;
-        --surface-border:#2a2e36;
-  
-        --green-hard:#538d4e;
-        --yellow-hard:#b59f3b;
-        --blue-soft:#8fb4ff;
-        --blue-hard:#6291ff;
-      }
-    }
-  
-    /* Manual overrides WIN over system */
-    html[data-theme="light"]{
-      --surface-bg:#ffffff;
-      --surface-text:#0b0e14;
-      --surface-border:#dcdfe4;
-  
-      --green-hard:#6aaa64;
-      --yellow-hard:#c9b458;
-      --blue-soft:#7aa2ff;
-      --blue-hard:#2f6cf6;
-      color-scheme: light;
-    }
-    html[data-theme="dark"]{
-      --surface-bg:#0b0e14;
-      --surface-text:#e8e8e8;
-      --surface-border:#2a2e36;
-  
-      --green-hard:#538d4e;
-      --yellow-hard:#b59f3b;
-      --blue-soft:#8fb4ff;
-      --blue-hard:#6291ff;
-      color-scheme: dark;
-    }
-  
-    html, body { height:100% }
-    html { background:var(--surface-bg); color:var(--surface-text) }
-    body { background:var(--surface-bg); color:var(--surface-text) }
-  </style>
-  
-
   <script>
     (function () {
       try {
-        const stored = localStorage.getItem('unwordable.theme'); // ← match the hook
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const stored = localStorage.getItem('unwordable.theme');
+        const systemDark = matchMedia('(prefers-color-scheme: dark)').matches;
         const explicit = stored === 'light' || stored === 'dark';
         const theme = explicit ? stored : (systemDark ? 'dark' : 'light');
 
         if (explicit) document.documentElement.setAttribute('data-theme', theme);
         else document.documentElement.removeAttribute('data-theme');
 
-        // If Tailwind uses darkMode:'class', keep it in sync:
-        document.documentElement.classList.toggle('dark', theme === 'dark');
+        // NOT using Tailwind -> remove:
+        // document.documentElement.classList.toggle('dark', theme === 'dark');
 
-        // Dynamic theme-color to avoid address bar flash
+        // dynamic theme-color so browser chrome matches
         var meta = document.querySelector('meta[name="theme-color"][data-dynamic]') || document.createElement('meta');
         meta.setAttribute('name', 'theme-color');
         meta.setAttribute('data-dynamic', '');
@@ -87,6 +25,109 @@
       } catch (_) { }
     })();
   </script>
+
+  <meta charset="UTF-8" />
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e14">
+
+  <style>
+    /* ---- Base palette (light defaults) ---- */
+    /* 1) Base constants (don’t change at runtime) */
+    :root {
+      /* neutrals */
+      --bg-light: #ffffff;
+      --text-light: #0b0e14;
+      --border-light: #dcdfe4;
+      --bg-dark: #0b0e14;
+      --text-dark: #e8e8e8;
+      --border-dark: #2a2e36;
+
+      /* palette (same in both modes unless you WANT different) */
+      --blue-soft: #90CAF9;
+      --blue-hard: #0557e4;
+      --green-soft: #A5D6A7;
+      --green-hard: #00c251;
+      --yellow-soft: #FFF59D;
+      --yellow-hard: #d4b100;
+      --red-soft: #EF9A9A;
+      --red-hard: #D50000;
+
+      /* color of text */
+      --on-green-hard: #fff;
+      --on-yellow-hard: #fff;
+      --on-blue-hard: #fff;
+      --on-red-hard: #fff;
+
+      --on-green-soft: #222;
+      --on-yellow-soft: #222;
+      --on-blue-soft: #222;
+      --on-red-soft: #222;
+
+      /* computed “surface” tokens — start as light */
+      --surface-bg: var(--bg-light);
+      --surface-text: var(--text-light);
+      --surface-border: var(--border-light);
+
+      /* extras */
+      --overlay-scrim: rgba(0, 0, 0, .60);
+      --tag-tint: 14%;
+      --tag-border: 45%;
+      --tag-fgmix: 12%;
+    }
+
+    /* 2) System fallback ONLY when no explicit theme */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --surface-bg: var(--bg-dark);
+        --surface-text: var(--text-dark);
+        --surface-border: var(--border-dark);
+        --overlay-scrim: rgba(0, 0, 0, .50);
+        /* if you don’t want palette changes, don’t redefine them here */
+        --tag-tint: 22%;
+        --tag-border: 55%;
+        --tag-fgmix: 8%;
+      }
+    }
+
+    /* 3) Manual overrides */
+    html[data-theme="light"] {
+      color-scheme: light;
+      --surface-bg: var(--bg-light);
+      --surface-text: var(--text-light);
+      --surface-border: var(--border-light);
+      --overlay-scrim: rgba(0, 0, 0, .60);
+      --tag-tint: 14%;
+      --tag-border: 45%;
+      --tag-fgmix: 12%;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --surface-bg: var(--bg-dark);
+      --surface-text: var(--text-dark);
+      --surface-border: var(--border-dark);
+      --overlay-scrim: rgba(0, 0, 0, .50);
+      --tag-tint: 22%;
+      --tag-border: 55%;
+      --tag-fgmix: 8%;
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    html {
+      background: var(--surface-bg);
+      color: var(--surface-text)
+    }
+
+    body {
+      background: var(--surface-bg);
+      color: var(--surface-text)
+    }
+  </style>
 
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

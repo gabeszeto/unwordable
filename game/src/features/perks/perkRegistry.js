@@ -57,7 +57,7 @@ export const perkRegistry = {
     component: Sixer
   },
   DeadKeys: {
-    name: "⬜️ Dead Keys",
+    name: "⬛️ Dead Keys",
     description: "Turns two white keys gray.",
     cost: 2,
     weight: 5,
@@ -73,7 +73,7 @@ export const perkRegistry = {
   Wager: {
     name: "💸 Wager",
     description: "Wager 5 Cash on your next guess. Guess right to win 10, guess wrong and lose it all.",
-    cost: 1,
+    cost: 2,
     weight: 2,
     component: Wager
   },

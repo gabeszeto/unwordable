@@ -62,7 +62,7 @@
 .key.present {
     background-color: var(--yellow-hard);
     border-color: color-mix(in srgb, var(--yellow-hard) 55%, var(--surface-border));
-    color: var(--on-yellow-hard, #222);
+    color: var(--on-yellow-hard, #fff);
 }
 
 .key.absent {

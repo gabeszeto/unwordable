@@ -101,7 +101,6 @@
 .perk-card:hover:not(.is-disabled) {
     cursor: pointer;
     background: color-mix(in srgb, var(--surface-bg) 78%, var(--surface-text) 22%);
-    box-shadow: 0 2px 0 color-mix(in srgb, var(--surface-text) 20%, transparent);
     transform: scale(1.03);
 }
 
@@ -182,6 +181,41 @@
     justify-content: space-between;
     align-items: baseline;
 }
+
+/* base tag */
+.offer-tag {
+    --accent: var(--blue-soft);
+    /* default accent */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    font-size: .8rem;
+    border-radius: 999px;
+    margin-left: 6px;
+
+    background-color: color-mix(in srgb, var(--surface-bg) calc(100% - var(--tag-tint)),
+            var(--accent) var(--tag-tint));
+    border: 1px solid color-mix(in srgb, var(--accent) var(--tag-border), var(--surface-border));
+    color: color-mix(in srgb, var(--surface-text) calc(100% - var(--tag-fgmix)),
+            var(--accent) var(--tag-fgmix));
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+
+/* per-kind accents */
+.offer-tag[data-kind="skill"] {
+    --accent: var(--green-soft);
+}
+
+.offer-tag[data-kind="perk"] {
+    --accent: var(--blue-soft);
+}
+
+/* alt: yellow for consumables */
+.offer-tag[data-kind="perk"] {
+    --accent: var(--yellow-soft);
+}
+
 
 .perk-description {
     margin-top: 0.5rem;

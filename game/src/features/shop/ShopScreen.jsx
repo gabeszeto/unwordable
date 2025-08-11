@@ -152,18 +152,7 @@ export default function ShopScreen() {
               <div className="choiceTopPart">
                 <div className="perk-name">
                   {id === 'KeyzoneRoulette' && purchasingId === id ? 'Spinning…' : name}
-                  <span
-                    className="offer-tag"
-                    style={{
-                      marginLeft: 8,
-                      fontSize: '0.75rem',
-                      opacity: 0.8,
-                      padding: '2px 6px',
-                      borderRadius: 999,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: type === 'skill' ? '#203245' : '#2a2a2a',
-                    }}
-                  >
+                  <span className="offer-tag" data-kind={type}>
                     {type === 'skill' ? 'Skill' : 'Consumable'}
                   </span>
                 </div>

@@ -4,16 +4,16 @@ const PerksContext = createContext();
 
 export const PerksProvider = ({ children }) => {
     const [perks, setPerks] = useState({
-        // DeadKeys: 4,
-        // Jybrish: 4,
-        // Anatomy: 4,
-        // KeyzoneRow: 4,
-        // KeyzoneGrid: 4,
-        // KeyzoneHalves: 4,
-        // Sixer: 4,
-        // BorrowedTime: 3,
-        // Revelation: 3,
-        // Wager: 2
+        // DeadKeys: 2,
+        // Jybrish: 3,
+        // Anatomy: 1,
+        // KeyzoneRow: 2,
+        // // KeyzoneGrid: 4,
+        // // KeyzoneHalves: 4,
+        // Sixer: 1,
+        // // BorrowedTime: 3,
+        // Revelation: 2,
+        // Wager: 1
     });
 
     // Perk states
