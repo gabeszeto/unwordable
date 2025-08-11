@@ -1,7 +1,8 @@
-// Sixer.jsx
+// src/features/perks/components/Sixer.jsx
 import '../perks.css';
 import useShiftHeld from '../useShiftHeld';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import { usePerkActions } from '../usePerkActions';
 
 export default function Sixer({
   perkKey = 'Sixer',
@@ -9,26 +10,24 @@ export default function Sixer({
   markAsUsed,
   remaining,
   setSixerMode,
-  setItemDescriptionKey, // 👈 add this
+  setItemDescriptionKey,
 }) {
-  const { perks, usePerk } = usePerks();
+  const { perks } = usePerks();
+  const { runPerk } = usePerkActions();
   const shiftHeld = useShiftHeld();
 
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
   const disabled = used || quantity <= 0;
 
-  const activate = () => {
-    if (disabled) return;
-    setSixerMode(true);      // turn on Sixer UI display
-    markAsUsed(perkKey);
-    usePerk(perkKey);
-  };
-
   const handleClick = (e) => {
     if (disabled) return;
     if (e.shiftKey) {
-      activate();
+      const res = runPerk(perkKey, {
+        setSixerMode,
+        markAsUsed,
+      });
+      if (!res.ok) console.warn(res.error);
     } else {
       setItemDescriptionKey?.(perkKey);
     }

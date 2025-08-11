@@ -4,40 +4,41 @@ import '../perks.css';
 import useShiftHeld from '../useShiftHeld';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 import { useCash } from '../../../contexts/cash/CashContext';
+import { usePerkActions } from '../usePerkActions';
 
 export default function Wager({
   perkKey = 'Wager',
   usedPerks,
   markAsUsed,
   remaining,
-  setItemDescriptionKey // 👈 added
+  setItemDescriptionKey,
 }) {
-  const { perks, usePerk } = usePerks();
-  const { cash, placeWager, pendingWager } = useCash();
+  const { perks } = usePerks();
+  const { cash, pendingWager } = useCash(); // for pre-disable UX only
+  const { runPerk } = usePerkActions();
   const shiftHeld = useShiftHeld();
 
-  const used = usedPerks.includes(perkKey);
   const quantity = perks[perkKey] || 0;
+  const used = usedPerks.includes(perkKey);
 
+  // Optional UX: pre-disable if not affordable or a wager is already active.
   const cost = 5;
   const canAfford = cash >= cost;
-  const disabled =
-    used || quantity <= 0 || !canAfford || !!pendingWager; // prevent stacking
-
-  const activate = () => {
-    if (disabled) return;
-    const ok = placeWager({ stake: cost, payout: cost });
-    if (!ok) return;
-    markAsUsed(perkKey);
-    usePerk(perkKey);
-  };
+  const disabled = used || quantity <= 0 || !canAfford || !!pendingWager;
 
   const handleClick = (e) => {
     if (disabled) return;
+
     if (e.shiftKey) {
-      activate();
+      const res = runPerk(perkKey, {
+        markAsUsed, // so PerkDisplay “remaining” updates
+      });
+      if (!res.ok) {
+        // Optional: toast/console to see why it failed
+        console.warn(res.error);
+      }
     } else {
-      setItemDescriptionKey?.(perkKey);
+      setItemDescriptionKey?.(perkKey); // open the item description panel
     }
   };
 

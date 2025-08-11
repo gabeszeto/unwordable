@@ -1,44 +1,46 @@
 import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 import useShiftHeld from '../useShiftHeld';
+import { usePerkActions } from '../usePerkActions';
 
 export default function Anatomy({
   perkKey = 'Anatomy',
   usedPerks,
-  markAsUsed,
   remaining,
+  setItemDescriptionKey,
+  markAsUsed,
   setInfoPerkKey,
-  setItemDescriptionKey
+  setShowInfoPanel
 }) {
-  const { perks, usePerk } = usePerks();
+  const { perks } = usePerks();
+  const { runPerk } = usePerkActions();
   const shiftHeld = useShiftHeld();
+
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
   const disabled = used || quantity <= 0;
 
-  const activate = () => {
-    if (disabled) return;
-    markAsUsed(perkKey);
-    usePerk(perkKey);
-    setInfoPerkKey?.(perkKey);
-  };
-
   const handleClick = (e) => {
     if (disabled) return;
+
     if (e.shiftKey) {
-      // Shift+Click -> use it
-      activate();
+      // Use the perk via centralized logic
+      const res = runPerk(perkKey, { markAsUsed, setInfoPerkKey, setShowInfoPanel });
+      if (!res.ok) {
+        console.warn(res.error);
+      }
     } else {
-      // Click -> show info
-      setItemDescriptionKey('Anatomy')
+      // Open description panel
+      setItemDescriptionKey?.('Anatomy');
     }
   };
 
   return (
     <button
-      className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
+      className={`perk-button ${shiftHeld && !disabled ? 'perk-shift-held' : ''}`}
       onClick={handleClick}
       disabled={disabled}
+      title="Click: details • Shift+Click: use"
     >
       🧪 Anatomy ×{remaining}
     </button>

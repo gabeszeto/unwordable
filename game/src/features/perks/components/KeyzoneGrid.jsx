@@ -1,5 +1,7 @@
+// src/features/perks/components/KeyzoneGrid.jsx
 import React from 'react';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import { usePerkActions } from '../usePerkActions';
 import useShiftHeld from '../useShiftHeld';
 
 export default function KeyzoneGrid({
@@ -8,25 +10,25 @@ export default function KeyzoneGrid({
   isKeyzoneUsed,
   markAsUsed,
   remaining,
-  setItemDescriptionKey, // ← normal click opens item description
+  setItemDescriptionKey,
 }) {
-  const { perks, usePerk } = usePerks();
+  const { perks } = usePerks();
+  const { runPerk } = usePerkActions();
   const shiftHeld = useShiftHeld();
 
   const quantity = perks[perkKey] || 0;
   const disabled = isKeyzoneUsed || quantity <= 0;
 
-  const activate = () => {
-    if (disabled) return;
-    onKBActivate?.('grid');
-    markAsUsed(perkKey);
-    usePerk(perkKey);
-  };
-
   const handleClick = (e) => {
     if (disabled) return;
+
     if (e.shiftKey) {
-      activate();
+      const res = runPerk(perkKey, {
+        onKBActivate,
+        isKeyzoneUsed,
+        markAsUsed,
+      });
+      if (!res.ok) console.warn(res.error);
     } else {
       setItemDescriptionKey?.(perkKey);
     }

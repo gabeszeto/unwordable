@@ -1,5 +1,7 @@
+// KeyzoneSegment.jsx
 import React from 'react';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import { usePerkActions } from '../usePerkActions';
 import useShiftHeld from '../useShiftHeld';
 
 export default function KeyzoneSegment({
@@ -10,23 +12,22 @@ export default function KeyzoneSegment({
   remaining,
   setItemDescriptionKey,
 }) {
-  const { perks, usePerk } = usePerks();
+  const { perks } = usePerks();
+  const { runPerk } = usePerkActions();
   const shiftHeld = useShiftHeld();
 
   const quantity = perks[perkKey] || 0;
   const disabled = isKeyzoneUsed || quantity <= 0;
 
-  const activate = () => {
-    if (disabled) return;
-    onKBActivate?.('segment');
-    markAsUsed(perkKey);
-    usePerk(perkKey);
-  };
-
   const handleClick = (e) => {
     if (disabled) return;
     if (e.shiftKey) {
-      activate();
+      const res = runPerk(perkKey, {
+        onKBActivate,
+        isKeyzoneUsed,
+        markAsUsed,
+      });
+      if (!res.ok) console.warn(res.error);
     } else {
       setItemDescriptionKey?.(perkKey);
     }
@@ -37,7 +38,9 @@ export default function KeyzoneSegment({
       className={`perk-button ${shiftHeld ? 'perk-shift-held' : ''}`}
       onClick={handleClick}
       disabled={disabled}
-    >      ↕️ Keyzones (Segments) ×{remaining}
+      title="Click for details · Shift+Click to use"
+    >
+      ➗ Keyzones (Segment) ×{remaining}
     </button>
   );
 }

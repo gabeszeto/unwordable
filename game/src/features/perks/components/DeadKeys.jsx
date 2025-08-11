@@ -1,21 +1,8 @@
+// src/features/perks/components/DeadKeys.jsx
 import '../perks.css';
 import { usePerks } from '../../../contexts/perks/PerksContext';
+import { usePerkActions } from '../usePerkActions';
 import useShiftHeld from '../useShiftHeld';
-
-function pickDeadLetters(targetWord, usedKeys, count = 2) {
-  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  const targetSet = new Set(String(targetWord || '').toUpperCase().split(''));
-
-  // Eligible = not already colored + not in targetWord
-  const eligible = ALPHABET.filter(ch => !usedKeys?.[ch] && !targetSet.has(ch));
-
-  // Shuffle (Fisher–Yates lite) and take up to `count`
-  for (let i = eligible.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
-  }
-  return eligible.slice(0, count);
-}
 
 export default function DeadKeys({
   perkKey = 'DeadKeys',
@@ -27,41 +14,28 @@ export default function DeadKeys({
   targetWord,
   usedKeys,
   setUsedKeys,
-  setItemDescriptionKey
+  setItemDescriptionKey,
 }) {
-  const { perks, usePerk } = usePerks();
+  const { perks } = usePerks();
+  const { runPerk } = usePerkActions();
   const shiftHeld = useShiftHeld();
 
   const quantity = perks[perkKey] || 0;
   const used = usedPerks.includes(perkKey);
   const disabled = used || quantity <= 0;
 
-  const activate = () => {
-    if (disabled) return;
-
-    // choose 2 letters to gray out
-    const picks = pickDeadLetters(targetWord, usedKeys, 2);
-    if (picks.length === 0) return;
-
-    // mark them as absent in keyboard state
-    setUsedKeys(prev => {
-      const next = { ...prev };
-      for (const ch of picks) next[ch] = 'absent';
-      return next;
-    });
-
-    // consume the perk
-    markAsUsed(perkKey);
-    usePerk(perkKey);
-  };
-
   const handleClick = (e) => {
     if (disabled) return;
+
     if (e.shiftKey) {
-      // Shift+Click -> use perk
-      activate();
+      const res = runPerk(perkKey, {
+        targetWord,
+        usedKeys,
+        setUsedKeys,
+        markAsUsed,
+      });
+      if (!res.ok) console.warn(res.error);
     } else {
-      // Normal click -> show info
       setItemDescriptionKey?.(perkKey);
     }
   };

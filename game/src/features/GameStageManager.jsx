@@ -36,11 +36,11 @@ export default function GameStageManager() {
   useEffect(() => {
     // Only run once at game start
     if (Object.keys(debuffPlan).length === 0) {
-      const plan = generateDebuffPlan();
-      // const plan = generateDebugDebuffPlan({
-      //   forcePassive: { CutShort: 1, ShiftedGuess: 1 },
-      //   forceActive: ['GreyReaper']
-      // });
+      // const plan = generateDebuffPlan();
+      const plan = generateDebugDebuffPlan({
+        forcePassive: { CutShort: 2, ShiftedGuess: 1 },
+        forceActive: []
+      });
       setDebuffPlan(plan);
       console.log(plan)
     }

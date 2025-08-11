@@ -4,7 +4,6 @@ import { perkRegistry } from '../../perks/perkRegistry.js';
 import { usePerks } from '../../../contexts/perks/PerksContext';
 import { useCash } from '../../../contexts/cash/CashContext.jsx';
 import { useLevel } from '../../../contexts/level/LevelContext';
-import { useDebuffs } from '../../../contexts/debuffs/DebuffsContext';
 
 import './perksDisplayStyles.css'
 
@@ -14,17 +13,12 @@ export default function PerkDisplay({
   sharedProps,
 }) {
   const { perks } = usePerks();
-  const { cash, spendCash } = useCash();              // ⬅️ move out of map
+  const { cash } = useCash();              // ⬅️ move out of map
   const { stage } = useLevel();
-  const { passiveDebuffs } = useDebuffs();            // ⬅️ move out of map
 
   // Snapshot at start of round; stable until stage changes
   const perksAtStartOfRound = useMemo(() => ({ ...perks }), [stage]);
 
-  const perkTaxStacks = passiveDebuffs['PerkTax'] || 0;
-  const applyPerkTax = () => {
-    if (perkTaxStacks > 0) spendCash(perkTaxStacks);
-  };
 
   return (
     <div className="perkDisplay">
@@ -53,10 +47,7 @@ export default function PerkDisplay({
                 key={`inv-${key}`}
                 perkKey={key}
                 usedPerks={usedPerks}
-                markAsUsed={(k) => {
-                  markAsUsed(k);
-                  applyPerkTax();
-                }}
+                markAsUsed={markAsUsed}
                 remaining={remaining}
                 isKeyzoneUsed={
                   key.toLowerCase().includes('keyzone') &&

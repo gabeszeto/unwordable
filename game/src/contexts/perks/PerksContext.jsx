@@ -11,6 +11,9 @@ export const PerksProvider = ({ children }) => {
         KeyzoneGrid: 4,
         KeyzoneSegment: 4,
         Sixer: 4,
+        BorrowedTime: 3,
+        Revelation: 3,
+        Wager: 2
     });
 
     // Perk states

@@ -63,7 +63,7 @@ export default function GameScreen() {
 
   const isKeyzoneUsed = usedPerks.some((key) => key.startsWith('keyzone'));
 
-  const markPerkAsUsed = (key) => {
+  const markAsUsed = (key) => {
     setUsedPerks((prev) => (prev.includes(key) ? prev : [...prev, key]));
   };
 
@@ -103,7 +103,9 @@ export default function GameScreen() {
     setMaxGuesses, // to decrement this round by 1
     bankGuessToNextRound: () => bankGuess(1, BASE_MAX_GUESSES), // <-- from context
     itemDescriptionKey,
-    setItemDescriptionKey
+    setItemDescriptionKey,
+    markAsUsed,
+    setShowInfoPanel
   };
 
   const [virtualKeyHandler, setVirtualKeyHandler] = useState(null);
@@ -269,7 +271,6 @@ export default function GameScreen() {
       <div className="hud">
         <PerkDisplay
           usedPerks={usedPerks}
-          markAsUsed={markPerkAsUsed}
           sharedProps={sharedProps}
           isKeyzoneUsed={isKeyzoneUsed}
         />
@@ -336,6 +337,7 @@ export default function GameScreen() {
       {itemDescriptionKey && (
         <ItemDescriptionScreen
           itemKey={itemDescriptionKey}
+          runtime={sharedProps}
           onClose={() => setItemDescriptionKey(null)}
         />
       )}
