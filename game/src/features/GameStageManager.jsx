@@ -5,6 +5,8 @@ import { useLevel } from '../contexts/level/LevelContext';
 import { useDebuffs } from '../contexts/debuffs/DebuffsContext';
 import { useDeath } from '../contexts/death/DeathContext';
 
+import ThemeToggle from './ThemeToggle';
+
 import { generateDebuffPlan, generateDebugDebuffPlan } from './debuffs/generateDebuffPlan';
 
 import DeathScreen from './game/DeathScreen';
@@ -77,33 +79,37 @@ export default function GameStageManager() {
 
   return (
     <div className="gameContainer">
-      <div className="round-visual">
-        <span className="round-label">
-          {`Round ${roundToUse} of 10`}
-          {isFinalBoss ? (
-            <span className="round-badge final" title="Final Boss">💀 Final</span>
-          ) : isBossRound ? (
-            <span className="round-badge boss" title="Boss Round">⚠️ Boss</span>
-          ) : null}
-          {isShopThisRound && (
-            <span className="round-badge shop" title="Shop">🛒 Shop</span>
-          )}
-        </span>
+      <div className="navBar">
+        <div className="navContent">
+          <div className="nav-left"></div> {/* empty for balance */}
+          <div className="nav-center">
+            <div className="round-visual">
+              <span className="round-label">
+                {`Round ${roundToUse} of 10`}
+                {isFinalBoss ? (
+                  <span className="round-badge final" title="Final Boss">💀 Final</span>
+                ) : isBossRound ? (
+                  <span className="round-badge boss" title="Boss Round">⚠️ Boss</span>
+                ) : null}
+                {isShopThisRound && (
+                  <span className="round-badge shop" title="Shop">🛒 Shop</span>
+                )}
+              </span>
 
-        <div className="round-progress-bar">
-          {Array.from({ length: 10 }, (_, i) => {
-            const step = i + 1;
-            const isBoss = [3, 6, 9].includes(step);
-            const isFinalBoss = step === 10;
-            const isComplete = step < roundToUse;
-            const isActive = step === round;
-            const isDeathRound = step === deathRound;
-            const isShopRound = isShop && step === round;
+              <div className="round-progress-bar">
+                {Array.from({ length: 10 }, (_, i) => {
+                  const step = i + 1;
+                  const isBoss = [3, 6, 9].includes(step);
+                  const isFinalBoss = step === 10;
+                  const isComplete = step < roundToUse;
+                  const isActive = step === round;
+                  const isDeathRound = step === deathRound;
+                  const isShopRound = isShop && step === round;
 
-            return (
-              <div
-                key={i}
-                className={`
+                  return (
+                    <div
+                      key={i}
+                      className={`
             round-step
             ${isFinalBoss ? 'finalBoss' : ''}
             ${isBoss ? 'boss' : ''}
@@ -112,12 +118,17 @@ export default function GameStageManager() {
             ${isShopRound ? 'shop-outline' : ''}
             ${isDeathRound ? 'died' : ''}
           `}
-              />
-            );
-          })}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="nav-right">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
-
 
       {/* Render appropriate screen */}
       {isDeath ? (

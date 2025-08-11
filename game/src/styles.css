@@ -82,8 +82,36 @@ body {
 }
 
 .theme-light {
-  --surface-bg:     var(--bg-light);
+  --surface-bg: var(--bg-light);
   --surface-border: var(--border-light);
-  --surface-text:   var(--text-light);
-  --overlay-scrim:  var(--scrim-light);
+  --surface-text: var(--text-light);
+  --overlay-scrim: var(--scrim-light);
+}
+
+/* theme toggle */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
+  background: color-mix(in srgb, var(--surface-bg) 90%, var(--blue-soft) 10%);
+  color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 12%);
+  font-family: 'Zilla Slab';
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.theme-toggle .tt-ico {
+  line-height: 1;
+}
+
+.theme-toggle .tt-label {
+  text-transform: capitalize;
 }
