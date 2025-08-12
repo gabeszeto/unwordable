@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useRunStats } from '../RunStatsContext';
 
 const PerksContext = createContext();
 
 export const PerksProvider = ({ children }) => {
+    const { notePerkUsed } = useRunStats()
     const [perks, setPerks] = useState({
-        // DeadKeys: 2,
-        // Jybrish: 3,
-        // Anatomy: 1,
+        DeadKeys: 2,
+        Jybrish: 3,
+        Anatomy: 1,
         // KeyzoneRow: 2,
         // // KeyzoneGrid: 4,
         // // KeyzoneHalves: 4,
@@ -33,13 +35,13 @@ export const PerksProvider = ({ children }) => {
     const usePerk = (perkName) => {
         setPerks(prev => {
             const current = prev[perkName] || 0;
-            console.log(`[usePerk] ${perkName} before: ${current}, after: ${Math.max(current - 1, 0)}`);
             return {
                 ...prev,
                 [perkName]: Math.max(current - 1, 0),
             };
         });
-        console.log(`used perk ${perkName}`)
+        notePerkUsed(1); 
+        // console.log(`used perk ${perkName}`)
     };
 
 

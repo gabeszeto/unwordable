@@ -7,23 +7,39 @@
   background-color: var(--surface-bg);
 }
 
+.gameTopPart {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 /* Navbar pinned to top, still in normal flow */
 .navBar {
   position: sticky;
+  display: flex;
+  flex-direction: column;
   top: 0;
   width: 100%;
   background-color: var(--surface-bg);
   border-bottom: 1px solid var(--surface-border);
   z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.roundInfo {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
 }
 
 /* Three-zone bar: [left spacer] [centered round-visual] [toggle] */
 .navContent {
   display: flex;
-  justify-content: space-between;
+  width: 100%;
   max-width: 444px;
-  margin: 0 auto;
-  padding: 0.5rem 0rem;
+  margin-bottom: 0.5rem;
   gap: 0.5rem;
 }
 
@@ -38,6 +54,16 @@
   justify-content: flex-start;
 }
 
+.menuButton {
+  height: 25px;
+  width: 25px;
+  padding: 0;
+}
+
+.menuButton:hover {
+  cursor: pointer;
+}
+
 .nav-right {
   justify-content: flex-end;
 }
@@ -47,6 +73,7 @@
   /* content-sized center keeps true centering */
   display: flex;
   justify-content: center;
+  align-items: center;
   min-width: 0;
 }
 
@@ -118,11 +145,16 @@
   align-items: center;
   gap: 0.35rem;
 }
+
 /* Base dot: NEUTRAL for all incomplete steps */
-.round-step{
+.round-step {
   --dot-bg: color-mix(in srgb, var(--surface-bg) 70%, var(--surface-border) 30%);
   --dot-bd: var(--surface-border);
-  position:relative; display:inline-block; width:1rem; height:1rem; border-radius:50%;
+  position: relative;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
   background: var(--dot-bg);
   /* box-sizing: border-box;                  */
   border: 1px solid var(--dot-bd);
@@ -130,29 +162,81 @@
 }
 
 /* --- COMPLETED (HARD) --- */
-.round-progress-bar .round-step.complete:nth-child(-n+3)      { --dot-bg: var(--blue-hard);   --dot-bd: color-mix(in srgb, var(--blue-hard)   45%, var(--surface-border)); }
-.round-progress-bar .round-step.complete:nth-child(n+4):nth-child(-n+6){ --dot-bg: var(--green-hard);  --dot-bd: color-mix(in srgb, var(--green-hard)  45%, var(--surface-border)); }
-.round-progress-bar .round-step.complete:nth-child(n+7):nth-child(-n+9){ --dot-bg: var(--yellow-hard); --dot-bd: color-mix(in srgb, var(--yellow-hard) 45%, var(--surface-border)); }
-.round-progress-bar .round-step.complete:nth-child(10)         { --dot-bg: var(--red-hard);    --dot-bd: color-mix(in srgb, var(--red-hard)    45%, var(--surface-border)); }
+.round-progress-bar .round-step.complete:nth-child(-n+3) {
+  --dot-bg: var(--blue-hard);
+  --dot-bd: color-mix(in srgb, var(--blue-hard) 45%, var(--surface-border));
+}
+
+.round-progress-bar .round-step.complete:nth-child(n+4):nth-child(-n+6) {
+  --dot-bg: var(--green-hard);
+  --dot-bd: color-mix(in srgb, var(--green-hard) 45%, var(--surface-border));
+}
+
+.round-progress-bar .round-step.complete:nth-child(n+7):nth-child(-n+9) {
+  --dot-bg: var(--yellow-hard);
+  --dot-bd: color-mix(in srgb, var(--yellow-hard) 45%, var(--surface-border));
+}
+
+.round-progress-bar .round-step.complete:nth-child(10) {
+  --dot-bg: var(--red-hard);
+  --dot-bd: color-mix(in srgb, var(--red-hard) 45%, var(--surface-border));
+}
 
 /* --- ACTIVE (SOFT) --- */
-.round-progress-bar .round-step.active:nth-child(-n+3)         { --dot-bg: var(--blue-soft);   --dot-bd: color-mix(in srgb, var(--blue-soft)   45%, var(--surface-border)); }
-.round-progress-bar .round-step.active:nth-child(n+4):nth-child(-n+6){ --dot-bg: var(--green-soft);  --dot-bd: color-mix(in srgb, var(--green-soft)  45%, var(--surface-border)); }
-.round-progress-bar .round-step.active:nth-child(n+7):nth-child(-n+9){ --dot-bg: var(--yellow-soft); --dot-bd: color-mix(in srgb, var(--yellow-soft) 45%, var(--surface-border)); }
-.round-progress-bar .round-step.active:nth-child(10)           { --dot-bg: var(--red-soft);    --dot-bd: color-mix(in srgb, var(--red-soft)    45%, var(--surface-border)); }
+.round-progress-bar .round-step.active:nth-child(-n+3) {
+  --dot-bg: var(--blue-soft);
+  --dot-bd: color-mix(in srgb, var(--blue-soft) 45%, var(--surface-border));
+}
+
+.round-progress-bar .round-step.active:nth-child(n+4):nth-child(-n+6) {
+  --dot-bg: var(--green-soft);
+  --dot-bd: color-mix(in srgb, var(--green-soft) 45%, var(--surface-border));
+}
+
+.round-progress-bar .round-step.active:nth-child(n+7):nth-child(-n+9) {
+  --dot-bg: var(--yellow-soft);
+  --dot-bd: color-mix(in srgb, var(--yellow-soft) 45%, var(--surface-border));
+}
+
+.round-progress-bar .round-step.active:nth-child(10) {
+  --dot-bg: var(--red-soft);
+  --dot-bd: color-mix(in srgb, var(--red-soft) 45%, var(--surface-border));
+}
 
 /* active sizing only */
-.round-step.active { transform: scale(1.3); }
-
-/* Boss stages: size only (inherits above colours) */
-/* .round-step.boss      { width:1.2rem; height:1.2rem; } */
-/* .round-step.finalBoss { width:1.3rem; height:1.3rem; } */
+.round-step.active {
+  transform: scale(1.3);
+}
 
 /* Death override (keeps your cue) */
-.round-step.died{ --dot-bg: var(--red-hard); --dot-bd: color-mix(in srgb, var(--red-hard) 45%, var(--surface-border)); }
+.round-step.died {
+  --dot-bg: var(--red-hard);
+  --dot-bd: color-mix(in srgb, var(--red-hard) 45%, var(--surface-border));
+}
 
 /* Active + shop: just change the ring color, not the fill */
-.round-step.active.shop-outline{
+.round-step.active.shop-outline {
   border-width: 2px;
   border-color: color-mix(in srgb, var(--surface-text) 45%, var(--surface-border));
+}
+
+/* Points and timer */
+
+.pointsTimerDisplay {
+  font-variant-numeric: lining-nums;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  width: 100%;
+  max-width: 444px;
+
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+  padding: 0rem 0.25rem;
+}
+
+.gameTimerDisplay {
+  font-variant-numeric: lining-nums;
 }

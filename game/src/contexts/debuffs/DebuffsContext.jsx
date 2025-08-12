@@ -40,8 +40,6 @@ export const DebuffsProvider = ({ children }) => {
     setPassiveDebuffs({});
   };
 
-  console.log({ activeDebuffs, passiveDebuffs });
-
   return (
     <DebuffsContext.Provider
       value={{

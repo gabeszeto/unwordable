@@ -11,6 +11,10 @@
     flex-direction: column;
 }
 
+.cash-counter {
+    font-variant-numeric: lining-nums;
+}
+
 .topPerksSection {
     display: flex;
     justify-content: space-between;

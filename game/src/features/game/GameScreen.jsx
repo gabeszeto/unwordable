@@ -209,9 +209,6 @@ export default function GameScreen() {
         })()}
       </div>
 
-
-
-
       <Board
         key={round}
         onRoundComplete={async (success, guesses, deathReason, word) => {

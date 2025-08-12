@@ -44,6 +44,7 @@
 
 .cash-amount {
     font-weight: 700;
+    font-variant-numeric: lining-nums;
 }
 
 /* Floating delta (+/-) */
@@ -96,6 +97,8 @@
     transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease, border-color 140ms ease, color 140ms ease;
     position: relative;
     text-align: left;
+    font-variant-numeric: lining-nums;
+    font-weight: 600;
 }
 
 .perk-card:hover:not(.is-disabled) {
@@ -219,6 +222,7 @@
 
 .perk-description {
     margin-top: 0.5rem;
+    font-weight: 500;
     color: color-mix(in srgb, var(--surface-text) 90%, var(--surface-bg));
     opacity: 0.9;
 }
@@ -297,6 +301,7 @@
     font-family: 'Zilla Slab';
     font-size: 0.7rem;
     margin: 2px;
+    font-variant-numeric: lining-nums;
 
     display: inline-flex;
     align-items: center;

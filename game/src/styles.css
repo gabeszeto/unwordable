@@ -4,6 +4,7 @@ body {
   padding: 0;
 }
 
+
 *,
 *::before,
 *::after {
@@ -14,7 +15,9 @@ body {
 .theme-toggle {
   display: inline-flex;
   align-items: center;
+  box-sizing: border-box;
   gap: 6px;
+  height: 25px;
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));

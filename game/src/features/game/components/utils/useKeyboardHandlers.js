@@ -3,6 +3,7 @@ import { usePerks } from '../../../../contexts/perks/PerksContext';
 import { useCorrectness } from '../../../../contexts/CorrectnessContext';
 import { useCash } from '../../../../contexts/cash/CashContext';
 import { useDebuffs } from '../../../../contexts/debuffs/DebuffsContext';
+import { useRunStats } from '../../../../contexts/RunStatsContext';
 
 export default function useKeyboardHandlers({
     guesses,
@@ -10,7 +11,6 @@ export default function useKeyboardHandlers({
     setCurrentGuess,
     setGuesses,
     targetWord,
-    MAX_ROW_LENGTH,
     maxGuesses,
     paddedTargetWord,
     setShakeRow,
@@ -24,7 +24,7 @@ export default function useKeyboardHandlers({
     feedbackShownUpToRow,
     setFeedbackShownUpToRow,
     FEEDBACK_DELAY_THRESHOLD,
-    goldenLieUsedPerRow,             // 👈 NEW
+    goldenLieUsedPerRow,         
     goldenLieInjectedIndex,
     lockedLetterByRow,
     setGuessRanges,
@@ -39,6 +39,7 @@ export default function useKeyboardHandlers({
     } = useCorrectness();
     const { pendingWager, resolveWager } = useCash();
     const { passiveDebuffs, activeDebuffs } = useDebuffs();
+    const { noteGuess } = useRunStats();
 
     const [pendingUsedKeys, setPendingUsedKeys] = useState(null);
 
@@ -73,6 +74,10 @@ export default function useKeyboardHandlers({
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
+
+        // Note in stats
+        noteGuess(1);
+
         setGuessRanges(prev => [...prev, rowActiveIndices]);
         // Set current guess long way
         const cleared = [...currentGuess];
@@ -234,10 +239,6 @@ export default function useKeyboardHandlers({
             setSixerMeta(prev => [...prev, null]);
         }
     };
-
-    useEffect(() => {
-        console.log(pendingUsedKeys)
-    }, [pendingUsedKeys])
 
     const handleKeyDown = useCallback(
         (e) => {
