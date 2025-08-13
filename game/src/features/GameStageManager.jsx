@@ -54,13 +54,15 @@ export default function GameStageManager() {
   // Initial debuff plan (once)
   useEffect(() => {
     if (Object.keys(debuffPlan).length === 0) {
-      const plan = generateDebuffPlan();
-      // const plan = generateDebugDebuffPlan({ forcePassive: { CutShort: 2, ShiftedGuess: 1 }, forceActive: [] });
+      // const plan = generateDebuffPlan();
+      const plan = generateDebugDebuffPlan({ forcePassive: { CutShort: 2, ShiftedGuess: 1 }, forceActive: ["GreyReaper"] });
       setDebuffPlan(plan);
       console.log('[Debuff Plan]', plan);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+
 
   // Pause time
   const [paused, setPaused] = useState(false);
@@ -74,28 +76,6 @@ export default function GameStageManager() {
     const n = typeof raw === 'number' ? raw : new Date(raw).valueOf();
     return Number.isFinite(n) ? n : null;
   }, [stats?.runStartedAt]);
-
-  const togglePause = useCallback(() => {
-    if (isDeath || isFinished) return;
-    setPaused(p => {
-      const next = !p;
-      console.log('[pause] toggle ->', { from: p, to: next, now: Date.now() });
-      if (next) {
-        pauseStartedAtRef.current = Date.now();
-        // console.log('[pause] startedAt <-', pauseStartedAtRef.current);
-      } else if (pauseStartedAtRef.current) {
-        const delta = Date.now() - pauseStartedAtRef.current;
-        setAccumulatedPauseMs(ms => {
-          const newTotal = ms + delta;
-          // console.log('[pause] resume; add delta', { delta, prev: ms, newTotal });
-          return newTotal;
-        });
-        pauseStartedAtRef.current = null;
-        setNow(Date.now()); // tick immediately
-      }
-      return next;
-    });
-  }, [isDeath, isFinished]);
 
   // Timer
   useEffect(() => {
@@ -114,6 +94,29 @@ export default function GameStageManager() {
     const s = Math.floor((totalMs % 60000) / 1000);
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }, [startMs, now, paused, accumulatedPauseMs]);
+
+  const pause = useCallback(() => {
+    if (isDeath || isFinished || paused) return;
+    pauseStartedAtRef.current = Date.now();
+    setPaused(true);
+  }, [isDeath, isFinished, paused]);
+
+  const resume = useCallback(() => {
+    if (!paused) return;
+    if (pauseStartedAtRef.current != null) {
+      const delta = Date.now() - pauseStartedAtRef.current;
+      setAccumulatedPauseMs(ms => ms + Math.max(0, delta));
+      pauseStartedAtRef.current = null;
+    }
+    setPaused(false);
+    setNow(Date.now()); // instant tick
+  }, [paused]);
+
+  const togglePause = useCallback(() => {
+    if (isDeath || isFinished) return;
+    if (paused) resume();
+    else pause();
+  }, [isDeath, isFinished, paused, pause, resume]);
 
   // Apply debuffs when stage changes 
   useEffect(() => {
@@ -167,13 +170,50 @@ export default function GameStageManager() {
     resetCorrectness();
   };
 
+  // Block keydown
+  const handleKeyDownCapture = useCallback((e) => {
+    if (e.code === 'Space' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      togglePause(); // toggle whether paused or not
+      return;
+    }
+
+    if (!paused) return;
+
+    // If paused, block everything else
+    e.preventDefault();
+    e.stopPropagation();
+  }, [paused, togglePause]);
+
+  // Space to pause and unpause
+  useEffect(() => {
+    const onKey = (e) => {
+      // Ignore when typing in fields
+      const el = e.target;
+      const isEditable =
+        el?.isContentEditable ||
+        /^(INPUT|TEXTAREA|SELECT)$/.test(el?.tagName);
+
+      if (isEditable) return;
+
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePause(); // uses your pause/resume math
+      }
+    };
+    window.addEventListener('keydown', onKey, true); // capture
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [togglePause]);
+
 
   const goToMenu = () => {
     restartRun()
     navigate('/')
   }
   return (
-    <div className="gameContainer">
+    <div className="gameContainer" onKeyDownCapture={handleKeyDownCapture}>
       {/* Sticky Navbar */}
       <div className="gameTopPart">
         <div className="navBar">
@@ -236,9 +276,28 @@ export default function GameStageManager() {
         </div>
       </div>
 
+      {/* Game Menu  */}
+      {paused && (
+        <div className="pauseOverlay" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+          <div className="pauseCard">
+            <div id="pause-title" className="pauseTitle">Paused</div>
+            <div className="pauseSub">Press <kbd>Space</kbd> or click Resume</div>
+            <div className="pauseActions">
+              <button className="pauseBtn primary" onClick={resume}>▶︎ Resume</button>
+              <button className="pauseBtn" onClick={restartRun}>↺ Restart Run</button>
+              <button className="pauseBtn" onClick={goToMenu}>☰ Main Menu</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stage routing */}
       {isDeath ? (
-        <DeathScreen />
+        <DeathScreen
+          time={runTimeString}              // optional pretty time from the parent
+          onPlayAgain={restartRun}
+          onMenu={goToMenu}
+        />
       ) : isFinished ? (
         <EndScreen
           stats={{ ...stats, time: runTimeString }}
@@ -248,7 +307,7 @@ export default function GameStageManager() {
       ) : isGameLevel ? (
         <SkillsProvider>
           <BoardHelperProvider>
-            <GameScreen />
+            <GameScreen paused={paused} />
           </BoardHelperProvider>
         </SkillsProvider>
       ) : (

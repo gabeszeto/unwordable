@@ -1,44 +1,121 @@
-.death-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100svh;
+.deathScreen-wrap {
+    position: relative;
+    min-height: calc(100vh - 120px);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.deathScreen-card {
+    background: var(--surface-bg, #111);
+    color: var(--surface-text, #fff);
+    border: 1px solid var(--surface-border, #2a2a2a);
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
     text-align: center;
-    padding: 2rem;
-    font-family: 'Zilla Slab', serif;
+    max-width: 444px;
+    width: 100%;
+    font-variant-numeric: lining-nums tabular-nums;
 }
 
-.death-screen h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+.deathScreen-title {
+    font-size: clamp(20px, 3.5vw, 28px);
+    font-weight: 800;
+    margin: 0 0 6px;
 }
 
-.death-screen p {
-    margin: 0.3rem 0;
-    font-size: 1.1rem;
-    max-width: 500px;
-    line-height: 1.5;
+.deathScreen-sub {
+    opacity: .9;
+    margin: 0 0 14px;
 }
 
-.death-screen strong {
-    color: #daab3e;
-
+.deathScreen-stats {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    margin: 14px 0 18px;
+    width: 100%;
 }
 
-.death-screen div {
-    margin-top: 20px;
-    padding: 12px 24px;
-    font-size: 1rem;
-    background: #222;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+.stat-chip {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-bg);
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-variant-numeric: lining-nums;
+    text-wrap: nowrap;
 }
 
-.death-screen div:hover {
+
+.tone-yellow {
+    background: color-mix(in srgb, var(--surface-bg, #111) 90%, var(--yellow-soft, #6b5c1a) 10%);
+}
+
+.tone-blue {
+    background: color-mix(in srgb, var(--surface-bg, #111) 90%, var(--blue-soft, #2a3d57) 10%);
+}
+
+.tone-green {
+    background: color-mix(in srgb, var(--surface-bg, #111) 90%, var(--green-soft, #1d3e2a) 10%);
+}
+
+.tone-red {
+    background: color-mix(in srgb, var(--surface-bg, #111) 90%, var(--red-soft, #4a1c1c) 10%);
+}
+
+.deathScreen-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    border: 1px solid var(--surface-border, #2a2a2a);
+    background: var(--surface-bg, #111);
+    color: var(--surface-text, #fff);
+    border-radius: 999px;
+    padding: 8px 14px;
     cursor: pointer;
-    background: #333333;
-    transform: scale(1.03);
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    font-family: inherit;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: color-mix(in srgb, var(--surface-bg, #111) 80%, var(--blue-soft, #4a6fa1) 20%);
+    border-color: color-mix(in srgb, var(--blue-soft, #4a6fa1) 60%, var(--surface-border, #2a2a2a));
+}
+
+.btn-soft {
+    background: color-mix(in srgb, var(--surface-bg, #111) 88%, var(--yellow-soft, #6b5c1a) 12%);
+}
+
+.btn-ghost {
+    opacity: .9;
+}
+
+.motes-stage {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+.mote-bit {
+    position: absolute;
+    top: 0;
+    border-radius: 2px;
+    opacity: 0;
 }

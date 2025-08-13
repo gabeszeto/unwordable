@@ -35,7 +35,8 @@ export default function Board({
   setSixerMode,
   sixerMode,
   maxGuesses,
-  stage
+  stage,
+  paused
 }) {
   const [guessRanges, setGuessRanges] = useState([]);
   const { revealedIndices, getRevealedForRow } = useCorrectness();
@@ -216,7 +217,8 @@ export default function Board({
     setGuessRanges,
     sixerActiveIndices,
     setSixerActiveIndices,
-    setSixerMeta
+    setSixerMeta,
+    paused
   });
 
   // Revelation logic

@@ -6,9 +6,9 @@ const PerksContext = createContext();
 export const PerksProvider = ({ children }) => {
     const { notePerkUsed } = useRunStats()
     const [perks, setPerks] = useState({
-        DeadKeys: 2,
-        Jybrish: 3,
-        Anatomy: 1,
+        // DeadKeys: 2,
+        // Jybrish: 3,
+        // Anatomy: 1,
         // KeyzoneRow: 2,
         // // KeyzoneGrid: 4,
         // // KeyzoneHalves: 4,

@@ -58,7 +58,7 @@ export const perkRegistry = {
   },
   DeadKeys: {
     name: "⬛️ Dead Keys",
-    description: "Turns two white keys gray.",
+    description: "Turns two white keys grey.",
     cost: 2,
     weight: 5,
     component: DeadKeys

@@ -21,7 +21,7 @@ import HintInfoScreen from './popups/HintInfoScreen.jsx'
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 import ItemDescriptionScreen from './popups/ItemDescriptionScreen.jsx';
 
-export default function GameScreen() {
+export default function GameScreen({paused}) {
   const { stage, setStage, advanceStage, isGameStage, bankGuess, consumeGuessBank } = useLevel();
   const [guesses, setGuesses] = useState([]);
   const { revealedIndices } = useCorrectness();
@@ -252,6 +252,7 @@ export default function GameScreen() {
         sixerMode={sixerMode}
         maxGuesses={maxGuesses}
         stage={stage}
+        paused={paused}
       />
 
       <div className="hud">

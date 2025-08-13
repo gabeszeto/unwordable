@@ -240,3 +240,48 @@
 .gameTimerDisplay {
   font-variant-numeric: lining-nums;
 }
+
+/* Game Menu */
+.pauseOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(2px);
+  background: color-mix(in srgb, black 35%, transparent);
+}
+
+.pauseCard {
+  background: var(--surface-bg, #fff);
+  color: var(--surface-text, #111);
+  border: 1px solid var(--surface-border, #ddd);
+  border-radius: 16px;
+  padding: 18px 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+  text-align: center;
+  min-width: 260px;
+  max-width: 90vw;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.pauseTitle { font-weight: 700; margin-bottom: 6px; }
+.pauseSub { opacity: .8; font-size: .9rem; margin-bottom: 12px; }
+
+.pauseActions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+.pauseBtn {
+  border: 1px solid color-mix(in srgb, var(--blue-soft) 40%, var(--surface-border));
+  background: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
+  color: color-mix(in srgb, var(--surface-text), var(--blue-hard) 12%);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+  font-family: inherit;
+}
+.pauseBtn:hover { transform: translateY(-1px); }
+.pauseBtn.primary {
+  background: color-mix(in srgb, var(--surface-bg) 80%, var(--blue-soft) 20%);
+  border-color: color-mix(in srgb, var(--blue-soft) 60%, var(--surface-border));
+}

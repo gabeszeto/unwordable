@@ -5,39 +5,42 @@ import HowToPlayMenu from './HowToPlayMenu';
 
 function Home() {
   const [currentMenu, setCurrentMenu] = useState(null); // 'play', 'howto', 'options', or null
+  const [menuOpening, setMenuOpening] = useState(false);
 
   const homeButtons = ["Play", "How to Play", "Options"];
 
   const openPage = (button) => {
-    const map = {
-      'Play': 'play',
-      'How to Play': 'howto',
-      'Options': 'options',
-    };
-    setCurrentMenu(map[button]);
+    setMenuOpening(true);
+    setTimeout(() => {
+      setCurrentMenu({ Play: 'play', 'How to Play': 'howto', Options: 'options' }[button]);
+      setMenuOpening(false);
+    }, 1); // matches CSS transition
   };
+
 
   const goBack = () => setCurrentMenu(null);
 
   return (
-    <div className="homeContainer">
-      <div className="mainTitle">Unwordable</div>
-
+    <div className={`homeContainer ${menuOpening ? 'menu-opening' : ''}`}>
       {!currentMenu && (
-        <div className="homeButtons">
-          {homeButtons.map((button, i) => (
-            <div
-              className="homeButton"
-              key={i}
-              onClick={(e) => {
-                e.currentTarget.blur(); // remove focus style
-                openPage(button);
-              }}
-            >
-              {button}
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="mainTitle">Unwordable</div>
+
+          <div className="homeButtons">
+            {homeButtons.map((button, i) => (
+              <div
+                className="homeButton"
+                key={i}
+                onClick={(e) => {
+                  e.currentTarget.blur(); // remove focus style
+                  openPage(button);
+                }}
+              >
+                {button}
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {currentMenu === 'play' && (

@@ -12,8 +12,8 @@ type MinimalStats = {
 
 export default function EndScreen({
   stats = {},
-  onPlayAgain = () => {},
-  onMenu = () => {},
+  onPlayAgain = () => { },
+  onMenu = () => { },
 }: {
   stats?: MinimalStats;
   onPlayAgain?: () => void;
@@ -112,10 +112,10 @@ export default function EndScreen({
             }}
           >
             {[
-              { label: "Guesses:", value: guessesUsed, tone: "yellow" },
-              { label: "Consumables Used:", value: perksUsed, tone: "blue" },
-              { label: "Cash Earnt:", value: cashLabel, tone: "green" },
-              ...(displayTime ? [{ label: "Time:", value: displayTime, tone: "red" }] : []),
+              { label: "Guesses:  ", value: guessesUsed, tone: "yellow" },
+              { label: "Consumables Used:  ", value: perksUsed, tone: "blue" },
+              { label: "Cash Earnt:  ", value: cashLabel, tone: "green" },
+              ...(displayTime ? [{ label: "Time:  ", value: displayTime, tone: "red" }] : []),
             ].map((s, i) => (
               <motion.div
                 key={s.label}
@@ -123,8 +123,7 @@ export default function EndScreen({
                 variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
                 transition={{ duration: 0.25, delay: 0.08 + i * 0.03 }}
               >
-                <span className="stat-label">{s.label}</span>
-                <span className="stat-value">{s.value}</span>
+                {s.label}{s.value}
               </motion.div>
             ))}
           </motion.div>

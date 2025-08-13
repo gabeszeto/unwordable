@@ -72,7 +72,8 @@
     border: 1px solid var(--surface-border);
     background: var(--surface-bg);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    font-variant-numeric: lining-nums;
 }
 
 /* tone variants (soft bg + hard accent text bias) */
@@ -94,15 +95,6 @@
 .tone-red {
     background: color-mix(in srgb, var(--surface-bg) 85%, var(--red-soft) 15%);
     color: color-mix(in srgb, var(--surface-text), var(--red-hard) 12%);
-}
-
-.stat-label {
-    opacity: 0.85;
-    font-weight: 600;
-}
-
-.stat-value {
-    font-variant-numeric: lining-nums;
 }
 
 /* Buttons */

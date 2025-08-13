@@ -24,13 +24,14 @@ export default function useKeyboardHandlers({
     feedbackShownUpToRow,
     setFeedbackShownUpToRow,
     FEEDBACK_DELAY_THRESHOLD,
-    goldenLieUsedPerRow,         
+    goldenLieUsedPerRow,
     goldenLieInjectedIndex,
     lockedLetterByRow,
     setGuessRanges,
     setSixerMeta,
     setSixerActiveIndices,
-    sixerActiveIndices
+    sixerActiveIndices,
+    paused
 }) {
     const { jybrishActive, consumeJybrish } = usePerks();
     const {
@@ -156,8 +157,9 @@ export default function useKeyboardHandlers({
         }
 
 
-        // Handle Gray Reaper instant death
-        if (activeDebuffs.includes('GreyReaper') && !hasColor) {            setUsedKeys(newUsed);
+        // Handle Grey Reaper instant death
+        if (activeDebuffs.includes('GreyReaper') && !hasColor) {
+            setUsedKeys(newUsed);
             setIsGameOver(true);
             onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
             return;
@@ -243,6 +245,8 @@ export default function useKeyboardHandlers({
     const handleKeyDown = useCallback(
         (e) => {
 
+            if (paused) { e.preventDefault(); return; }
+
             // Shift pressed then no input
             if (e.shiftKey) {
                 e.preventDefault();
@@ -321,7 +325,7 @@ export default function useKeyboardHandlers({
             }
 
         },
-        [guesses, currentGuess, revealedIndices, getRowActiveIndices]
+        [paused, guesses, currentGuess, revealedIndices, getRowActiveIndices]
     );
 
     useEffect(() => {

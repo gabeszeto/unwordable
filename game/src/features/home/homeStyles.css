@@ -1,10 +1,15 @@
+/* ===== Home (theme-aware) ===== */
+
 .homeContainer {
     min-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #fefefe;
+
+    background: var(--surface-bg);
+    color: var(--surface-text);
+
     padding: 20px;
 }
 
@@ -13,7 +18,7 @@
     font-weight: bold;
     margin-bottom: 40px;
     text-align: center;
-    color: #333;
+    color: var(--surface-text);
 }
 
 .homeButtons {
@@ -22,29 +27,7 @@
     gap: 16px;
     width: 100%;
     max-width: 300px;
-}
-
-.homeButton {
-    background-color: #222;
-    color: white;
-    padding: 14px 20px;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: transform 0.15s ease, background-color 0.3s ease;
-}
-
-.homeButton:hover {
-    background-color: #444;
-    transform: scale(1.02);
-}
-
-.homeButton.disabled {
-    background-color: #999;
-    color: #ccc;
-    cursor: not-allowed;
-    pointer-events: none;
+    transition: opacity .12s ease, transform .12s ease;
 }
 
 /* Submenu wrapper */
@@ -54,31 +37,69 @@
     align-items: center;
     gap: 24px;
     width: 100%;
-    max-width: 300px;
+    max-width: 444px;
     margin: 0 auto;
 }
 
-/* Back button that always exists to avoid layout shift */
+/* Button uses surface tokens, no hard colors */
+.homeButton {
+    /* button tones derived from theme */
+    --btn-bg: color-mix(in srgb, var(--surface-bg) 85%, var(--surface-text) 15%);
+    --btn-bg-hover: color-mix(in srgb, var(--surface-bg) 80%, var(--surface-text) 20%);
+    --btn-border: color-mix(in srgb, var(--surface-border) 70%, transparent);
+    --btn-border-h: color-mix(in srgb, var(--surface-border) 55%, var(--blue-soft) 45%);
+
+    background: var(--btn-bg);
+    color: var(--surface-text);
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform .15s ease, background-color .25s ease, border-color .25s ease, box-shadow .2s ease;
+    border: 1px solid var(--btn-border);
+    box-sizing: border-box;
+}
+
+.homeButton:hover {
+    background: var(--btn-bg-hover);
+    transform: scale(1.02);
+    border-color: var(--btn-border-h);
+}
+
+.homeButton:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-soft) 45%, transparent);
+    border-color: color-mix(in srgb, var(--blue-soft) 60%, var(--surface-border));
+}
+
+/* Back button stays subtle in both themes */
 .backButton.persistent {
     margin-top: 24px;
     font-size: 0.9rem;
     text-align: center;
     text-decoration: underline;
     cursor: pointer;
-    color: #222;
-    transition: color 0.2s ease, opacity 0.2s ease;
+    color: color-mix(in srgb, var(--surface-text) 88%, var(--blue-hard) 12%);
+    transition: color .2s ease, opacity .2s ease;
     min-height: 24px;
 }
 
 .backButton.persistent:hover {
-    color: #444;
+    color: color-mix(in srgb, var(--surface-text) 76%, var(--blue-hard) 24%);
 }
 
-/* htp css */
+/* How-to copy: slightly softer than headings */
 .howToText {
     font-size: 1rem;
-    color: #333;
+    color: color-mix(in srgb, var(--surface-text) 85%, var(--surface-bg) 15%);
     line-height: 1.6;
     text-align: center;
     max-width: 300px;
+}
+
+/* Menu opening transition */
+.homeContainer.menu-opening .homeButtons {
+    opacity: 0;
+    pointer-events: none;
 }
