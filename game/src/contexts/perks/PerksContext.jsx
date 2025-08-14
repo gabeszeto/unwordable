@@ -40,13 +40,18 @@ export const PerksProvider = ({ children }) => {
                 [perkName]: Math.max(current - 1, 0),
             };
         });
-        notePerkUsed(1); 
+        notePerkUsed(1);
         // console.log(`used perk ${perkName}`)
     };
 
+    const resetPerks = () => {
+        setPerks({})
+        setJybrishActive(false)
+    }
+
 
     return (
-        <PerksContext.Provider value={{ perks, addPerk, usePerk, jybrishActive, activateJybrish, consumeJybrish }}>
+        <PerksContext.Provider value={{ perks, addPerk, usePerk, jybrishActive, activateJybrish, consumeJybrish, resetPerks }}>
             {children}
         </PerksContext.Provider>
     );

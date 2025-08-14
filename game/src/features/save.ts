@@ -13,22 +13,36 @@ export type SaveV3 = {
   stage: number;
   cash: number;
   runStats: RunStatsSave;
+  // You can safely add more props here later:
+  debuffPlan?: any;
+  perks?: Record<string, number>;
 };
 
-/** Old shapes you had around; we’ll migrate them forward */
+/** Old shapes */
 type SaveV1 = { version: 1; stage: number; debuffPlan: any; runStartedAt?: number };
 type SaveV2 = { version: 2; stage: number; debuffPlan: any; coins: number; runStartedAt?: number };
 
 function blankRunStats(): RunStatsSave {
-  return { guessesUsed: 0, perksUsed: 0, cashEarnt: 0, runStartedAt: Date.now() };
+  return {
+    guessesUsed: 0,
+    perksUsed: 0,
+    cashEarnt: 0,
+    runStartedAt: Date.now(),
+  };
 }
 
+/** Migration helper: always return a full V3 or null */
 function migrate(raw: any): SaveV3 | null {
   if (!raw || typeof raw !== 'object') return null;
 
   switch (raw.version) {
     case 3:
-      return raw as SaveV3;
+      // ensure missing fields get defaults
+      return {
+        ...raw,
+        cash: Number(raw.cash ?? 0),
+        runStats: { ...blankRunStats(), ...(raw.runStats ?? {}) },
+      };
 
     case 2: {
       const v2 = raw as SaveV2;
@@ -40,6 +54,7 @@ function migrate(raw: any): SaveV3 | null {
           ...blankRunStats(),
           runStartedAt: v2.runStartedAt ?? Date.now(),
         },
+        debuffPlan: v2.debuffPlan,
       };
     }
 
@@ -53,6 +68,7 @@ function migrate(raw: any): SaveV3 | null {
           ...blankRunStats(),
           runStartedAt: v1.runStartedAt ?? Date.now(),
         },
+        debuffPlan: v1.debuffPlan,
       };
     }
 
@@ -71,17 +87,29 @@ export function loadSave(): SaveV3 | null {
 }
 
 export function persistSave(patch: Partial<SaveV3>) {
-  const cur: SaveV3 =
-    loadSave() ?? { version: 3, stage: 0, cash: 0, runStats: blankRunStats() };
+  const cur: SaveV3 = loadSave() ?? {
+    version: 3,
+    stage: 0,
+    cash: 0,
+    runStats: blankRunStats(),
+  };
+
   const next: SaveV3 = {
     ...cur,
     ...patch,
     runStats: { ...cur.runStats, ...(patch.runStats ?? {}) },
     version: 3,
   };
+
   localStorage.setItem(SAVE_KEY, JSON.stringify(next));
 }
 
 export function clearSave() {
   localStorage.removeItem(SAVE_KEY);
+}
+
+/** Tiny helper so Home can quickly know if a run exists */
+export function hasOngoingRun(): boolean {
+  const save = loadSave();
+  return !!save && save.stage > 0; // or adjust to > -1 if stage starts at 0
 }

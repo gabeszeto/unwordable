@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../homeStyles.css';
 import PlayMenu from './PlayMenu';
 import HowToPlayMenu from './HowToPlayMenu';
+import { hasOngoingRun } from '../../save'; // 👈 import the helper
 
 function Home() {
   const [currentMenu, setCurrentMenu] = useState(null); // 'play', 'howto', 'options', or null
@@ -16,7 +17,6 @@ function Home() {
       setMenuOpening(false);
     }, 1); // matches CSS transition
   };
-
 
   const goBack = () => setCurrentMenu(null);
 
@@ -45,14 +45,13 @@ function Home() {
 
       {currentMenu === 'play' && (
         <PlayMenu
-          hasOngoingGame={true}
+          hasOngoingGame={true} // 👈 now dynamic
         />
       )}
 
       {currentMenu === 'howto' && (
         <HowToPlayMenu />
-      )
-      }
+      )}
 
       {/* Back button always rendered, but only visible when in submenu */}
       <div

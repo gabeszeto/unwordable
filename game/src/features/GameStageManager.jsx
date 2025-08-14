@@ -20,6 +20,8 @@ import { useCorrectness } from '../contexts/CorrectnessContext';
 import { BoardHelperProvider } from '../contexts/BoardHelperContext';
 import { SkillsProvider } from '../contexts/skills/SkillsContext';
 
+import { useRunControls } from './game/useRunControls';
+
 import { Menu } from 'lucide-react';
 
 const FINAL_STAGE = 18;
@@ -34,6 +36,7 @@ export default function GameStageManager() {
   const isFinished = stage > FINAL_STAGE;
   const appliedStageRef = React.useRef(-1);
   const navigate = useNavigate()
+  const { restartRunInGame } = useRunControls();
 
   // Debuffs
   const {
@@ -158,16 +161,28 @@ export default function GameStageManager() {
 
 
   // Restart handler
+  // const restartRun = () => {
+  //   setPaused(false);
+  //   pauseStartedAtRef.current = null;
+  //   setAccumulatedPauseMs(0);
+
+  //   resetRunStats();
+  //   resetLevel();        // back to stage 0 (Round 1)
+  //   setDebuffPlan(generateDebuffPlan());   // regenerate on next mount
+  //   clearDebuffs();
+  //   resetCorrectness();
+  // };
+
   const restartRun = () => {
+    // your local “pause” bits:
     setPaused(false);
     pauseStartedAtRef.current = null;
     setAccumulatedPauseMs(0);
 
-    resetRunStats();
-    resetLevel();        // back to stage 0 (Round 1)
-    setDebuffPlan(generateDebuffPlan());   // regenerate on next mount
-    clearDebuffs();
-    resetCorrectness();
+    // centralized reset:
+    restartRunInGame({
+      onResetLocalTimers: null /* we already reset above, but you could pass a function here instead */
+    });
   };
 
   // Block keydown
@@ -209,7 +224,6 @@ export default function GameStageManager() {
 
 
   const goToMenu = () => {
-    restartRun()
     navigate('/')
   }
   return (
