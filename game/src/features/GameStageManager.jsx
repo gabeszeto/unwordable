@@ -54,8 +54,8 @@ export default function GameStageManager() {
   // Initial debuff plan (once)
   useEffect(() => {
     if (Object.keys(debuffPlan).length === 0) {
-      // const plan = generateDebuffPlan();
-      const plan = generateDebugDebuffPlan({ forcePassive: { CutShort: 2, ShiftedGuess: 1 }, forceActive: ["GreyReaper"] });
+      const plan = generateDebuffPlan();
+      // const plan = generateDebugDebuffPlan({ forcePassive: { CutShort: 2, ShiftedGuess: 1 }, forceActive: ["GreyReaper"] });
       setDebuffPlan(plan);
       console.log('[Debuff Plan]', plan);
     }
@@ -165,7 +165,7 @@ export default function GameStageManager() {
 
     resetRunStats();
     resetLevel();        // back to stage 0 (Round 1)
-    setDebuffPlan({});   // regenerate on next mount
+    setDebuffPlan(generateDebuffPlan());   // regenerate on next mount
     clearDebuffs();
     resetCorrectness();
   };

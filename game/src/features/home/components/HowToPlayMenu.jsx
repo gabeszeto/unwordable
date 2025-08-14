@@ -4,15 +4,13 @@ function HowToPlayMenu({ onBack }) {
   return (
     <div className="playMenu">
       <div className="howToText">
-        <p>This is like Wordle, but crazy.</p>
+        <p>This is like Wordle, but meaner.</p>
 
-        <p>You go through 10 levels. Each level is a 5-letter word you have to guess.</p>
+        <p>Survive <strong>10 levels</strong>. In each level, you must correctly guess a 5-letter word. It keeps getting tougher in the most fun (painful?) way.</p>
 
-        <p>Some levels are regular, but every three rounds, there's a boss which messes with the rules, making your life more difficult.</p>
+        <p>Beat a level to earn <strong>cash</strong> to buy <strong>consumables</strong> and <strong>skills</strong> which help you along the way.</p>
 
-        <p>To help you out, you can use perks which give you little boosts. These are bought with cash from beating levels and can be spent between rounds.</p>
-
-        <p>If you run out of guesses, the run ends. If you beat all 10? You're <strong>Unwordable</strong>.</p>
+        <p>If you die on any level, the run ends. Clear them all and you're <strong>Unwordable</strong>.</p>
       </div>
     </div>
   );

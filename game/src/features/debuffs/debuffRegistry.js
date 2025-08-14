@@ -42,19 +42,19 @@ export const debuffRegistry = {
     type: 'passive',
     name: 'Locked Letter',
     description: 'A random letter is locked into a specific position in one of your first three guesses.',
-    weight: 1,
+    weight: 2,
   },
   ShiftedGuess: {
     type: 'passive',
     name: 'Shifted Guess',
     description: 'One of your first three guesses is shifted left or right.',
-    weight: 1,
+    weight: 2,
   },
   NoFoureedom: {
     type: 'passive',
     name: 'NoFoureedom',
     description: 'Your first guess must be a 4-letter word.',
-    weight: 1,
+    weight: 2,
     upgradableTo: 'NoThreedom', // 💡 new field
   },
   NoThreedom: {
@@ -70,7 +70,7 @@ export const debuffRegistry = {
     name: 'Cut Short',
     description: 'You have 1 less guess.',
     weight: 1,
-    maxStacks: 3,
+    maxStacks: 2,
     stackable: true
   },
   PerkTax: {

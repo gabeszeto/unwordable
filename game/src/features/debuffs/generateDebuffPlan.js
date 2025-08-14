@@ -42,6 +42,14 @@ export function generateDebuffPlan() {
     Yellowless: 'Grellow',
   };
 
+  // 🔹 figure out “first” and “second” passive rounds from your milestones
+  const passiveRoundsSorted = [...debuffMilestones.passiveRounds].sort((a, b) => a - b);
+  const FIRST_PASSIVE_ROUND  = passiveRoundsSorted[0];        // usually 1
+  const SECOND_PASSIVE_ROUND = passiveRoundsSorted[1] ?? null; // e.g. 4
+
+  // 🔹 how much to bias CutShort on the second passive (tweak to taste)
+  const CUTSHORT_SECOND_PASSIVE_PROB = 0.45; // 45% chance
+
   for (let round = 1; round <= 10; round++) {
     plan[round] = {
       passive: [...persistentPassives], // snapshot at the start of the round
@@ -52,10 +60,32 @@ export function generateDebuffPlan() {
     if (debuffMilestones.passiveRounds.includes(round)) {
       let selected;
 
-      // Round 10: prefer "CutShort" if we can still add a stack
+      // Round 10: prefer "CutShort" if we can still add a stack (existing rule)
       if (round === 10 && canAddPassive('CutShort')) {
         selected = 'CutShort';
-      } else {
+      }
+      // First passive may NOT be CutShort
+      else if (round === FIRST_PASSIVE_ROUND) {
+        const filtered = getFilteredPassivePool()
+          .filter(([key]) => key !== 'CutShort');             // exclude CutShort
+        if (filtered.length) {
+          selected = pickWeightedDebuff(Object.fromEntries(filtered));
+        } else {
+          // no valid non-CutShort options → skip adding this round
+          selected = null;
+        }
+      }
+      // Second passive: bias toward CutShort
+      else if (SECOND_PASSIVE_ROUND && round === SECOND_PASSIVE_ROUND) {
+        if (canAddPassive('CutShort') && Math.random() < CUTSHORT_SECOND_PASSIVE_PROB) {
+          selected = 'CutShort';
+        } else {
+          const filtered = getFilteredPassivePool();
+          selected = pickWeightedDebuff(Object.fromEntries(filtered));
+        }
+      }
+      // Normal selection
+      else {
         const filtered = getFilteredPassivePool();
         selected = pickWeightedDebuff(Object.fromEntries(filtered));
       }
@@ -88,7 +118,6 @@ export function generateDebuffPlan() {
     // ----- ACTIVE SELECTION (for this round only) -----
     const activeCount = debuffMilestones.activeRounds[round] || 0;
     if (activeCount > 0) {
-      // copy pool to map for pick func
       const poolMap = () => Object.fromEntries(activePool);
 
       for (let i = 0; i < activeCount; i++) {
@@ -98,7 +127,6 @@ export function generateDebuffPlan() {
         if (round === 10 && selected) {
           const already = plan[round].active[0]; // only matters on second pick
           if (already && MUTUAL_EXCLUSION[already] === selected) {
-            // re-pick avoiding the conflicting one
             const filteredActivePool = activePool.filter(([key]) => key !== MUTUAL_EXCLUSION[already]);
             const filteredMap = Object.fromEntries(filteredActivePool);
             selected = pickWeightedDebuff(filteredMap);
@@ -107,9 +135,8 @@ export function generateDebuffPlan() {
 
         if (selected) {
           plan[round].active.push(selected);
-          // remove from global active pool to avoid repeats in later rounds
           const idx = activePool.findIndex(([key]) => key === selected);
-          if (idx !== -1) activePool.splice(idx, 1);
+          if (idx !== -1) activePool.splice(idx, 1); // avoid repeats later
         }
       }
     }
@@ -117,6 +144,7 @@ export function generateDebuffPlan() {
 
   return plan;
 }
+
 
 export function generateDebugDebuffPlan({
   forcePassive = {},

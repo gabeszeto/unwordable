@@ -6,13 +6,12 @@ function PlayMenu({ hasOngoingGame, onSelect }) {
     const navigate = useNavigate();
 
     const playOptions = [
-        { label: 'Daily', value: 'daily', active: true },
         { label: 'New Run', value: 'new', active: true },
         { label: 'Continue', value: 'continue', active: hasOngoingGame }
     ];
 
     const handleSelect = (value) => {
-        if (value === 'daily') {
+        if (value === 'new') {
             navigate('/play');
         } else {
             return
