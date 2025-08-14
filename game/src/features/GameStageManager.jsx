@@ -34,7 +34,6 @@ export default function GameStageManager() {
   const isShop = stage % 2 === 1;
   const isDeath = stage === 100;
   const isFinished = stage > FINAL_STAGE;
-  const appliedStageRef = React.useRef(-1);
   const navigate = useNavigate()
   const { restartRunInGame } = useRunControls();
 
@@ -84,9 +83,15 @@ export default function GameStageManager() {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }, [startMs, now, paused, accumulatedPauseMs]);
 
-  const pause = useCallback(() => {
+  // const pause = useCallback(() => {
+  //   if (isDeath || isFinished || paused) return;
+  //   pauseStartedAtRef.current = Date.now();
+  //   setPaused(true);
+  // }, [isDeath, isFinished, paused]);
+
+  const pause = useCallback((atMs) => {
     if (isDeath || isFinished || paused) return;
-    pauseStartedAtRef.current = Date.now();
+    pauseStartedAtRef.current = typeof atMs === 'number' ? atMs : Date.now();
     setPaused(true);
   }, [isDeath, isFinished, paused]);
 
@@ -123,20 +128,6 @@ export default function GameStageManager() {
   useEffect(() => {
     if (isGameLevel) resetCorrectness();
   }, [isGameLevel, resetCorrectness]);
-
-  // useEffect(() => {
-  //   if (appliedStageRef.current === stage) return;
-  //   appliedStageRef.current = stage;
-
-  //   clearDebuffs({ keepPlan: true });
-  //   const roundPlan = debuffPlan[round];
-  //   if (!roundPlan) return;
-
-  //   (roundPlan.passive || []).forEach(p => addPassiveDebuff(p));
-  //   (roundPlan.active || []).forEach(a => addActiveDebuff(a));
-
-  // }, [stage, debuffPlan, round]);
-
 
   // Round visuals
   const roundToUse = isDeath ? deathRound : round;
@@ -198,6 +189,63 @@ export default function GameStageManager() {
   const goToMenu = () => {
     navigate('/')
   }
+
+  // Auto–pause when user leaves the tab/window (and never auto-resume)
+  // Auto–pause when the document is no longer visible.
+  // Auto–pause when the page goes to the background.
+  // Defer on Safari to avoid stealing focus back to this tab.
+  useEffect(() => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    if (isSafari) {
+      // Safari: capture the time on blur, then pause after 2x rAF so the tab switch can finish.
+      const onBlur = () => {
+        const leftAt = Date.now();
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            pause(leftAt); // use captured timestamp
+          });
+        });
+      };
+      window.addEventListener('blur', onBlur);
+      return () => window.removeEventListener('blur', onBlur);
+    } else {
+      // Others: pause immediately when hidden / pagehide
+      const onVis = () => {
+        if (document.visibilityState === 'hidden') {
+          pause(Date.now());
+        }
+      };
+      const onPageHide = () => pause(Date.now());
+
+      document.addEventListener('visibilitychange', onVis, { passive: true });
+      window.addEventListener('pagehide', onPageHide, { passive: true });
+
+      return () => {
+        document.removeEventListener('visibilitychange', onVis);
+        window.removeEventListener('pagehide', onPageHide);
+      };
+    }
+  }, [pause]);
+
+
+
+
+  // useEffect(() => {
+  //   const log = (msg) => console.log('[vis]', msg, document.visibilityState);
+  //   const onVis = () => log('visibilitychange');
+  //   const onPageHide = () => log('pagehide');
+  //   document.addEventListener('visibilitychange', onVis);
+  //   window.addEventListener('pagehide', onPageHide);
+  //   return () => {
+  //     document.removeEventListener('visibilitychange', onVis);
+  //     window.removeEventListener('pagehide', onPageHide);
+  //   };
+  // }, []);
+
+
+
+
   return (
     <div className="gameContainer" onKeyDownCapture={handleKeyDownCapture}>
       {/* Sticky Navbar */}

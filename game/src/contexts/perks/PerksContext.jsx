@@ -1,60 +1,102 @@
-import React, { createContext, useContext, useState } from 'react';
+// contexts/perks/PerksContext.js
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useRunStats } from '../RunStatsContext';
+import { loadSave, persistSave } from '../../features/save'; // <-- adjust path if needed
 
 const PerksContext = createContext();
 
-export const PerksProvider = ({ children }) => {
-    const { notePerkUsed } = useRunStats()
-    const [perks, setPerks] = useState({
-        // DeadKeys: 2,
-        // Jybrish: 3,
-        // Anatomy: 1,
-        // KeyzoneRow: 2,
-        // // KeyzoneGrid: 4,
-        // // KeyzoneHalves: 4,
-        // Sixer: 1,
-        // // BorrowedTime: 3,
-        // Revelation: 2,
-        // Wager: 1
+export function PerksProvider({ children }) {
+  const { notePerkUsed } = useRunStats();
+
+  // Only persist the counts object in save.perks
+  const [perks, setPerks] = useState({});
+  // Transient runtime-only state
+  const [jybrishActive, setJybrishActive] = useState(false);
+
+  // Avoid re-hydrating twice in StrictMode dev
+  const hydratedRef = useRef(false);
+
+  // Hydrate from save once
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    try {
+      const save = loadSave();
+      if (save?.perks && typeof save.perks === 'object') {
+        setPerks(save.perks);
+      }
+    } catch {
+      // ignore malformed saves
+    }
+  }, []);
+
+  // Helpers
+  const getPerkCount = (name) => Math.max(0, Number(perks?.[name] || 0));
+  const hasPerk = (name) => getPerkCount(name) > 0;
+
+  // Mutators (these also persist)
+  const addPerk = (perkName, n = 1) => {
+    const delta = Math.max(0, Number(n) || 0);
+    if (!delta) return;
+    setPerks(prev => {
+      const next = { ...prev, [perkName]: getPerkCount(perkName) + delta };
+      persistSave({ perks: next });
+      return next;
+    });
+  };
+
+  /**
+   * Attempts to consume a perk. Returns true if one was spent.
+   * Only calls notePerkUsed when a spend actually happened.
+   */
+  const usePerk = (perkName) => {
+    const current = getPerkCount(perkName);
+    if (current <= 0) return false;
+
+    setPerks(prev => {
+      const nextCount = Math.max(0, current - 1);
+      const next = { ...prev, [perkName]: nextCount };
+      if (nextCount === 0) delete next[perkName]; // keep the object tidy
+      persistSave({ perks: next });
+      return next;
     });
 
-    // Perk states
-    const [jybrishActive, setJybrishActive] = useState(false);
+    notePerkUsed(1);
+    return true;
+  };
 
-    const activateJybrish = () => setJybrishActive(true);
-    const consumeJybrish = () => setJybrishActive(false);
+  const resetPerks = () => {
+    setPerks({});
+    setJybrishActive(false);
+    persistSave({ perks: {} });
+  };
 
-    const addPerk = (perkName) => {
-        setPerks(prev => ({
-            ...prev,
-            [perkName]: (prev[perkName] || 0) + 1
-        }));
-    };
+  // Transient toggles (not persisted)
+  const activateJybrish = () => setJybrishActive(true);
+  const consumeJybrish = () => setJybrishActive(false);
 
+  return (
+    <PerksContext.Provider
+      value={{
+        // data
+        perks,
+        getPerkCount,
+        hasPerk,
 
-    const usePerk = (perkName) => {
-        setPerks(prev => {
-            const current = prev[perkName] || 0;
-            return {
-                ...prev,
-                [perkName]: Math.max(current - 1, 0),
-            };
-        });
-        notePerkUsed(1);
-        // console.log(`used perk ${perkName}`)
-    };
+        // mutators (persist)
+        addPerk,
+        usePerk,
+        resetPerks,
 
-    const resetPerks = () => {
-        setPerks({})
-        setJybrishActive(false)
-    }
-
-
-    return (
-        <PerksContext.Provider value={{ perks, addPerk, usePerk, jybrishActive, activateJybrish, consumeJybrish, resetPerks }}>
-            {children}
-        </PerksContext.Provider>
-    );
-};
+        // transient state
+        jybrishActive,
+        activateJybrish,
+        consumeJybrish,
+      }}
+    >
+      {children}
+    </PerksContext.Provider>
+  );
+}
 
 export const usePerks = () => useContext(PerksContext);
