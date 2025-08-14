@@ -44,7 +44,6 @@ export default function GameStageManager() {
     addPassiveDebuff,
     clearDebuffs,
     debuffPlan,
-    setDebuffPlan,
   } = useDebuffs();
 
   // Death + correctness
@@ -53,19 +52,6 @@ export default function GameStageManager() {
 
   // Run stats
   const { stats, resetRunStats } = useRunStats();
-
-  // Initial debuff plan (once)
-  useEffect(() => {
-    if (Object.keys(debuffPlan).length === 0) {
-      const plan = generateDebuffPlan();
-      // const plan = generateDebugDebuffPlan({ forcePassive: { CutShort: 2, ShiftedGuess: 1 }, forceActive: ["GreyReaper"] });
-      setDebuffPlan(plan);
-      console.log('[Debuff Plan]', plan);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
 
   // Pause time
   const [paused, setPaused] = useState(false);
@@ -123,7 +109,7 @@ export default function GameStageManager() {
 
   // Apply debuffs when stage changes 
   useEffect(() => {
-    clearDebuffs();
+    clearDebuffs({ keepPlan: true });
 
     const roundPlan = debuffPlan[round];
     if (!roundPlan) return;
@@ -138,18 +124,18 @@ export default function GameStageManager() {
     if (isGameLevel) resetCorrectness();
   }, [isGameLevel, resetCorrectness]);
 
-  useEffect(() => {
-    if (appliedStageRef.current === stage) return;
-    appliedStageRef.current = stage;
+  // useEffect(() => {
+  //   if (appliedStageRef.current === stage) return;
+  //   appliedStageRef.current = stage;
 
-    clearDebuffs();
-    const roundPlan = debuffPlan[round];
-    if (!roundPlan) return;
+  //   clearDebuffs({ keepPlan: true });
+  //   const roundPlan = debuffPlan[round];
+  //   if (!roundPlan) return;
 
-    (roundPlan.passive || []).forEach(p => addPassiveDebuff(p));
-    (roundPlan.active || []).forEach(a => addActiveDebuff(a));
+  //   (roundPlan.passive || []).forEach(p => addPassiveDebuff(p));
+  //   (roundPlan.active || []).forEach(a => addActiveDebuff(a));
 
-  }, [stage, debuffPlan, round]);
+  // }, [stage, debuffPlan, round]);
 
 
   // Round visuals
@@ -158,20 +144,6 @@ export default function GameStageManager() {
   const isBossRound = BOSS_STEPS.includes(roundToUse);
   const isFinalBoss = roundToUse === 10;
   const isShopThisRound = isShop && roundToUse === round;
-
-
-  // Restart handler
-  // const restartRun = () => {
-  //   setPaused(false);
-  //   pauseStartedAtRef.current = null;
-  //   setAccumulatedPauseMs(0);
-
-  //   resetRunStats();
-  //   resetLevel();        // back to stage 0 (Round 1)
-  //   setDebuffPlan(generateDebuffPlan());   // regenerate on next mount
-  //   clearDebuffs();
-  //   resetCorrectness();
-  // };
 
   const restartRun = () => {
     // your local “pause” bits:

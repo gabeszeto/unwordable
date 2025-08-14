@@ -45,7 +45,7 @@ function Home() {
 
       {currentMenu === 'play' && (
         <PlayMenu
-          hasOngoingGame={true} // 👈 now dynamic
+          hasOngoingGame={hasOngoingRun()} // 👈 now dynamic
         />
       )}
 
