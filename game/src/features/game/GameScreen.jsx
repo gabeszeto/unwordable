@@ -88,6 +88,7 @@ export default function GameScreen({paused}) {
   );
 
   const targetWord = targetWords[round - 1];
+  // const targetWord = 'LEVEL'
 
   // perk stuff
   const sharedProps = {

@@ -282,6 +282,75 @@ export default function Board({
   };
 
 
+  // Put this near the component, above renderRow (has access to paddedTargetWord & activeDebuffs)
+  const computeRowVisualStatuses = (guessStr, rowActiveIndices, activeDebuffs, paddedTargetWord) => {
+    const len = rowActiveIndices.length;
+
+    // Count target letters for just this row's slots
+    const remaining = {};
+    for (let i = 0; i < len; i++) {
+      const idx = rowActiveIndices[i];
+      const t = paddedTargetWord[idx];
+      remaining[t] = (remaining[t] || 0) + 1;
+    }
+
+    const raw = new Array(len).fill('absent');
+
+    // Pass 1: mark true exacts (consume), blurred-correct (do NOT consume)
+    for (let i = 0; i < len; i++) {
+      const idx = rowActiveIndices[i];
+      const letter = guessStr[i];
+      if (!letter) continue;
+
+      const targetChar = paddedTargetWord[idx];
+      const isExact = letter === targetChar;
+
+      const isBlurredGreen =
+        activeDebuffs.includes('BlurredVision') &&
+        [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
+          .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
+          .includes(letter);
+
+      if (isExact) {
+        raw[i] = 'correct';
+        remaining[letter] = (remaining[letter] || 0) - 1; // consume a real copy
+      } else if (isBlurredGreen) {
+        raw[i] = 'correct'; // visual only, don't consume
+      }
+    }
+
+    // Pass 2: award presents only if target still has copies left
+    for (let i = 0; i < len; i++) {
+      if (raw[i] !== 'absent') continue;
+      const letter = guessStr[i];
+      if (!letter) continue;
+
+      if ((remaining[letter] || 0) > 0) {
+        raw[i] = 'present';
+        remaining[letter] = remaining[letter] - 1;
+      }
+    }
+
+    // Visual transforms
+    const grellow = activeDebuffs.includes('Grellow');
+    const yellowless = activeDebuffs.includes('Yellowless');
+
+    const visual = raw.map(s => {
+      let v = s;
+      if (grellow && v === 'correct') v = 'present';
+      if (yellowless && s === 'present') v = 'absent';
+      return v;
+    });
+
+    // Map back to board indices for easy lookup when rendering
+    const byBoardIndex = {};
+    for (let i = 0; i < len; i++) {
+      byBoardIndex[rowActiveIndices[i]] = visual[i];
+    }
+    return byBoardIndex;
+  };
+
+
   const renderRow = (
     guessArray,
     rowIndex,
@@ -290,30 +359,38 @@ export default function Board({
     sixerThisRow = null
   ) => {
     const rowActiveIndices = forcedActiveIndices || getRowActiveIndices(rowIndex);
-
+  
     // 🔒 use row-scoped revelations
     const rowReveals = getRevealedForRow(rowIndex);
-
+  
     // caret: first empty, non-revealed slot in THIS row
     const cursorIndex = rowActiveIndices.find(
       i => guessArray[i] === '' && !rowReveals.includes(i)
     );
-
+  
     // Sixer
     const isCurrentGuessRow = rowIndex === guesses.length;
     const isSixerSelectable =
       isCurrentGuessRow && sixerMode && sixerActiveIndices === null;
-
+  
     // Normal
     const guessStr = rowActiveIndices.map(i => guessArray[i]).join('');
     const overrideAllCorrect = isSubmitted && isCorrectGuess(guessStr);
-
+  
+    // --- NEW: precompute this row's visual statuses (Wordle 2-pass + debuffs) ---
+    const rowStatusesByBoardIndex = computeRowVisualStatuses(
+      guessStr,
+      rowActiveIndices,
+      activeDebuffs,
+      paddedTargetWord
+    );
+  
     const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const letter = guessArray[i] || '';
       const isActive = rowActiveIndices.includes(i);
-
+  
       let displayLetter = letter;
-
+  
       // Show locked letter in correct position on the right row
       if (!isSubmitted) {
         if (rowReveals.includes(i)) {
@@ -324,38 +401,41 @@ export default function Board({
           displayLetter = lockedLetterByRow.current[rowIndex].letter;
         }
       }
-
+  
       const feedbackSuppressed =
         isFeedbackDelayActive &&
         rowIndex <= 1 &&
         rowIndex > feedbackShownUpToRow;
-
+  
       // 👇 consider revealed-for-this-row as “feedback should show”
       const isSuppressed = feedbackSuppressed && !overrideAllCorrect;
-
+  
       // ✅ show feedback if submitted, revealed-for-this-row, or override
       const shouldApplyFeedback =
         (isSubmitted || rowReveals.includes(i) || overrideAllCorrect) && !isSuppressed;
+  
       let letterClass = '';
-
-      if (shouldApplyFeedback) {
-        if (overrideAllCorrect && isActive) {
+  
+      if (shouldApplyFeedback && isActive) {
+        if (overrideAllCorrect) {
           letterClass = 'correct'; // Boss override
         } else {
-          letterClass = getLetterClass(displayLetter, i, !isSubmitted, rowActiveIndices, rowIndex);
-
+          // Use our computed statuses for this row
+          letterClass = rowStatusesByBoardIndex[i] || 'absent';
+  
           // If this tile was revealed for THIS row, force green when editing this row
           if (!isSubmitted && rowReveals.includes(i)) {
             letterClass = 'correct';
           }
-
-          // 👁 Grellow downgrade
-          if (isGrellowActive && letterClass === 'correct') {
+  
+          // Grellow downgrade is already applied inside computeRowVisualStatuses,
+          // but keep this in case you sometimes want to force it at render time.
+          if (activeDebuffs.includes('Grellow') && letterClass === 'correct') {
             letterClass = 'present';
           }
         }
       }
-
+  
       if (
         bouncingIndices.includes(i) &&
         isSubmitted &&
@@ -363,14 +443,14 @@ export default function Board({
       ) {
         letterClass += ' bounce';
       }
-
+  
       const isCurrent = !isSubmitted && i === cursorIndex;
       const isSixerSelectableTile = isSixerSelectable && (i === 0 || i === 6);
       const sixerData = sixerMeta[rowIndex];
       const isSixerLockedVisual = sixerData
         ? i >= sixerData.start && i <= sixerData.end
         : false;
-
+  
       return (
         <div
           className={`
@@ -384,8 +464,8 @@ export default function Board({
           key={i}
           style={
             bouncingIndices.includes(i) &&
-              isSubmitted &&
-              rowIndex === guesses.length - 1
+            isSubmitted &&
+            rowIndex === guesses.length - 1
               ? { animationDelay: `${i * 0.1}s` }
               : {}
           }
@@ -402,7 +482,7 @@ export default function Board({
         </div>
       );
     });
-
+  
     return (
       <div
         className={`guess-row ${!isSubmitted && rowIndex === guesses.length && shakeRow ? 'shake' : ''}`}
@@ -412,20 +492,21 @@ export default function Board({
       </div>
     );
   };
+  
 
 
   const renderEmptyRow = (rowIndex, forceInactive = false) => {
     const rowActiveIndices = getRowActiveIndices(rowIndex);
     const locked = lockedLetterByRow.current?.[rowIndex];
-  
+
     const emptyCells = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const isLocked = !forceInactive && locked?.index === i; // no locks when forced inactive
       const letter = isLocked ? locked.letter : '';
-  
+
       const inactiveClass = forceInactive
         ? 'inactive'
         : (!rowActiveIndices.includes(i) ? 'inactive' : '');
-  
+
       return (
         <div
           className={`letter ${inactiveClass} ${isLocked ? 'locked' : ''}`}
@@ -435,7 +516,7 @@ export default function Board({
         </div>
       );
     });
-  
+
     return <div className="guess-row" key={`empty-${rowIndex}`}>{emptyCells}</div>;
   };
 
@@ -447,29 +528,29 @@ export default function Board({
         rowActiveIndices.forEach((idx, j) => {
           guessArray[idx] = guessStr[j];
         });
-  
+
         const sixerThisRow = sixerMeta[i];
         return renderRow(guessArray, i, true, rowActiveIndices, sixerThisRow);
       })
     ];
-  
+
     // current editing row (if not game over)
     if (!isGameOver) {
       renderedRows.push(renderRow(currentGuess, guesses.length, false));
     }
-  
+
     const totalRowsRendered = isGameOver ? guesses.length : guesses.length + 1;
-  
+
     // First: normal empty rows up to maxGuesses
     for (let r = totalRowsRendered; r < Math.min(maxGuesses, 6); r++) {
       renderedRows.push(renderEmptyRow(r, /*forceInactive*/ false));
     }
-  
+
     // Then: force inactive rows to fill to 6 rows
     for (let r = Math.max(totalRowsRendered, maxGuesses); r < 6; r++) {
       renderedRows.push(renderEmptyRow(r, /*forceInactive*/ true));
     }
-  
+
     return renderedRows;
   }, [
     guesses,
@@ -483,7 +564,7 @@ export default function Board({
     getRowActiveIndices,
     guessRanges
   ]);
-  
+
 
   useEffect(() => {
     if (typeof onVirtualKey === 'function') {

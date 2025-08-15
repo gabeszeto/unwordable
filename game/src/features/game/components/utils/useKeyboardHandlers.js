@@ -115,6 +115,7 @@ export default function useKeyboardHandlers({
                 const targetChar = paddedTargetWord[idx];
 
                 const isExact = letter === targetChar;
+                // 1. Blurred green first
                 const isBlurredGreen =
                     activeDebuffs.includes('BlurredVision') &&
                     [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
@@ -123,6 +124,7 @@ export default function useKeyboardHandlers({
 
                 let rawStatus;
 
+                // 2. Handle everything else
                 if (isExact || isBlurredGreen) {
                     if (isExact) {
                         console.log(`marking ${idx}`)
@@ -134,30 +136,94 @@ export default function useKeyboardHandlers({
                     rawStatus = 'present';
                     hasColor = true;
                 } else {
-                    rawStatus = 'absent';
+                    // --- Wordle-style 2-pass logic with debuffs ---
+                    const len = rowActiveIndices.length;
+
+                    // Count how many of each target letter exists in this row (5 slots)
+                    const remaining = {};
+                    for (let i = 0; i < len; i++) {
+                        const idx = rowActiveIndices[i];
+                        const t = paddedTargetWord[idx];
+                        remaining[t] = (remaining[t] || 0) + 1;
+                    }
+
+                    // Raw statuses before Grellow/Yellowless transforms
+                    const rawStatuses = new Array(len).fill('absent');
+
+                    // Pass 1: mark corrects (and blurred-correct for visuals), decrement remaining only for true exacts
+                    for (let i = 0; i < len; i++) {
+                        const idx = rowActiveIndices[i];
+                        const letter = guessStr[i];
+                        const targetChar = paddedTargetWord[idx];
+                        if (!letter) continue;
+
+                        const isExact = letter === targetChar;
+                        const isBlurredGreen =
+                            activeDebuffs.includes('BlurredVision') &&
+                            [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
+                                .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
+                                .includes(letter);
+
+                        if (isExact) {
+                            rawStatuses[i] = 'correct';
+                            remaining[letter] -= 1;   // consume a real target letter
+                            markAsTrulyCorrect(idx);
+                        } else if (isBlurredGreen) {
+                            // Visual green only; do NOT consume a target letter
+                            rawStatuses[i] = 'correct';
+                        }
+                    }
+
+                    // Pass 2: mark presents where target still has remaining of that letter
+                    for (let i = 0; i < len; i++) {
+                        if (rawStatuses[i] !== 'absent') continue;
+                        const letter = guessStr[i];
+                        if (!letter) continue;
+
+                        const left = remaining[letter] || 0;
+                        if (left > 0) {
+                            rawStatuses[i] = 'present';
+                            remaining[letter] = left - 1; // consume one
+                        }
+                        // else stays 'absent'
+                    }
+
+                    // Track “hasColor” BEFORE Grellow/Yellowless transforms (matches your GreyReaper behavior)
+                    if (rawStatuses.some(s => s === 'correct' || s === 'present')) {
+                        hasColor = true;
+                    }
+
+                    // Apply visual transforms + push to keyboard with priority
+                    for (let i = 0; i < len; i++) {
+                        const letter = guessStr[i];
+                        if (!letter) continue;
+
+                        const rawStatus = rawStatuses[i];
+                        let status = rawStatus;
+
+                        // Grellow: downgrade real greens to present (purely visual)
+                        if (isGrellowActive && rawStatus === 'correct') {
+                            status = 'present';
+                        }
+
+                        // Yellowless: hide raw presents (but not greens)
+                        if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
+                            status = 'absent';
+                        }
+
+                        // Keyboard: keep the strongest state seen for this letter
+                        if (!newUsed[letter] || getPriority(status) > getPriority(newUsed[letter])) {
+                            newUsed[letter] = status;
+                        }
+                    }
                 }
 
-                // 👁 Grellow override (visual downgrade)
-                let status = rawStatus;
-                if (isGrellowActive && rawStatus === 'correct') {
-                    status = 'present';
-                }
-
-                // 💛 Yellowless applies ONLY to raw present letters (not grellow-faked)
-                if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
-                    status = 'absent';
-                }
-
-                // Final: apply with priority
-                if (!newUsed[letter] || getPriority(status) > getPriority(newUsed[letter])) {
-                    newUsed[letter] = status;
-                }
             });
 
         }
 
 
-        // Handle Grey Reaper instant death
+        // 6. Gray Reaper death
         if (activeDebuffs.includes('GreyReaper') && !hasColor) {
             setUsedKeys(newUsed);
             setIsGameOver(true);
@@ -165,7 +231,7 @@ export default function useKeyboardHandlers({
             return;
         }
 
-        // Golden lie janky logic
+        // 7. Golden Lie Janky logic
         if (
             activeDebuffs.includes('GoldenLie') &&
             !goldenLieUsedPerRow.current.has(guesses.length)
@@ -200,7 +266,7 @@ export default function useKeyboardHandlers({
         }
 
 
-        // Set key states — either now or after delay
+        // 8. Set key states or after feedback
         if (feedbackSuppressed) {
             setPendingUsedKeys(prev => {
                 const merged = { ...(prev || {}) };
@@ -220,7 +286,7 @@ export default function useKeyboardHandlers({
             setUsedKeys(newUsed);
         }
 
-        // Handle win/loss
+        // 9. Handle win loss
         if (isCorrect) {
             setBouncingIndices([...rowActiveIndices]);
             setTimeout(() => setBouncingIndices([]), 1000);

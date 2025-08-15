@@ -17,8 +17,8 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },
     levels: [
-      { level: 1, cost: 14, weight: 2, description: 'Tells if any letter repeats.' },
-      { level: 2, cost: 12, weight: 2, description: 'Also tells how many letters repeat.' },
+      { level: 1, cost: 15, weight: 2, description: 'Tells if any letter repeats.' },
+      { level: 2, cost: 10, weight: 2, description: 'Also tells how many letters repeat.' },
     ],
   },
   Analysis: {
@@ -27,7 +27,7 @@ export const skillsRegistry = {
     maxLevel: 2,
     shop: { minStage: 1, maxStage: 20 },
     levels: [
-      { level: 1, cost: 12, weight: 2, description: 'Shows how many tries Gabe took (simulated).' },
+      { level: 1, cost: 10, weight: 2, description: 'Shows how many tries Gabe took (simulated).' },
       { level: 2, cost: 12, weight: 1, description: 'Also shows if Gabe knows the word (manual or simulated).' },
     ],
   },
