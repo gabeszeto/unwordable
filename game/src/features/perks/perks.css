@@ -29,7 +29,7 @@
     color: var(--surface-text);
 
     cursor: pointer;
-    transition: transform 120ms ease, filter 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    transition: transform 120ms ease, filter 120ms ease;
 }
 
 .perk-button:hover {

@@ -74,7 +74,7 @@
     border: 1px solid var(--surface-border);
     white-space: nowrap;
     user-select: none;
-    transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    transition: transform 120ms ease;
     color: var(--surface-text);
     background: color-mix(in srgb, var(--surface-bg) 92%, var(--blue-soft) 8%);
   }
@@ -176,7 +176,7 @@
     font-size: 0.9rem;
     font-family: 'Zilla Slab';
     cursor: pointer;
-    transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    transition: transform 120ms ease;
   }
   
   .gb-btn:hover {

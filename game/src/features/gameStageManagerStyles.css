@@ -158,7 +158,7 @@
   background: var(--dot-bg);
   /* box-sizing: border-box;                  */
   border: 1px solid var(--dot-bd);
-  transition: background .25s, transform .2s, border-color .25s;
+  transition: transform .2s;
 }
 
 /* --- COMPLETED (HARD) --- */
