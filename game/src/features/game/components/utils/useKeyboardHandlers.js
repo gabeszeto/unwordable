@@ -5,8 +5,11 @@ import { useCash } from '../../../../contexts/cash/CashContext';
 import { useDebuffs } from '../../../../contexts/debuffs/DebuffsContext';
 import { useRunStats } from '../../../../contexts/RunStatsContext';
 
+import { shouldHideYellow } from '../../../engine/yellowless';
+
 export default function useKeyboardHandlers({
     guesses,
+    stage,
     currentGuess,
     setCurrentGuess,
     setGuesses,
@@ -207,8 +210,21 @@ export default function useKeyboardHandlers({
                         }
 
                         // Yellowless: hide raw presents (but not greens)
+                        // if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
+                        //     status = 'absent';
+                        // }
+
+                        // Yellowless with rng checker
                         if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
-                            status = 'absent';
+                            const hide = shouldHideYellow({
+                                stage,
+                                guessIndex: newGuesses.length - 1, 
+                                colAbs: rowActiveIndices[i],  
+                                targetWord: correctWord, 
+                                guess: guessStr,
+                            }
+                            )
+                            status = hide ? 'absent' : 'present';
                         }
 
                         // Keyboard: keep the strongest state seen for this letter

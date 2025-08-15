@@ -10,6 +10,8 @@ const MAX_ROW_LENGTH = 7;
 
 import useKeyboardHandlers from './utils/useKeyboardHandlers';
 
+import { shouldHideYellow } from '../../engine/yellowless';
+
 import threeLetterWords from '../../../assets/three-letter-words.txt?raw';
 import fourLetterWords from '../../../assets/four-letter-words.txt?raw';
 import fiveLetterWords from '../../../assets/five-letter-words.txt?raw';
@@ -192,6 +194,7 @@ export default function Board({
 
   const { handleKeyDown } = useKeyboardHandlers({
     guesses,
+    stage,
     currentGuess,
     setCurrentGuess,
     setGuesses,
@@ -283,7 +286,7 @@ export default function Board({
 
 
   // Put this near the component, above renderRow (has access to paddedTargetWord & activeDebuffs)
-  const computeRowVisualStatuses = (guessStr, rowActiveIndices, activeDebuffs, paddedTargetWord) => {
+  const computeRowVisualStatuses = (guessStr, rowActiveIndices, activeDebuffs, paddedTargetWord, rowIndex) => {
     const len = rowActiveIndices.length;
 
     // Count target letters for just this row's slots
@@ -335,10 +338,21 @@ export default function Board({
     const grellow = activeDebuffs.includes('Grellow');
     const yellowless = activeDebuffs.includes('Yellowless');
 
-    const visual = raw.map(s => {
+    const visual = raw.map((s, j) => {
       let v = s;
       if (grellow && v === 'correct') v = 'present';
-      if (yellowless && s === 'present') v = 'absent';
+    
+      if (yellowless && s === 'present') {
+        const hide = shouldHideYellow({
+          // Use the SAME field here as in submitGuess (round or stage)
+          stage,                     // or stage — just be consistent
+          guessIndex: rowIndex,      // submitted row index
+          colAbs: rowActiveIndices[j],
+          targetWord: targetWord.toUpperCase(),
+          guess: guessStr,           // this is already the row's guess letters
+        });
+        v = hide ? 'absent' : 'present';
+      }
       return v;
     });
 
@@ -382,7 +396,8 @@ export default function Board({
       guessStr,
       rowActiveIndices,
       activeDebuffs,
-      paddedTargetWord
+      paddedTargetWord,
+      rowIndex
     );
   
     const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
