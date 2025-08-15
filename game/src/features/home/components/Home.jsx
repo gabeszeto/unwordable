@@ -3,6 +3,7 @@ import '../homeStyles.css';
 import PlayMenu from './PlayMenu';
 import HowToPlayMenu from './HowToPlayMenu';
 import { hasOngoingRun } from '../../save'; // 👈 import the helper
+import OptionsMenu from './OptionsMenu';
 
 function Home() {
   const [currentMenu, setCurrentMenu] = useState(null); // 'play', 'howto', 'options', or null
@@ -51,6 +52,10 @@ function Home() {
 
       {currentMenu === 'howto' && (
         <HowToPlayMenu />
+      )}
+
+      {currentMenu === 'options' && (
+        <OptionsMenu />
       )}
 
       {/* Back button always rendered, but only visible when in submenu */}

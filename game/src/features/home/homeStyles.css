@@ -75,14 +75,13 @@
 
 /* Back button stays subtle in both themes */
 .backButton.persistent {
-    margin-top: 24px;
+    margin-top: 1rem;
     font-size: 0.9rem;
     text-align: center;
     text-decoration: underline;
     cursor: pointer;
     color: color-mix(in srgb, var(--surface-text) 88%, var(--blue-hard) 12%);
     transition: color .2s ease, opacity .2s ease;
-    min-height: 24px;
 }
 
 .backButton.persistent:hover {
@@ -102,4 +101,26 @@
 .homeContainer.menu-opening .homeButtons {
     opacity: 0;
     pointer-events: none;
+}
+
+
+/*Options */
+
+.optionsMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 444px;
+    margin: 0 auto;
+}
+
+.optionsRow {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--surface-text) 20%, transparent);
 }

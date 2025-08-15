@@ -9,7 +9,7 @@ import { useCash } from '../../contexts/cash/CashContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
 import { generateDebuffPlan, generateDebugDebuffPlan } from '../debuffs/generateDebuffPlan';
 import { useSkills } from '../../contexts/skills/SkillsContext';
-const STARTING_CASH = Number(import.meta.env.VITE_STARTING_CASH ?? 5);
+const STARTING_CASH = Number(import.meta.env.VITE_STARTING_CASH ?? 10);
 
 export function useRunControls() {
     const navigate = useNavigate();
