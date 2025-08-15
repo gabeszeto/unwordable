@@ -6,6 +6,7 @@ import { useDebuffs } from '../../../../contexts/debuffs/DebuffsContext';
 import { useRunStats } from '../../../../contexts/RunStatsContext';
 
 import { shouldHideYellow } from '../../../engine/yellowless';
+import { shouldHideYellowDebug } from '../../../engine/yellowlessDebug';
 
 export default function useKeyboardHandlers({
     guesses,

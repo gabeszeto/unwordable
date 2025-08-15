@@ -11,7 +11,7 @@ const MAX_ROW_LENGTH = 7;
 import useKeyboardHandlers from './utils/useKeyboardHandlers';
 
 import { shouldHideYellow } from '../../engine/yellowless';
-
+import { shouldHideYellowDebug } from '../../engine/yellowlessDebug';
 import threeLetterWords from '../../../assets/three-letter-words.txt?raw';
 import fourLetterWords from '../../../assets/four-letter-words.txt?raw';
 import fiveLetterWords from '../../../assets/five-letter-words.txt?raw';
