@@ -3,13 +3,13 @@ export const debuffRegistry = {
   Grellow: {
     type: 'active',
     name: 'Grellow',
-    description: `Green and yellow tiles may show up as one another.`,
+    description: `Green tiles will show up as yellow instead.`,
     weight: 1,
   },
   Yellowless: {
     type: 'active',
     name: 'Yellowless',
-    description: "Correct letters in the wrong place won't show up yellow.",
+    description: "Correct letters in the wrong place have may not show up as yellow.",
     weight: 1,
   },
   GreyReaper: {

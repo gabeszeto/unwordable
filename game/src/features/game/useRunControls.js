@@ -24,13 +24,14 @@ export function useRunControls() {
     /** Core reset used by both Start New + Restart */
     const resetAll = () => {
         resetRunStats();
+
         resetLevel();
         resetDebuffsCompletely();
-        const plan = generateDebuffPlan();
-        // const plan = generateDebugDebuffPlan({
-        //     forcePassive: {},
-        //     forceActive: ['Yellowless']
-        // })
+        // const plan = generateDebuffPlan();
+        const plan = generateDebugDebuffPlan({
+            forcePassive: {},
+            forceActive: ['Yellowless', 'GoldenLie']
+        })
         setDebuffPlan(plan);
         resetCorrectness();
         resetPerks();

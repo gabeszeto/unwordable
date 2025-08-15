@@ -270,12 +270,13 @@ export default function Board({
     if (isPresent) return 'present';
 
     // Golden Lie
+    console.log(activeDebuffs)
     if (
       activeDebuffs.includes('GoldenLie') &&
       goldenLieUsedPerRow.current.has(rowIndex)
     ) {
       const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
-
+      console.log('rendering golden lie')
       if (injectedIdx === index) {
         return 'present'; // This letter is the fake yellow
       }
@@ -442,7 +443,14 @@ export default function Board({
           if (!isSubmitted && rowReveals.includes(i)) {
             letterClass = 'correct';
           }
-  
+          
+          if (activeDebuffs.includes('GoldenLie') && goldenLieUsedPerRow.current.has(rowIndex)) {
+            const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
+            if (injectedIdx === i) {
+              letterClass = 'present';
+            }
+          }
+          
           // Grellow downgrade is already applied inside computeRowVisualStatuses,
           // but keep this in case you sometimes want to force it at render time.
           if (activeDebuffs.includes('Grellow') && letterClass === 'correct') {
