@@ -27,6 +27,10 @@ export function useRunControls() {
         resetLevel();
         resetDebuffsCompletely();
         const plan = generateDebuffPlan();
+        // const plan = generateDebugDebuffPlan({
+        //     forcePassive: {},
+        //     forceActive: ['Yellowless']
+        // })
         setDebuffPlan(plan);
         resetCorrectness();
         resetPerks();

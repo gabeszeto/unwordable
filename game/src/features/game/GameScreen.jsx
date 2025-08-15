@@ -21,6 +21,9 @@ import HintInfoScreen from './popups/HintInfoScreen.jsx'
 import shuffledWordles from '../../assets/shuffled_real_wordles.txt?raw';
 import ItemDescriptionScreen from './popups/ItemDescriptionScreen.jsx';
 
+// ⬇️ NEW: pretty names for chips (emoji etc.)
+import { getItemMeta } from '../getItemMeta';
+
 export default function GameScreen({paused}) {
   const { stage, setStage, advanceStage, isGameStage, bankGuess, consumeGuessBank } = useLevel();
   const [guesses, setGuesses] = useState([]);
@@ -53,7 +56,19 @@ export default function GameScreen({paused}) {
     setMaxGuesses(applied);
   }, [stage, cutShortStacks]);
 
+  // OLD: perks open by setting just a key (keep this for PerkDisplay)
   const [itemDescriptionKey, setItemDescriptionKey] = useState(null);
+
+  // NEW: chips open via a richer state so we can pass level/stacks/subtype
+  const [inspectItem, setInspectItem] = useState(null);
+  // { type: 'skill' | 'debuff', key: string, runtime?: any }
+
+  const openItem = (type, key, runtime) => {
+    setInspectItem({ type, key, runtime });
+    // ensure perk modal (if any) is closed
+    setItemDescriptionKey(null);
+  };
+  const closeInspectItem = () => setInspectItem(null);
 
   // Perk states
   const [usedPerks, setUsedPerks] = useState([]);
@@ -104,7 +119,7 @@ export default function GameScreen({paused}) {
     setMaxGuesses, // to decrement this round by 1
     bankGuessToNextRound: () => bankGuess(1, BASE_MAX_GUESSES), // <-- from context
     itemDescriptionKey,
-    setItemDescriptionKey,
+    setItemDescriptionKey, // used by perk buttons to open the modal
     markAsUsed,
     setShowInfoPanel
   };
@@ -130,31 +145,45 @@ export default function GameScreen({paused}) {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
+  // a11y helper for chips
+  const chipProps = (onActivate) => ({
+    role: 'button',
+    tabIndex: 0,
+    onClick: onActivate,
+    onKeyDown: (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onActivate();
+      }
+    },
+    style: { cursor: 'pointer' },
+  });
+
+  const toRoman = (num) => {
+    if (num <= 0) return '';
+    const map = [
+      { value: 10, numeral: 'X' },
+      { value: 9, numeral: 'IX' },
+      { value: 5, numeral: 'V' },
+      { value: 4, numeral: 'IV' },
+      { value: 1, numeral: 'I' }
+    ];
+    let result = '';
+    for (const { value, numeral } of map) {
+      while (num >= value) {
+        result += numeral;
+        num -= value;
+      }
+    }
+    return result;
+  };
+
   return (
     <div className="game-screen">
 
       {/* passives and debuffs display */}
       <div className={`modifiersDisplay ${BOSS_STAGES.includes(stage) ? 'is-boss' : ''}`}>
         {(() => {
-          const toRoman = (num) => {
-            if (num <= 0) return '';
-            const map = [
-              { value: 10, numeral: 'X' },
-              { value: 9, numeral: 'IX' },
-              { value: 5, numeral: 'V' },
-              { value: 4, numeral: 'IV' },
-              { value: 1, numeral: 'I' }
-            ];
-            let result = '';
-            for (const { value, numeral } of map) {
-              while (num >= value) {
-                result += numeral;
-                num -= value;
-              }
-            }
-            return result;
-          };
-
           const skillEntries = Object.entries(activeSkills || {}).filter(([, lvl]) => lvl > 0);
           const hasSkills = skillEntries.length > 0;
           const hasPassives = Object.keys(passiveDebuffs || {}).length > 0;
@@ -168,11 +197,18 @@ export default function GameScreen({paused}) {
               {/* GOOD: Skills (permanent upgrades) */}
               {hasSkills && (
                 <div className="mod-group good" aria-label="Skills">
-                  {skillEntries.map(([skillKey, level]) => (
-                    <span className="mod-chip good" key={`skill-${skillKey}`}>
-                      {skillKey} {level > 1 ? toRoman(level) : ''}
-                    </span>
-                  ))}
+                  {skillEntries.map(([skillKey, level]) => {
+                    const display = getItemMeta(skillKey)?.name || skillKey;
+                    return (
+                      <span
+                        className="mod-chip good"
+                        key={`skill-${skillKey}`}
+                        {...chipProps(() => openItem('skill', skillKey, { level }))}
+                      >
+                        {display} {level > 1 ? toRoman(level) : ''}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
 
@@ -187,22 +223,39 @@ export default function GameScreen({paused}) {
                     // hide NoFoureedom if NoThreedom exists
                     if (debuffKey === 'NoFoureedom' && passiveDebuffs['NoThreedom']) return null;
                     const isUpgrade = debuffKey === 'NoThreedom';
+                    const display = getItemMeta(debuffKey)?.name || debuffKey;
+
                     return (
                       <span
                         className={`mod-chip bad passive ${isUpgrade ? 'mod-upgraded' : ''}`}
                         key={`passive-${debuffKey}`}
+                        {...chipProps(() =>
+                          openItem('debuff', debuffKey, {
+                            stacks: level,               // shows "Stacks: n"
+                            subtypeOverride: 'passive',  // ensures Passive badge
+                          })
+                        )}
                       >
-                        {debuffKey}{level > 1 ? ` ${toRoman(level)}` : ''}
+                        {display}{level > 1 ? ` ${toRoman(level)}` : ''}
                       </span>
                     );
                   })}
 
                   {/* active debuffs */}
-                  {activeDebuffs.map((debuffKey, i) => (
-                    <span className="mod-chip bad active" key={`active-${i}`}>
-                      {debuffKey}
-                    </span>
-                  ))}
+                  {activeDebuffs.map((debuffKey, i) => {
+                    const display = getItemMeta(debuffKey)?.name || debuffKey;
+                    return (
+                      <span
+                        className="mod-chip bad active"
+                        key={`active-${debuffKey}-${i}`}
+                        {...chipProps(() =>
+                          openItem('debuff', debuffKey, { subtypeOverride: 'active' })
+                        )}
+                      >
+                        {display}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
             </>
@@ -264,7 +317,6 @@ export default function GameScreen({paused}) {
         />
       </div>
 
-
       <div className="gameButtons">
         {keyzoneType && (
           <button
@@ -287,7 +339,6 @@ export default function GameScreen({paused}) {
           <kbd className="gb-kbd">Shift+I</kbd>
         </button>
       </div>
-
 
       <Keyboard
         usedKeys={usedKeys}
@@ -322,6 +373,7 @@ export default function GameScreen({paused}) {
         </div>
       )}
 
+      {/* Perk-initiated item modal (kept as-is) */}
       {itemDescriptionKey && (
         <ItemDescriptionScreen
           itemKey={itemDescriptionKey}
@@ -330,6 +382,15 @@ export default function GameScreen({paused}) {
         />
       )}
 
+      {/* Chip-initiated item modal (skills/debuffs) */}
+      {inspectItem && (
+        <ItemDescriptionScreen
+          itemKey={inspectItem.key}
+          // merge shared controls with chip-specific runtime (level/stacks/subtype)
+          runtime={{ ...sharedProps, ...(inspectItem.runtime || {}) }}
+          onClose={closeInspectItem}
+        />
+      )}
     </div>
   );
 }

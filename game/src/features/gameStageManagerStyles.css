@@ -281,7 +281,8 @@
   font-family: inherit;
 }
 .pauseBtn:hover { transform: translateY(-1px); }
-.pauseBtn.primary {
-  background: color-mix(in srgb, var(--surface-bg) 80%, var(--blue-soft) 20%);
-  border-color: color-mix(in srgb, var(--blue-soft) 60%, var(--surface-border));
+
+.pauseBtn:focus {
+  outline: none;
+  box-shadow: none; /* in case browser uses box-shadow for focus */
 }

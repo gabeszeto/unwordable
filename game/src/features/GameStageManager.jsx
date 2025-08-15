@@ -285,7 +285,7 @@ export default function GameStageManager() {
         </div>
         <div className="pointsTimerDisplay">
           <div className="gameTimerDisplay">{runTimeString}</div>
-          <div className="gamePointsDisplay">2,346</div>
+          <div className="gamePointsDisplay"></div>
         </div>
       </div>
 

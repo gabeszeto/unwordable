@@ -46,7 +46,7 @@
 
 .itemPopup {
     margin-left: 10px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     opacity: 0.95;
     height: fit-content;
     padding: 2px 12px;
@@ -63,13 +63,13 @@
     font-size: 1.1rem;
 }
 
-.itemCloseButton {
+.closeButton {
     position: absolute;
     right: 1rem;
     font-size: 2rem;
 }
 
-.itemCloseButton:hover {
+.closeButton:hover {
     cursor: pointer;
 }
 
@@ -79,7 +79,7 @@
     font-size: 1rem;
     border-radius: 20px;
     border: 1px solid var(--surface-border);
-
+    font-family: 'Zilla Slab';
     /* Softer button for popups (nice on both light/dark) */
     background-color: var(--green-soft);
     color: var(--on-green-soft);
