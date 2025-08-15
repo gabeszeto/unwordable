@@ -10,6 +10,7 @@ import { DebuffsProvider } from '../contexts/debuffs/DebuffsContext';
 import { DeathProvider } from '../contexts/death/DeathContext';
 import { CorrectnessProvider } from '../contexts/CorrectnessContext';
 import { RunStatsProvider } from '../contexts/RunStatsContext';
+import { SkillsProvider } from '../contexts/skills/SkillsContext';
 
 import GameStageManager from '../features/GameStageManager';
 import GameSave from '../features/GameSave';
@@ -21,18 +22,20 @@ export default function App() {
         <DeathProvider>
           <RunStatsProvider>
             <DebuffsProvider>
-              <PerksProvider>
-                <CashProvider>
-                  <CorrectnessProvider>
-                    <GameSave>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/play" element={<GameStageManager />} />
-                      </Routes>
-                    </GameSave>
-                  </CorrectnessProvider>
-                </CashProvider>
-              </PerksProvider>
+              <SkillsProvider>
+                <PerksProvider>
+                  <CashProvider>
+                    <CorrectnessProvider>
+                      <GameSave>
+                        <Routes>
+                          <Route path="/" element={<Home />} />
+                          <Route path="/play" element={<GameStageManager />} />
+                        </Routes>
+                      </GameSave>
+                    </CorrectnessProvider>
+                  </CashProvider>
+                </PerksProvider>
+              </SkillsProvider>
             </DebuffsProvider>
           </RunStatsProvider>
         </DeathProvider>

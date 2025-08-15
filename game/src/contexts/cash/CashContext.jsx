@@ -8,7 +8,7 @@ export function useCash() {
 }
 
 export function CashProvider({ children }) {
-  const [cash, setCash] = useState(10);
+  const [cash, setCash] = useState(500);
   const [pendingWager, setPendingWager] = useState(null);
   const { noteCashEarned } = useRunStats();
 

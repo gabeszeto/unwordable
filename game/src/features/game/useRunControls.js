@@ -8,8 +8,8 @@ import { useCorrectness } from '../../contexts/CorrectnessContext';
 import { useCash } from '../../contexts/cash/CashContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
 import { generateDebuffPlan, generateDebugDebuffPlan } from '../debuffs/generateDebuffPlan';
-
-const STARTING_CASH = Number(import.meta?.env?.VITE_STARTING_CASH ?? 5);
+import { useSkills } from '../../contexts/skills/SkillsContext';
+const STARTING_CASH = Number(import.meta.env.VITE_STARTING_CASH ?? 5);
 
 export function useRunControls() {
     const navigate = useNavigate();
@@ -19,6 +19,7 @@ export function useRunControls() {
     const { resetCorrectness } = useCorrectness();
     const { resetCash, addCash } = useCash();
     const { resetPerks } = usePerks();
+    const { resetSkills} = useSkills();
 
     /** Core reset used by both Start New + Restart */
     const resetAll = () => {
@@ -29,6 +30,7 @@ export function useRunControls() {
         setDebuffPlan(plan);
         resetCorrectness();
         resetPerks();
+        resetSkills();
         resetCash();
         if (STARTING_CASH > 0) addCash(STARTING_CASH);
     };

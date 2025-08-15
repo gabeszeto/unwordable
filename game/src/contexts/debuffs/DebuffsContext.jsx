@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { persistSave, loadSave } from '../../features/save';
-import { generateDebuffPlan } from '../../features/debuffs/generateDebuffPlan';
+// src/contexts/debuffs/DebuffsContext.jsx
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { persistSave, loadSave } from '../../features/save';     // 👈 unify path
 
 const DebuffsContext = createContext();
 
@@ -8,84 +8,76 @@ export const DebuffsProvider = ({ children }) => {
   const [activeDebuffs, setActiveDebuffs] = useState([]);
   const [passiveDebuffs, setPassiveDebuffs] = useState({});
   const [debuffPlan, setDebuffPlan] = useState({});
+  const hydratedRef = useRef(false);
 
-  // 🔹 Restore from save on mount
+  // Hydrate once
   useEffect(() => {
     const save = loadSave();
-    console.log(save)
     if (save?.debuffPlan && Object.keys(save.debuffPlan).length > 0) {
       setDebuffPlan(save.debuffPlan);
     }
-    // else: do nothing — let startNewRun / resetAll decide when to generate
+    hydratedRef.current = true;
   }, []);
-  
+
   const addActiveDebuff = (debuffKey) => {
-    setActiveDebuffs((prev) => {
+    setActiveDebuffs(prev => {
       const updated = prev.includes(debuffKey) ? prev : [...prev, debuffKey];
-      persistSave({ debuffPlan }); // persist current plan, active list can be rebuilt from plan
+      if (hydratedRef.current) persistSave({ debuffPlan }); // persist plan, not the volatile active list
       return updated;
     });
   };
 
   const addPassiveDebuff = (debuffKey) => {
-    setPassiveDebuffs((prev) => {
+    setPassiveDebuffs(prev => {
       const updated = { ...prev, [debuffKey]: (prev[debuffKey] || 0) + 1 };
-      persistSave({ debuffPlan, passiveDebuffs: updated });
+      if (hydratedRef.current) persistSave({ debuffPlan, passiveDebuffs: updated });
       return updated;
     });
   };
 
   const removeActiveDebuff = (debuffKey) => {
-    setActiveDebuffs((prev) => prev.filter((key) => key !== debuffKey));
+    setActiveDebuffs(prev => prev.filter(k => k !== debuffKey));
   };
 
   const removePassiveDebuff = (debuffKey) => {
-    setPassiveDebuffs((prev) => {
+    setPassiveDebuffs(prev => {
       const { [debuffKey]: _, ...rest } = prev;
-      persistSave({ debuffPlan, passiveDebuffs: rest });
+      if (hydratedRef.current) persistSave({ debuffPlan, passiveDebuffs: rest });
       return rest;
     });
   };
 
+  // Clear between stages, optionally keeping the plan
   const clearDebuffs = ({ keepPlan = false } = {}) => {
     setActiveDebuffs([]);
     setPassiveDebuffs({});
+    if (!hydratedRef.current) return; // 👈 don’t write during hydration
     persistSave({
       passiveDebuffs: {},
-      ...(keepPlan ? {} : { debuffPlan: {} })
+      ...(keepPlan ? {} : { debuffPlan: {} }),
     });
   };
-  
-  /** Use this when starting a new run */
-  const resetDebuffsCompletely = () => {
-    clearDebuffs({ keepPlan: false });
-  };
+
+  const resetDebuffsCompletely = () => clearDebuffs({ keepPlan: false });
 
   const setDebuffPlanAndSave = (plan) => {
     setDebuffPlan(plan);
-    persistSave({ debuffPlan: plan });
+    if (hydratedRef.current) persistSave({ debuffPlan: plan });
   };
 
-  useEffect(() => {
-    console.log('[Debuffs] plan hydrated:', debuffPlan);
-  }, [debuffPlan]);
-  
-
   return (
-    <DebuffsContext.Provider
-      value={{
-        activeDebuffs,
-        passiveDebuffs,
-        addActiveDebuff,
-        addPassiveDebuff,
-        removeActiveDebuff,
-        removePassiveDebuff,
-        clearDebuffs,
-        debuffPlan,
-        setDebuffPlan: setDebuffPlanAndSave,
-        resetDebuffsCompletely
-      }}
-    >
+    <DebuffsContext.Provider value={{
+      activeDebuffs,
+      passiveDebuffs,
+      addActiveDebuff,
+      addPassiveDebuff,
+      removeActiveDebuff,
+      removePassiveDebuff,
+      clearDebuffs,
+      resetDebuffsCompletely,
+      debuffPlan,
+      setDebuffPlan: setDebuffPlanAndSave,
+    }}>
       {children}
     </DebuffsContext.Provider>
   );

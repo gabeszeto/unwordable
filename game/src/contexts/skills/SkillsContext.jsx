@@ -1,24 +1,19 @@
-// src/contexts/skills/SkillsContext.jsx
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { skillsRegistry } from '../../features/skills/skillsRegistry';
+import { loadSave, persistSave } from '../../features/save';
 
 const SkillsContext = createContext(null);
 
 export const SkillsProvider = ({ children }) => {
-  // { LetterLens: 2, OtherSkill: 1 }
-  const [activeSkills, setActiveSkills] = useState({});
+  // ✅ hydrate synchronously on first render
+  const [activeSkills, setActiveSkills] = useState(() => {
+    const save = loadSave();
+    return (save?.skills && typeof save.skills === 'object') ? save.skills : {};
+  });
 
-  // optional persistence
+  // Persist whenever skills change
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('unwordable.activeSkills');
-      if (saved) setActiveSkills(JSON.parse(saved));
-    } catch {}
-  }, []);
-  useEffect(() => {
-    try {
-      localStorage.setItem('unwordable.activeSkills', JSON.stringify(activeSkills));
-    } catch {}
+    persistSave({ skills: activeSkills }, 'SkillsProvider:skills');
   }, [activeSkills]);
 
   const resetSkills = useCallback(() => setActiveSkills({}), []);
@@ -30,13 +25,21 @@ export const SkillsProvider = ({ children }) => {
   }, []);
 
   const unlockSkill = useCallback((key, { level = 1 } = {}) => {
-    setSkillLevel(key, Math.max(level, activeSkills[key] ?? 0));
-  }, [activeSkills, setSkillLevel]);
+    setActiveSkills(prev => {
+      const current = prev[key] ?? 0;
+      const max = skillsRegistry[key]?.maxLevel ?? Infinity;
+      const next = Math.max(level, current);
+      return { ...prev, [key]: Math.min(next, max) };
+    });
+  }, []);
 
   const upgradeSkill = useCallback((key, by = 1) => {
-    const current = activeSkills[key] ?? 0;
-    setSkillLevel(key, current + by);
-  }, [activeSkills, setSkillLevel]);
+    setActiveSkills(prev => {
+      const current = prev[key] ?? 0;
+      const max = skillsRegistry[key]?.maxLevel ?? Infinity;
+      return { ...prev, [key]: Math.min(current + by, max) };
+    });
+  }, []);
 
   const getSkillLevel = useCallback((key) => activeSkills[key] ?? 0, [activeSkills]);
 

@@ -8,97 +8,86 @@ export type RunStatsSave = {
   runStartedAt: number;
 };
 
-export type SaveV3 = {
-  version: 3;
+export type Save = {
+  // core
   stage: number;
   cash: number;
   runStats: RunStatsSave;
-  // You can safely add more props here later:
+
+  // persisted slices
   debuffPlan?: any;
   perks?: Record<string, number>;
+  skills?: Record<string, number>;
+  passiveDebuffs?: Record<string, number>;
 };
 
-/** Old shapes */
-type SaveV1 = { version: 1; stage: number; debuffPlan: any; runStartedAt?: number };
-type SaveV2 = { version: 2; stage: number; debuffPlan: any; coins: number; runStartedAt?: number };
-
 function blankRunStats(): RunStatsSave {
+  return { guessesUsed: 0, perksUsed: 0, cashEarnt: 0, runStartedAt: Date.now() };
+}
+
+function blankSave(): Save {
   return {
-    guessesUsed: 0,
-    perksUsed: 0,
-    cashEarnt: 0,
-    runStartedAt: Date.now(),
+    stage: 0,
+    cash: 0,
+    runStats: blankRunStats(),
+    debuffPlan: {},
+    perks: {},
+    skills: {},
+    passiveDebuffs: {},
   };
 }
 
-/** Migration helper: always return a full V3 or null */
-function migrate(raw: any): SaveV3 | null {
+/** Coerce arbitrary JSON from storage into a valid Save object. */
+function normalize(raw: any): Save | null {
   if (!raw || typeof raw !== 'object') return null;
 
-  switch (raw.version) {
-    case 3:
-      // ensure missing fields get defaults
-      return {
-        ...raw,
-        cash: Number(raw.cash ?? 0),
-        runStats: { ...blankRunStats(), ...(raw.runStats ?? {}) },
-      };
+  const stage = Number(raw.stage ?? 0);
+  const cash = Number(raw.cash ?? 0);
 
-    case 2: {
-      const v2 = raw as SaveV2;
-      return {
-        version: 3,
-        stage: v2.stage ?? 0,
-        cash: Number(v2.coins ?? 0),
-        runStats: {
-          ...blankRunStats(),
-          runStartedAt: v2.runStartedAt ?? Date.now(),
-        },
-        debuffPlan: v2.debuffPlan,
-      };
-    }
+  const rs = raw.runStats ?? {};
+  const runStats: RunStatsSave = {
+    guessesUsed: Number(rs.guessesUsed ?? 0),
+    perksUsed: Number(rs.perksUsed ?? 0),
+    cashEarnt: Number(rs.cashEarnt ?? 0),
+    runStartedAt: Number(rs.runStartedAt ?? Date.now()),
+  };
 
-    case 1: {
-      const v1 = raw as SaveV1;
-      return {
-        version: 3,
-        stage: v1.stage ?? 0,
-        cash: 0,
-        runStats: {
-          ...blankRunStats(),
-          runStartedAt: v1.runStartedAt ?? Date.now(),
-        },
-        debuffPlan: v1.debuffPlan,
-      };
-    }
-
-    default:
-      return null;
-  }
+  const safeObj = (o: any) => (o && typeof o === 'object' ? o : {});
+  return {
+    stage: Number.isFinite(stage) ? stage : 0,
+    cash: Number.isFinite(cash) ? cash : 0,
+    runStats,
+    debuffPlan: raw.debuffPlan ?? {},
+    perks: safeObj(raw.perks),
+    skills: safeObj(raw.skills),
+    passiveDebuffs: safeObj(raw.passiveDebuffs),
+  };
 }
 
-export function loadSave(): SaveV3 | null {
+export function loadSave(): Save | null {
   try {
-    const raw = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
-    return migrate(raw);
+    const rawJson = localStorage.getItem(SAVE_KEY);
+    if (!rawJson) return null;
+    const parsed = JSON.parse(rawJson);
+    return normalize(parsed);
   } catch {
     return null;
   }
 }
 
-export function persistSave(patch: Partial<SaveV3>) {
-  const cur: SaveV3 = loadSave() ?? {
-    version: 3,
-    stage: 0,
-    cash: 0,
-    runStats: blankRunStats(),
-  };
+/**
+ * Persist a partial update.
+ * - Shallow-merge top-level fields
+ * - Deep-merge runStats only
+ */
+export function persistSave(patch: Partial<Save>, source = 'unknown') {
+  // console.log('[persistSave]', source, patch);
+  const cur = loadSave() ?? blankSave();
 
-  const next: SaveV3 = {
+  const next: Save = {
     ...cur,
     ...patch,
     runStats: { ...cur.runStats, ...(patch.runStats ?? {}) },
-    version: 3,
   };
 
   localStorage.setItem(SAVE_KEY, JSON.stringify(next));
@@ -108,8 +97,7 @@ export function clearSave() {
   localStorage.removeItem(SAVE_KEY);
 }
 
-/** Tiny helper so Home can quickly know if a run exists */
 export function hasOngoingRun(): boolean {
-  const save = loadSave();
-  return !!save && save.stage > 0; // or adjust to > -1 if stage starts at 0
+  const s = loadSave();
+  return !!s && s.stage > 0; // adjust if stage 0 counts as “ongoing”
 }

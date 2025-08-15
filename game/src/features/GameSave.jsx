@@ -32,11 +32,11 @@ export default function GameSave({ children }) {
 
   // Persist whenever any tracked slice changes
   useEffect(() => {
-    persistSave({
-      stage,
-      cash,
-      runStats: stats,
-    });
+    if (!hydratedRef.current) return;             // ⬅️ skip first render while we hydrate
+    persistSave(
+      { stage, cash, runStats: stats },
+      'GameSave/useEffect'                        // ⬅️ tag your writes
+    );
   }, [stage, cash, stats]);
 
   return <>{children}</>;

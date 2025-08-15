@@ -190,9 +190,6 @@ export default function GameStageManager() {
     navigate('/')
   }
 
-  // Auto–pause when user leaves the tab/window (and never auto-resume)
-  // Auto–pause when the document is no longer visible.
-  // Auto–pause when the page goes to the background.
   // Defer on Safari to avoid stealing focus back to this tab.
   useEffect(() => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -227,24 +224,6 @@ export default function GameStageManager() {
       };
     }
   }, [pause]);
-
-
-
-
-  // useEffect(() => {
-  //   const log = (msg) => console.log('[vis]', msg, document.visibilityState);
-  //   const onVis = () => log('visibilitychange');
-  //   const onPageHide = () => log('pagehide');
-  //   document.addEventListener('visibilitychange', onVis);
-  //   window.addEventListener('pagehide', onPageHide);
-  //   return () => {
-  //     document.removeEventListener('visibilitychange', onVis);
-  //     window.removeEventListener('pagehide', onPageHide);
-  //   };
-  // }, []);
-
-
-
 
   return (
     <div className="gameContainer" onKeyDownCapture={handleKeyDownCapture}>
@@ -339,15 +318,11 @@ export default function GameStageManager() {
           onMenu={goToMenu}
         />
       ) : isGameLevel ? (
-        <SkillsProvider>
-          <BoardHelperProvider>
-            <GameScreen paused={paused} />
-          </BoardHelperProvider>
-        </SkillsProvider>
+        <BoardHelperProvider>
+          <GameScreen paused={paused} />
+        </BoardHelperProvider>
       ) : (
-        <SkillsProvider>
-          <ShopScreen />
-        </SkillsProvider>
+        <ShopScreen />
       )}
     </div>
   );
