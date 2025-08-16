@@ -1,22 +1,23 @@
 // contexts/perks/PerksContext.js
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useRunStats } from '../RunStatsContext';
-import { loadSave, persistSave } from '../../features/save'; // <-- adjust path if needed
+import { loadSave, persistSave } from '../../features/save'; // adjust path if needed
 
 const PerksContext = createContext();
 
 export function PerksProvider({ children }) {
   const { notePerkUsed } = useRunStats();
 
-  // Only persist the counts object in save.perks
+  // Persisted counts (hydrated from save)
   const [perks, setPerks] = useState({});
-  // Transient runtime-only state
+  // Transient / runtime-only toggles
   const [jybrishActive, setJybrishActive] = useState(false);
+  // NEW: staged consumptions that haven't been flushed to save yet
+  const [pendingSpends, setPendingSpends] = useState({}); // { perkName: count }
 
-  // Avoid re-hydrating twice in StrictMode dev
   const hydratedRef = useRef(false);
 
-  // Hydrate from save once
+  // Hydrate once from save
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
@@ -25,29 +26,30 @@ export function PerksProvider({ children }) {
       if (save?.perks && typeof save.perks === 'object') {
         setPerks(save.perks);
       }
-    } catch {
-      // ignore malformed saves
-    }
+    } catch {}
   }, []);
 
-  // Helpers
+  // helpers
   const getPerkCount = (name) => Math.max(0, Number(perks?.[name] || 0));
   const hasPerk = (name) => getPerkCount(name) > 0;
 
-  // Mutators (these also persist)
+  // Add (shop/reward). We persist immediately for acquisitions.
   const addPerk = (perkName, n = 1) => {
     const delta = Math.max(0, Number(n) || 0);
     if (!delta) return;
     setPerks(prev => {
-      const next = { ...prev, [perkName]: getPerkCount(perkName) + delta };
+      const next = { ...prev, [perkName]: (prev[perkName] || 0) + delta };
       persistSave({ perks: next });
       return next;
     });
   };
 
   /**
-   * Attempts to consume a perk. Returns true if one was spent.
-   * Only calls notePerkUsed when a spend actually happened.
+   * Consume a perk for THIS GUESS ONLY.
+   * - Updates React state immediately so UI logic can rely on the spend.
+   * - DOES NOT persist to save here.
+   * - We stage the spend in `pendingSpends` and
+   *   the caller should later call `commitPerkSpends()` on successful submit.
    */
   const usePerk = (perkName) => {
     const current = getPerkCount(perkName);
@@ -56,17 +58,49 @@ export function PerksProvider({ children }) {
     setPerks(prev => {
       const nextCount = Math.max(0, current - 1);
       const next = { ...prev, [perkName]: nextCount };
-      if (nextCount === 0) delete next[perkName]; // keep the object tidy
-      persistSave({ perks: next });
+      if (nextCount === 0) delete next[perkName];
       return next;
     });
 
+    setPendingSpends(prev => ({
+      ...prev,
+      [perkName]: (prev[perkName] || 0) + 1,
+    }));
+
+    // Stats can still tick immediately (or move this to commit if you prefer)
     notePerkUsed(1);
     return true;
   };
 
+  /**
+   * Flush staged spends to disk. Call this after a row is submitted.
+   */
+  const commitPerkSpends = () => {
+    if (Object.keys(pendingSpends).length === 0) return;
+    // Persist current `perks` snapshot; it already reflects the spends.
+    persistSave({ perks });
+    setPendingSpends({});
+  };
+
+  /**
+   * Optional: rollback staged spends (e.g., if you ever cancel a whole guess).
+   * Not used by default, but handy to have.
+   */
+  const rollbackPerkSpends = () => {
+    if (Object.keys(pendingSpends).length === 0) return;
+    setPerks(prev => {
+      const next = { ...prev };
+      for (const [name, spent] of Object.entries(pendingSpends)) {
+        next[name] = (next[name] || 0) + spent;
+      }
+      return next;
+    });
+    setPendingSpends({});
+  };
+
   const resetPerks = () => {
     setPerks({});
+    setPendingSpends({});
     setJybrishActive(false);
     persistSave({ perks: {} });
   };
@@ -83,12 +117,16 @@ export function PerksProvider({ children }) {
         getPerkCount,
         hasPerk,
 
-        // mutators (persist)
+        // mutators
         addPerk,
         usePerk,
         resetPerks,
 
-        // transient state
+        // staged I/O
+        commitPerkSpends,
+        rollbackPerkSpends,
+
+        // transient
         jybrishActive,
         activateJybrish,
         consumeJybrish,

@@ -38,7 +38,7 @@ export default function useKeyboardHandlers({
     sixerActiveIndices,
     paused
 }) {
-    const { jybrishActive, consumeJybrish } = usePerks();
+    const { jybrishActive, consumeJybrish, commitPerkSpends } = usePerks();
     const {
         revealedIndices,
         markAsTrulyCorrect,
@@ -265,6 +265,9 @@ export default function useKeyboardHandlers({
             ],
           });
         }
+
+        // Commit save changes
+        commitPerkSpends();
       
         // -------- 5) Grey Reaper after we know hasColor ----------
         if (activeDebuffs.includes('GreyReaper') && !hasColor) {
