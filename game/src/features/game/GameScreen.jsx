@@ -122,7 +122,8 @@ export default function GameScreen({ paused, ...props }) {
     return generated;
   });
 
-  const targetWord = targetWords[(round - 1) % targetWords.length];
+  // const targetWord = targetWords[(round - 1) % targetWords.length];
+  const targetWord = 'MIDST'
 
   // Change setusedkeys on stage change
   useEffect(() => {

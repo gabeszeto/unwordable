@@ -141,6 +141,7 @@ export default function DeathScreen({ time = null, onPlayAgain, onMenu }) {
                     >
                         {[
                             { label: "Round:  ", value: deathRound ?? "—", tone: "yellow" },
+                            { label: "The word was:  ", value: word ?? "—", tone: "blue" },
                             { label: "Guesses:  ", value: guessesUsed, tone: "yellow" },
                             { label: "Consumables Used:  ", value: perksUsed, tone: "blue" },
                             { label: "Cash Earnt:  ", value: cashEarnt || 0, tone: "green" },

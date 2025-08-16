@@ -31,11 +31,11 @@ export function useRunControls() {
 
         resetLevel();
         resetDebuffsCompletely();
-        const plan = generateDebuffPlan();
-        // const plan = generateDebugDebuffPlan({
-        //     forcePassive: { CutShort: 1},
-        //     forceActive: ['Yellowless']
-        // })
+        // const plan = generateDebuffPlan();
+        const plan = generateDebugDebuffPlan({
+            forcePassive: { ShiftedGuess: 1},
+            forceActive: []
+        })
         setDebuffPlan(plan);
         resetCorrectness();
         resetPerks();

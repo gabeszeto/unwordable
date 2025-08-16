@@ -82,27 +82,27 @@ export default function useKeyboardHandlers({
     };
 
     // Final row statuses (Wordle 2-pass + Grellow + Yellowless RNG)
+    // Final row statuses (Wordle 2-pass + Grellow + Yellowless RNG)
     const computeFinalRowStatuses = (guessStr, rowActiveIndices, correctWord, guessIndex) => {
         const len = rowActiveIndices.length;
 
-        // count target letters in the active slots only
+        // 1) GLOBAL inventory of the target word (not just active slots)
         const remaining = {};
-        for (let j = 0; j < len; j++) {
-            const idx = rowActiveIndices[j];
-            const t = paddedTargetWord[idx];
-            remaining[t] = (remaining[t] || 0) + 1;
+        for (const ch of correctWord) {
+            remaining[ch] = (remaining[ch] || 0) + 1;
         }
 
         const raw = new Array(len).fill('absent');
 
-        // pass 1: exacts (consume), blurred visual correct (no consume)
+        // 2) Pass 1: exacts (consume), blurred "visual correct" (do NOT consume)
         for (let j = 0; j < len; j++) {
-            const idx = rowActiveIndices[j];
+            const idx = rowActiveIndices[j];           // absolute board index
             const letter = guessStr[j];
             if (!letter) continue;
 
-            const targetChar = paddedTargetWord[idx];
+            const targetChar = paddedTargetWord[idx];  // aligned board slot
             const isExact = letter === targetChar;
+
             const isBlurredGreen =
                 activeDebuffs.includes('BlurredVision') &&
                 [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
@@ -111,31 +111,34 @@ export default function useKeyboardHandlers({
 
             if (isExact) {
                 raw[j] = 'correct';
+                // consume from GLOBAL inventory
                 remaining[letter] = (remaining[letter] || 0) - 1;
             } else if (isBlurredGreen) {
+                // visual-only correct, do NOT consume inventory
                 raw[j] = 'correct';
             }
         }
 
-        // pass 2: presents (only while copies remain)
+        // 3) Pass 2: presents from what's left in GLOBAL inventory
         for (let j = 0; j < len; j++) {
             if (raw[j] !== 'absent') continue;
             const letter = guessStr[j];
             if (!letter) continue;
-            const left = remaining[letter] || 0;
-            if (left > 0) {
+
+            if ((remaining[letter] || 0) > 0) {
                 raw[j] = 'present';
-                remaining[letter] = left - 1;
+                remaining[letter] = remaining[letter] - 1;
             }
         }
 
-        // visual transforms
+        // 4) Visual transforms
         const grellow = activeDebuffs.includes('Grellow');
         const yellowless = activeDebuffs.includes('Yellowless');
 
         const finalStatuses = raw.map((s, j) => {
             let v = s;
             if (grellow && v === 'correct') v = 'present';
+
             if (yellowless && s === 'present') {
                 const hide = shouldHideYellow(
                     {
@@ -145,7 +148,7 @@ export default function useKeyboardHandlers({
                         targetWord: correctWord,
                         guess: guessStr,
                     },
-                    1 / 3 // 66.7% show as yellow, 33.3% hide → tweak as desired
+                    1 / 3
                 );
                 v = hide ? 'absent' : 'present';
             }
@@ -155,168 +158,170 @@ export default function useKeyboardHandlers({
         return finalStatuses;
     };
 
+
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
-      
+
         // stats
         noteGuess(1);
-      
+
         // keep per-row ranges and clear current row
         setGuessRanges(prev => [...prev, rowActiveIndices]);
         const cleared = [...currentGuess];
         rowActiveIndices.forEach(i => { cleared[i] = ''; });
         setCurrentGuess(cleared);
-      
+
         // delayed feedback threshold
         if (delayFeedback && newGuesses.length === FEEDBACK_DELAY_THRESHOLD) {
-          setFeedbackShownUpToRow(1);
+            setFeedbackShownUpToRow(1);
         }
-      
+
         const correctWord = targetWord.toUpperCase();
         const isCorrect = guessStr === correctWord;
         const guessIndex = newGuesses.length - 1;
-      
+
         if (pendingWager) resolveWager(isCorrect);
-      
+
         // start keyboard from prior state
         let newUsed = { ...usedKeys };
-      
+
         // -------- 1) GOLDEN LIE: decide BEFORE computing finalStatuses --------
         if (
-          activeDebuffs.includes('GoldenLie') &&
-          !goldenLieUsedPerRow.current.has(guesses.length) // current row index
+            activeDebuffs.includes('GoldenLie') &&
+            !goldenLieUsedPerRow.current.has(guessIndex)
         ) {
-          const rowIndex = guesses.length;
-          const eligible = [];
-          for (let i = 0; i < rowActiveIndices.length; i++) {
-            const idx = rowActiveIndices[i];
-            const letter = guessStr[i];
-            const targetChar = paddedTargetWord[idx];
-            const isExact = letter === targetChar;
-            const isPresent = paddedTargetWord.includes(letter);
-            if (letter && !isExact && !isPresent) eligible.push(idx);
-          }
-          if (eligible.length > 0) {
-            const chosenIndexAbs = eligible[Math.floor(Math.random() * eligible.length)];
-            const fakeLetter = guessStr[rowActiveIndices.indexOf(chosenIndexAbs)];
-            // keyboard lie (visual)
-            newUsed[fakeLetter] = 'present';
-            goldenLieUsedPerRow.current.add(rowIndex);
-            goldenLieInjectedIndex.current[rowIndex] = chosenIndexAbs;
-          }
+            const rowIndex = guessIndex;
+            const eligible = [];
+            for (let i = 0; i < rowActiveIndices.length; i++) {
+                const idx = rowActiveIndices[i];
+                const letter = guessStr[i];
+                const targetChar = paddedTargetWord[idx];
+                const isExact = letter === targetChar;
+                const isPresent = correctWord.includes(letter); if (letter && !isExact && !isPresent) eligible.push(idx);
+            }
+            if (eligible.length > 0) {
+                const chosenIndexAbs = eligible[Math.floor(Math.random() * eligible.length)];
+                const fakeLetter = guessStr[rowActiveIndices.indexOf(chosenIndexAbs)];
+                // keyboard lie (visual)
+                newUsed[fakeLetter] = 'present';
+                goldenLieUsedPerRow.current.add(rowIndex);
+                goldenLieInjectedIndex.current[rowIndex] = chosenIndexAbs;
+            }
         }
-      
+
         // -------- 2) TILE STATUSES for this row (single source of truth) --------
         let finalStatuses;
         if (isCorrect) {
-          finalStatuses = rowActiveIndices.map(() => 'correct');
+            finalStatuses = rowActiveIndices.map(() => 'correct');
         } else {
-          finalStatuses = computeFinalRowStatuses(
-            guessStr,
-            rowActiveIndices,
-            correctWord,
-            guessIndex
-          );
-          // If Golden Lie injected, force that absolute tile to 'present' if it was 'absent'
-          if (
-            activeDebuffs.includes('GoldenLie') &&
-            goldenLieUsedPerRow.current.has(guesses.length)
-          ) {
-            const injectedAbs = goldenLieInjectedIndex.current?.[guesses.length];
-            const j = rowActiveIndices.indexOf(injectedAbs);
-            if (j !== -1 && finalStatuses[j] === 'absent') {
-              finalStatuses[j] = 'present';
+            finalStatuses = computeFinalRowStatuses(
+                guessStr,
+                rowActiveIndices,
+                correctWord,
+                guessIndex
+            );
+            // If Golden Lie injected, force that absolute tile to 'present' if it was 'absent'
+            if (
+                activeDebuffs.includes('GoldenLie') &&
+                goldenLieUsedPerRow.current.has(guessIndex)
+            ) {
+                const injectedAbs = goldenLieInjectedIndex.current?.[guessIndex];
+                const j = rowActiveIndices.indexOf(injectedAbs);
+                if (j !== -1 && finalStatuses[j] === 'absent') {
+                    finalStatuses[j] = 'present';
+                }
             }
-          }
         }
-      
+
         // Does this row have any color at all? (for Grey Reaper)
         const hasColor = finalStatuses.some(s => s === 'present' || s === 'correct');
-      
+
         // -------- 3) KEYBOARD from tile statuses (with priority) --------
         const priority = (s) => (s === 'correct' ? 3 : s === 'present' ? 2 : s === 'absent' ? 1 : 0);
         for (let j = 0; j < rowActiveIndices.length; j++) {
-          const letter = guessStr[j];
-          if (!letter) continue;
-          const status = finalStatuses[j];
-          if (!newUsed[letter] || priority(status) > priority(newUsed[letter])) {
-            newUsed[letter] = status;
-          }
+            const letter = guessStr[j];
+            if (!letter) continue;
+            const status = finalStatuses[j];
+            if (!newUsed[letter] || priority(status) > priority(newUsed[letter])) {
+                newUsed[letter] = status;
+            }
         }
-      
+
         // -------- 4) Persist the guess record --------
         {
-          const prev = loadBoardState(stage);
-          const prevGuesses = prev?.guesses || [];
-          patchBoardState(stage, {
-            guesses: [
-              ...prevGuesses,
-              {
-                word: guessStr,
-                indices: rowActiveIndices.slice(),
-                statuses: finalStatuses,
-                lieIndexAbs:
-                  activeDebuffs.includes('GoldenLie') &&
-                  goldenLieUsedPerRow.current.has(guesses.length)
-                    ? goldenLieInjectedIndex.current?.[guesses.length]
-                    : undefined,
-              },
-            ],
-          });
+            const prev = loadBoardState(stage);
+            const prevGuesses = prev?.guesses || [];
+            patchBoardState(stage, {
+                guesses: [
+                    ...prevGuesses,
+                    {
+                        word: guessStr,
+                        indices: rowActiveIndices.slice(),
+                        statuses: finalStatuses,
+                        lieIndexAbs:
+                            activeDebuffs.includes('GoldenLie') &&
+                                goldenLieUsedPerRow.current.has(guesses.length)
+                                ? goldenLieInjectedIndex.current?.[guesses.length]
+                                : undefined,
+                    },
+                ],
+            });
         }
 
         // Commit save changes
         commitPerkSpends();
-      
+
         // -------- 5) Grey Reaper after we know hasColor ----------
         if (activeDebuffs.includes('GreyReaper') && !hasColor) {
-          setUsedKeys(newUsed);
-          setIsGameOver(true);
-          onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
-          return;
+            setUsedKeys(newUsed);
+            setIsGameOver(true);
+            onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
+            return;
         }
-      
+
         // -------- 6) usedKeys: delayed vs immediate ----------
         if (feedbackSuppressed) {
-          setPendingUsedKeys(prev => {
-            const merged = { ...(prev || {}) };
-            for (const [letter, status] of Object.entries(newUsed)) {
-              const existing = merged[letter];
-              if (!existing || priority(status) > priority(existing)) {
-                merged[letter] = status;
-              }
-            }
-            return merged;
-          });
+            setPendingUsedKeys(prev => {
+                const merged = { ...(prev || {}) };
+                for (const [letter, status] of Object.entries(newUsed)) {
+                    const existing = merged[letter];
+                    if (!existing || priority(status) > priority(existing)) {
+                        merged[letter] = status;
+                    }
+                }
+                return merged;
+            });
         } else {
-          setUsedKeys(newUsed);
-          patchBoardState(stage, { usedKeys: newUsed });
+            setUsedKeys(newUsed);
+            patchBoardState(stage, { usedKeys: newUsed });
         }
-      
+
         // -------- 7) Win/Loss ----------
         if (isCorrect) {
-          setBouncingIndices([...rowActiveIndices]);
-          setTimeout(() => setBouncingIndices([]), 1000);
-          setIsGameOver(true);
-          onRoundComplete(true, newGuesses);
+            setBouncingIndices([...rowActiveIndices]);
+            setTimeout(() => setBouncingIndices([]), 1000);
+            setIsGameOver(true);
+            onRoundComplete(true, newGuesses);
         } else if (newGuesses.length >= maxGuesses) {
-          setIsGameOver(true);
-          onRoundComplete(false, newGuesses, 'Out of guesses', targetWord);
+            setIsGameOver(true);
+            onRoundComplete(false, newGuesses, 'Out of guesses', targetWord);
         }
-      
+
         // -------- 8) Sixer meta ----------
         if (sixerActiveIndices) {
-          setSixerMeta(prev => [
-            ...prev,
-            { start: sixerActiveIndices[0], end: sixerActiveIndices[1] }
-          ]);
-          setSixerActiveIndices(null);
+            setSixerMeta(prev => [
+                ...prev,
+                { start: sixerActiveIndices[0], end: sixerActiveIndices[1] }
+            ]);
+            setSixerActiveIndices(null);
         } else {
-          setSixerMeta(prev => [...prev, null]);
+            setSixerMeta(prev => [...prev, null]);
         }
-      };
-      
+
+        console.log(newUsed)
+    };
+
 
     const handleKeyDown = useCallback(
         (e) => {
