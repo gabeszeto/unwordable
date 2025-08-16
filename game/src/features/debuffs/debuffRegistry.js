@@ -9,7 +9,7 @@ export const debuffRegistry = {
   Yellowless: {
     type: 'active',
     name: 'Yellowless',
-    description: "Correct letters in the wrong place have may not show up as yellow.",
+    description: "Correct letters in the wrong place have a 1/3 chance to not show up as yellow.",
     weight: 1,
   },
   GreyReaper: {
@@ -35,7 +35,7 @@ export const debuffRegistry = {
   DelayedFeedback: {
     type: 'passive',
     name: 'Delayed Feedback',
-    description: 'No feedback until after your first 2 guesses.',
+    description: 'There is no visual feedback until after your first 2 guesses.',
     weight: 1,
   },
   LetterLock: {
@@ -78,7 +78,7 @@ export const debuffRegistry = {
     name: 'Perk Tax',
     description: 'Using a perk costs +1 cash.',
     weight: 1,
-    maxStacks: 2,
+    maxStacks: 3,
     stackable: true
   },
 };

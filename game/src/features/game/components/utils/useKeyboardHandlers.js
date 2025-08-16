@@ -223,8 +223,7 @@ export default function useKeyboardHandlers({
                                 colAbs: rowActiveIndices[i],  
                                 targetWord: correctWord, 
                                 guess: guessStr,
-                            }
-                            )
+                            }, 1/3)
                             status = hide ? 'absent' : 'present';
                         }
 

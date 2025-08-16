@@ -5,6 +5,12 @@ import { usePerks } from '../../../contexts/perks/PerksContext';
 import { useCorrectness } from '../../../contexts/CorrectnessContext';
 import { useBoardHelper } from '../../../contexts/BoardHelperContext';
 
+import {
+  loadBoardState,
+  replaceBoardState,
+  patchBoardState,
+} from '../../save'; 
+
 const WORD_LENGTH = 5;
 const MAX_ROW_LENGTH = 7;
 
@@ -106,13 +112,105 @@ export default function Board({
   }, [getRowIndicesSafe, sixerActiveIndices, guesses.length]);
 
   // THE CHUNKY USEEFFECT FOR INITIAL RENDER BIG BIGBIG
+  // useEffect(() => {
+  //   setBoardInitialized(false);
+  //   setRowsAfterDebuffs([]);
+  //   lockedLetterByRow.current = {};
+  //   goldenLieUsedPerRow.current = new Set();
+  //   goldenLieInjectedIndex.current = {};
+
+  //   // ----- compute shortened first row
+  //   const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
+  //   let shortenedFirstRow = firstRowBase;
+  //   const hasNo3 = !!passiveDebuffs?.NoThreedom;
+  //   const hasNo4 = !!passiveDebuffs?.NoFoureedom;
+  //   if (hasNo3) {
+  //     shortenedFirstRow = firstRowBase.filter(i => i !== 1 && i !== 5);
+  //   } else if (hasNo4) {
+  //     const block = Math.random() < 0.5 ? 1 : 5;
+  //     shortenedFirstRow = firstRowBase.filter(i => i !== block);
+  //   }
+
+  //   // ----- choose shifted row + dir once
+  //   const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
+  //   const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
+  //   const shiftDir = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
+
+  //   // stash params for this round
+  //   layoutRef.current = { shortenedFirstRow, shiftedRow, shiftDir };
+
+  //   // build rows for current maxGuesses with the frozen params
+  //   const rows = [];
+  //   for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
+  //   setRowsAfterDebuffs(rows);
+
+  //   // ----- seed LetterLock once (uses the frozen rows)
+  //   if ((passiveDebuffs?.LetterLock ?? 0) > 0) {
+  //     const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
+  //     const eligibleRows = [0, 1, 2].filter(r => r < rows.length);
+  //     if (eligibleRows.length) {
+  //       const lockRow = eligibleRows[Math.floor(Math.random() * eligibleRows.length)];
+  //       const allowed = rows[lockRow] ?? [];
+  //       if (allowed.length) {
+  //         const lockIndex = allowed[Math.floor(Math.random() * allowed.length)];
+  //         const lockLetter = topLetters[Math.floor(Math.random() * topLetters.length)];
+  //         lockedLetterByRow.current[lockRow] = { index: lockIndex, letter: lockLetter };
+  //       }
+  //     }
+  //   }
+
+  //   // seed current guess row using frozen first row
+  //   const firstRow = rows[0] ?? [];
+  //   const next = Array(MAX_ROW_LENGTH).fill('');
+  //   firstRow.forEach(i => { next[i] = ''; });
+  //   setCurrentGuess(next);
+
+  //   setBoardInitialized(true);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [
+  //   stage,
+  //   passiveDebuffs?.NoThreedom,
+  //   passiveDebuffs?.NoFoureedom,
+  //   passiveDebuffs?.ShiftedGuess,
+  //   passiveDebuffs?.LetterLock,
+  // ]);
+
+  // NEW CHUNKY USEEFFECT
   useEffect(() => {
     setBoardInitialized(false);
     setRowsAfterDebuffs([]);
     lockedLetterByRow.current = {};
     goldenLieUsedPerRow.current = new Set();
     goldenLieInjectedIndex.current = {};
-
+  
+    // ---- 1) Try to restore from save for this stage
+    const saved = loadBoardState(stage);
+    if (saved) {
+      // hydrate layout + rows
+      const { layout, rowsAfterDebuffs: rows, lockedLetterByRow: locks, maxGuesses: savedMax } = saved;
+  
+      layoutRef.current = layout || { shortenedFirstRow: [], shiftedRow: null, shiftDir: 0 };
+      setRowsAfterDebuffs(Array.isArray(rows) ? rows : []);
+  
+      lockedLetterByRow.current = locks || {};
+  
+      // seed empty current row using the saved first row
+      const firstRow = (rows && rows[0]) || [];
+      const next = Array(MAX_ROW_LENGTH).fill('');
+      firstRow.forEach(i => { next[i] = ''; });
+      setCurrentGuess(next);
+  
+      // (optional) align max guesses to save; if you prefer prop to win, delete this
+      // if (typeof savedMax === 'number' && savedMax !== maxGuesses) {
+      //   setMaxGuesses(savedMax); // only if you own this state here
+      // }
+  
+      setBoardInitialized(true);
+      return; // ✅ restored; stop here
+    }
+  
+    // ---- 2) Otherwise compute fresh and persist
+  
     // ----- compute shortened first row
     const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
     let shortenedFirstRow = firstRowBase;
@@ -124,20 +222,20 @@ export default function Board({
       const block = Math.random() < 0.5 ? 1 : 5;
       shortenedFirstRow = firstRowBase.filter(i => i !== block);
     }
-
+  
     // ----- choose shifted row + dir once
     const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
     const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
     const shiftDir = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
-
+  
     // stash params for this round
     layoutRef.current = { shortenedFirstRow, shiftedRow, shiftDir };
-
+  
     // build rows for current maxGuesses with the frozen params
     const rows = [];
     for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
     setRowsAfterDebuffs(rows);
-
+  
     // ----- seed LetterLock once (uses the frozen rows)
     if ((passiveDebuffs?.LetterLock ?? 0) > 0) {
       const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
@@ -152,14 +250,23 @@ export default function Board({
         }
       }
     }
-
+  
     // seed current guess row using frozen first row
     const firstRow = rows[0] ?? [];
     const next = Array(MAX_ROW_LENGTH).fill('');
     firstRow.forEach(i => { next[i] = ''; });
     setCurrentGuess(next);
-
+  
     setBoardInitialized(true);
+  
+    // ---- persist the initial layout for this stage
+    replaceBoardState(stage, {
+      layout: layoutRef.current,
+      rowsAfterDebuffs: rows,
+      lockedLetterByRow: lockedLetterByRow.current,
+      maxGuesses,
+    }, 'board-initialized');
+  
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     stage,
@@ -169,13 +276,21 @@ export default function Board({
     passiveDebuffs?.LetterLock,
   ]);
 
+  
   // Rebuild rows if borrowed time
   useEffect(() => {
     if (!layoutRef.current) return;
     const rows = [];
     for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
     setRowsAfterDebuffs(rows);
-  }, [maxGuesses, setRowsAfterDebuffs]);
+  
+    // keep save in sync
+    patchBoardState(stage, {
+      rowsAfterDebuffs: rows,
+      maxGuesses,
+    }, 'board-rebuild-maxGuesses');
+  }, [maxGuesses, setRowsAfterDebuffs, stage]);
+  
 
 
   const paddedTargetWord = useMemo(() => {
@@ -243,49 +358,6 @@ export default function Board({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [boardInitialized, handleKeyDown]);
 
-  const getLetterClass = (letter, index, isCurrentRow, rowActiveIndices, rowIndex) => {
-    if (!letter || !rowActiveIndices.includes(index)) return '';
-
-    if (revealedIndices.includes(index) && isCurrentRow) return 'correct';
-
-    const targetChar = paddedTargetWord[index];
-    const isExact = letter === targetChar;
-
-    const isBlurredGreen =
-      isBlurredVisionActive &&
-      !isCurrentRow &&
-      [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
-        .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
-        .includes(letter);
-
-    if (isExact || isBlurredGreen) return 'correct';
-
-    const isPresent = paddedTargetWord.includes(letter);
-
-    // 🎯 Yellowless override
-    if (isPresent && activeDebuffs.includes('Yellowless')) {
-      return 'absent';
-    }
-
-    if (isPresent) return 'present';
-
-    // Golden Lie
-    console.log(activeDebuffs)
-    if (
-      activeDebuffs.includes('GoldenLie') &&
-      goldenLieUsedPerRow.current.has(rowIndex)
-    ) {
-      const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
-      console.log('rendering golden lie')
-      if (injectedIdx === index) {
-        return 'present'; // This letter is the fake yellow
-      }
-    }
-
-    return 'absent';
-  };
-
-
   // Put this near the component, above renderRow (has access to paddedTargetWord & activeDebuffs)
   const computeRowVisualStatuses = (guessStr, rowActiveIndices, activeDebuffs, paddedTargetWord, rowIndex) => {
     const len = rowActiveIndices.length;
@@ -351,7 +423,7 @@ export default function Board({
           colAbs: rowActiveIndices[j],
           targetWord: targetWord.toUpperCase(),
           guess: guessStr,           // this is already the row's guess letters
-        });
+        }, 1/3);
         v = hide ? 'absent' : 'present';
       }
       return v;
@@ -450,7 +522,7 @@ export default function Board({
               letterClass = 'present';
             }
           }
-          
+
           // Grellow downgrade is already applied inside computeRowVisualStatuses,
           // but keep this in case you sometimes want to force it at render time.
           if (activeDebuffs.includes('Grellow') && letterClass === 'correct') {

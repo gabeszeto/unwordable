@@ -9,6 +9,8 @@ import { useCash } from '../../contexts/cash/CashContext';
 import { usePerks } from '../../contexts/perks/PerksContext';
 import { generateDebuffPlan, generateDebugDebuffPlan } from '../debuffs/generateDebuffPlan';
 import { useSkills } from '../../contexts/skills/SkillsContext';
+import { useDeath } from '../../contexts/death/DeathContext';
+
 const STARTING_CASH = Number(import.meta.env.VITE_STARTING_CASH ?? 10);
 
 export function useRunControls() {
@@ -20,18 +22,20 @@ export function useRunControls() {
     const { resetCash, addCash } = useCash();
     const { resetPerks } = usePerks();
     const { resetSkills} = useSkills();
+    const { resetDeath } = useDeath();
 
     /** Core reset used by both Start New + Restart */
     const resetAll = () => {
         resetRunStats();
+        resetDeath();
 
         resetLevel();
         resetDebuffsCompletely();
-        // const plan = generateDebuffPlan();
-        const plan = generateDebugDebuffPlan({
-            forcePassive: {},
-            forceActive: ['Yellowless', 'GoldenLie']
-        })
+        const plan = generateDebuffPlan();
+        // const plan = generateDebugDebuffPlan({
+        //     forcePassive: {},
+        //     forceActive: ['Yellowless', 'GoldenLie']
+        // })
         setDebuffPlan(plan);
         resetCorrectness();
         resetPerks();

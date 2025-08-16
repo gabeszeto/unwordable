@@ -1,23 +1,19 @@
-// src/features/engine/yellowless.ts
-import { seededCoin50 } from './rng';
+// yellowless.ts
+import { seededBool } from './rng';
 
 type Ctx = {
-    round: number;          // 1-based round (you already have this)
-    guessIndex: number;     // 0-based index in guesses array
-    colAbs: number;         // absolute board column (e.g., 0..6)
-    targetWord: string;     // uppercase
-    guess: string;          // uppercase, for this row
+  round?: number; stage?: number;
+  guessIndex: number;
+  colAbs: number;
+  targetWord: string; // UPPERCASE
+  guess: string;      // UPPERCASE
 };
 
-// Returns true if this yellow should be hidden (become 'absent')
-export function shouldHideYellow(ctx: Ctx) {
-    // Prefix "YL" to isolate from other features’ seeds
-    return seededCoin50(
-        'YL',
-        ctx.round,
-        ctx.guessIndex,
-        ctx.colAbs,
-        ctx.targetWord,
-        ctx.guess
-    );
+// Returns true if this yellow should be HIDDEN
+export function shouldHideYellow(ctx: Ctx, hideProb = 0.5) {
+  const roundOrStage = (ctx.round ?? ctx.stage ?? 0);
+  return seededBool(
+    hideProb,
+    'YL', roundOrStage, ctx.guessIndex, ctx.colAbs, ctx.targetWord, ctx.guess
+  );
 }

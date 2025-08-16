@@ -31,7 +31,9 @@ export function stableRand01(...parts: (string | number | boolean)[]) {
     return rand();
 }
 
-// 50% coin flip that’s stable for the same inputs
-export function seededCoin50(...parts: (string | number | boolean)[]) {
-    return stableRand01(...parts) < 0.5;
-}
+// rng.ts
+export function seededBool(prob: number, ...parts: (string | number | boolean)[]) {
+    const p = Math.max(0, Math.min(1, prob));   // clamp
+    return stableRand01(...parts) < p;
+  }
+  

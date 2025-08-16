@@ -10,7 +10,6 @@ import { useRunStats } from '../contexts/RunStatsContext';
 import { useNavigate } from 'react-router-dom';
 
 import ThemeToggle from './ThemeToggle';
-import { generateDebuffPlan, generateDebugDebuffPlan } from './debuffs/generateDebuffPlan';
 
 import DeathScreen from './game/DeathScreen';
 import EndScreen from './game/EndScreen';
@@ -18,7 +17,6 @@ import EndScreen from './game/EndScreen';
 import './gameStageManagerStyles.css';
 import { useCorrectness } from '../contexts/CorrectnessContext';
 import { BoardHelperProvider } from '../contexts/BoardHelperContext';
-import { SkillsProvider } from '../contexts/skills/SkillsContext';
 
 import { useRunControls } from './game/useRunControls';
 
@@ -256,7 +254,7 @@ export default function GameStageManager() {
                     const isFinalBossStep = step === 10;
                     const isComplete = step < roundToUse;
                     const isActive = step === round;
-                    const isDeathStep = step === deathRound;
+                    const isDeathStep = isDeath && step === deathRound;
                     const isShopRound = isShop && step === round;
 
                     return (

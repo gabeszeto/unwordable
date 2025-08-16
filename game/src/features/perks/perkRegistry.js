@@ -66,7 +66,7 @@ export const perkRegistry = {
   BorrowedTime: {
     name: "⌛️ Borrowed Time",
     description: "Removes a guess from this round and adds it to the next round.",
-    cost: 4,
+    cost: 2,
     weight: 2,
     component: BorrowedTime
   },
