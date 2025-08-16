@@ -49,6 +49,7 @@ export default function GameStageManager() {
 
   // Run stats
   const { stats, resetRunStats } = useRunStats();
+  const runKey = stats?.runStartedAt ?? 0;
 
   // Pause time
   const [paused, setPaused] = useState(false);
@@ -317,7 +318,7 @@ export default function GameStageManager() {
         />
       ) : isGameLevel ? (
         <BoardHelperProvider>
-          <GameScreen paused={paused} />
+          <GameScreen key={runKey}paused={paused} />
         </BoardHelperProvider>
       ) : (
         <ShopScreen />

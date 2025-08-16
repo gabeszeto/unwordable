@@ -34,7 +34,11 @@
     text-transform: uppercase;
     font-size: 1.5rem;
     font-weight: bold;
-    /* transition: all 0.2s ease-in-out; */
+    transition:
+        background-color .2s ease-in-out,
+        border-color .2s ease-in-out,
+        color .2s ease-in-out,
+        transform .1s ease;
     border-radius: 4px;
 }
 
@@ -42,7 +46,7 @@
 .letter.current-input {
     transform: scale(1.1);
     border-color: color-mix(in srgb, var(--blue-hard) 55%, var(--surface-border));
-    /* transition: transform 0.1s ease; */
+    transition: transform 0.1s ease;
 }
 
 /* Inactive / blocked tiles */

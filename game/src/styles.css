@@ -4,6 +4,13 @@ body {
   padding: 0;
 }
 
+html.theme-swapping *,
+html.theme-swapping *::before,
+html.theme-swapping *::after {
+    transition: none !important;
+    animation: none !important;
+    /* optional */
+}
 
 *,
 *::before,

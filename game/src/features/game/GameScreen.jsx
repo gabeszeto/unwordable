@@ -13,6 +13,9 @@ import { useSkills } from '../../contexts/skills/SkillsContext.jsx';
 
 import PerkDisplay from './components/PerkDisplay.jsx';
 
+import { loadSave, persistSave } from '../save';
+
+
 import './gameScreenStyles.css';
 import './popups/popupScreenStyles.css'
 
@@ -98,12 +101,23 @@ export default function GameScreen({paused}) {
   const [showInfoPanel, setShowInfoPanel] = useState(false);
 
   const allWords = shuffledWordles.split('\n').map(w => w.trim().toUpperCase());
-  const [targetWords] = useState(() =>
-    Array.from({ length: 10 }, () => allWords[Math.floor(Math.random() * allWords.length)])
-  );
 
-  const targetWord = targetWords[round - 1];
-  // const targetWord = 'LEVEL'
+  const [targetWords, setTargetWords] = useState(() => {
+    const s = loadSave();
+    if (s?.targets && s.targets.length === 10) {
+      // use saved list (normalize to uppercase just in case)
+      return s.targets.map(t => String(t).toUpperCase());
+    }
+  
+    // generate once for the run and persist
+    const generated = Array.from({ length: 10 }, () =>
+      allWords[Math.floor(Math.random() * allWords.length)]
+    );
+    persistSave({ targets: generated }, 'init-targets');
+    return generated;
+  });
+
+  const targetWord = targetWords[(round - 1) % targetWords.length]; 
 
   // perk stuff
   const sharedProps = {
