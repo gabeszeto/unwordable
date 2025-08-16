@@ -168,6 +168,7 @@ export default function Board({
         return true;
 
       }
+      return true
     })();
 
     if (savedOK) {
@@ -201,7 +202,7 @@ export default function Board({
 
       setBoardInitialized(true);
 
-      console.log('same run')
+      // console.log('same run')
       return; // ✅ restored; stop here
     }
 
