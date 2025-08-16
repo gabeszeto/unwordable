@@ -34,6 +34,7 @@ export default function GameStageManager() {
   const isFinished = stage > FINAL_STAGE;
   const navigate = useNavigate()
   const { restartRunInGame } = useRunControls();
+  const [runNonce, setRunNonce] = useState(0);
 
   // Debuffs
   const {
@@ -145,6 +146,7 @@ export default function GameStageManager() {
     restartRunInGame({
       onResetLocalTimers: null /* we already reset above, but you could pass a function here instead */
     });
+    setRunNonce(n => n + 1);
   };
 
   // Block keydown
@@ -318,7 +320,7 @@ export default function GameStageManager() {
         />
       ) : isGameLevel ? (
         <BoardHelperProvider>
-          <GameScreen key={runKey}paused={paused} />
+          <GameScreen key={`${runKey}:${runNonce}`} paused={paused} runId={`${runKey}:${runNonce}`} />
         </BoardHelperProvider>
       ) : (
         <ShopScreen />

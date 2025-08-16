@@ -33,8 +33,8 @@ export function useRunControls() {
         resetDebuffsCompletely();
         const plan = generateDebuffPlan();
         // const plan = generateDebugDebuffPlan({
-        //     forcePassive: {},
-        //     forceActive: ['Yellowless', 'GoldenLie']
+        //     forcePassive: { CutShort: 1},
+        //     forceActive: ['Yellowless']
         // })
         setDebuffPlan(plan);
         resetCorrectness();

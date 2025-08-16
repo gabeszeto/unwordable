@@ -14,7 +14,7 @@ import { useSkills } from '../../contexts/skills/SkillsContext.jsx';
 import PerkDisplay from './components/PerkDisplay.jsx';
 
 import { loadSave, persistSave, loadBoardState } from '../save';
-
+import { useRunStats } from '../../contexts/RunStatsContext.jsx';
 
 import './gameScreenStyles.css';
 import './popups/popupScreenStyles.css'
@@ -27,7 +27,12 @@ import ItemDescriptionScreen from './popups/ItemDescriptionScreen.jsx';
 // ⬇️ NEW: pretty names for chips (emoji etc.)
 import { getItemMeta } from '../getItemMeta';
 
-export default function GameScreen({ paused }) {
+export default function GameScreen({ paused, ...props }) {
+
+  const incomingRunId = props.runId; // from GameStageManager
+  const { stats } = useRunStats();
+  const runId = incomingRunId ?? stats?.runStartedAt ?? 0;
+
   const { stage, setStage, advanceStage, isGameStage, bankGuess, consumeGuessBank } = useLevel();
   const [guesses, setGuesses] = useState([]);
   const { revealedIndices } = useCorrectness();
@@ -289,7 +294,8 @@ export default function GameScreen({ paused }) {
       </div>
 
       <Board
-        key={round}
+        key={`${runId}:${round}`}    // remount on new run OR new round
+        runId={runId}
         onRoundComplete={async (success, guesses, deathReason, word) => {
           if (success) {
             const earned = calculateRoundCash({

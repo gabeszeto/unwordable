@@ -44,7 +44,8 @@ export default function Board({
   sixerMode,
   maxGuesses,
   stage,
-  paused
+  paused,
+  runId
 }) {
   const [guessRanges, setGuessRanges] = useState([]);
   const { revealedIndices, getRevealedForRow } = useCorrectness();
@@ -111,70 +112,6 @@ export default function Board({
     return base;
   }, [getRowIndicesSafe, sixerActiveIndices, guesses.length]);
 
-  // THE CHUNKY USEEFFECT FOR INITIAL RENDER BIG BIGBIG
-  // useEffect(() => {
-  //   setBoardInitialized(false);
-  //   setRowsAfterDebuffs([]);
-  //   lockedLetterByRow.current = {};
-  //   goldenLieUsedPerRow.current = new Set();
-  //   goldenLieInjectedIndex.current = {};
-
-  //   // ----- compute shortened first row
-  //   const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
-  //   let shortenedFirstRow = firstRowBase;
-  //   const hasNo3 = !!passiveDebuffs?.NoThreedom;
-  //   const hasNo4 = !!passiveDebuffs?.NoFoureedom;
-  //   if (hasNo3) {
-  //     shortenedFirstRow = firstRowBase.filter(i => i !== 1 && i !== 5);
-  //   } else if (hasNo4) {
-  //     const block = Math.random() < 0.5 ? 1 : 5;
-  //     shortenedFirstRow = firstRowBase.filter(i => i !== block);
-  //   }
-
-  //   // ----- choose shifted row + dir once
-  //   const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
-  //   const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
-  //   const shiftDir = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
-
-  //   // stash params for this round
-  //   layoutRef.current = { shortenedFirstRow, shiftedRow, shiftDir };
-
-  //   // build rows for current maxGuesses with the frozen params
-  //   const rows = [];
-  //   for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
-  //   setRowsAfterDebuffs(rows);
-
-  //   // ----- seed LetterLock once (uses the frozen rows)
-  //   if ((passiveDebuffs?.LetterLock ?? 0) > 0) {
-  //     const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
-  //     const eligibleRows = [0, 1, 2].filter(r => r < rows.length);
-  //     if (eligibleRows.length) {
-  //       const lockRow = eligibleRows[Math.floor(Math.random() * eligibleRows.length)];
-  //       const allowed = rows[lockRow] ?? [];
-  //       if (allowed.length) {
-  //         const lockIndex = allowed[Math.floor(Math.random() * allowed.length)];
-  //         const lockLetter = topLetters[Math.floor(Math.random() * topLetters.length)];
-  //         lockedLetterByRow.current[lockRow] = { index: lockIndex, letter: lockLetter };
-  //       }
-  //     }
-  //   }
-
-  //   // seed current guess row using frozen first row
-  //   const firstRow = rows[0] ?? [];
-  //   const next = Array(MAX_ROW_LENGTH).fill('');
-  //   firstRow.forEach(i => { next[i] = ''; });
-  //   setCurrentGuess(next);
-
-  //   setBoardInitialized(true);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [
-  //   stage,
-  //   passiveDebuffs?.NoThreedom,
-  //   passiveDebuffs?.NoFoureedom,
-  //   passiveDebuffs?.ShiftedGuess,
-  //   passiveDebuffs?.LetterLock,
-  // ]);
-
   // NEW CHUNKY USEEFFECT
   useEffect(() => {
     setBoardInitialized(false);
@@ -183,9 +120,57 @@ export default function Board({
     goldenLieUsedPerRow.current = new Set();
     goldenLieInjectedIndex.current = {};
 
+
+    const hasNo3 = !!passiveDebuffs?.NoThreedom;
+    const hasNo4 = !!passiveDebuffs?.NoFoureedom;
+    const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
+    const hasLock = (passiveDebuffs?.LetterLock || 0) > 0;
+
     // ---- 1) Try to restore from save for this stage
     const saved = loadBoardState(stage);
-    if (saved) {
+    const savedOK = (() => {
+      if (!saved) return false;
+      // If runId exists in both, they must match
+      if (saved.runId && runId && saved.runId !== runId) return false;
+      
+      // Shape checks: first-row length must match debuffs
+      const expectedFirstLen = 5 - (hasNo3 ? 2 : hasNo4 ? 1 : 0);
+      const savedFirstLen =
+        Array.isArray(saved.rowsAfterDebuffs?.[0])
+          ? saved.rowsAfterDebuffs[0].length
+          : Array.isArray(saved.layout?.shortenedFirstRow)
+            ? saved.layout.shortenedFirstRow.length
+            : 5;
+      if (savedFirstLen !== expectedFirstLen) return false;
+
+      // ShiftedGuess: require shiftedRow + shiftDir if active; require none if inactive
+      const savedHasShift =
+        Number.isFinite(saved.layout?.shiftedRow) && (saved.layout?.shiftDir === -1 || saved.layout?.shiftDir === 1);
+      if (hasShift !== savedHasShift) return false;
+
+      // LetterLock presence/shape must match
+      const locksObj = saved.lockedLetterByRow || {};
+      const savedHasAnyLock = Object.keys(locksObj).length > 0;
+      if (hasLock !== savedHasAnyLock) return false;
+
+      if (hasLock) {
+        // at least one valid lock: row in 0..2, index inside that row, letter A-Z
+        const rows = Array.isArray(saved.rowsAfterDebuffs) ? saved.rowsAfterDebuffs : [];
+        const okLock = Object.entries(locksObj).some(([rowStr, lock]) => {
+          const r = Number(rowStr);
+          if (!Number.isFinite(r) || r < 0 || r > 2) return false;
+          const rowIndices = Array.isArray(rows[r]) ? rows[r] : [];
+          const idxOK = Number.isFinite(lock?.index) && rowIndices.includes(lock.index);
+          const letterOK = typeof lock?.letter === 'string' && /^[A-Z]$/.test(lock.letter);
+          return idxOK && letterOK;
+        });
+        if (!okLock) return false;
+        return true;
+
+      }
+    })();
+
+    if (savedOK) {
       // hydrate layout + rows
       const { layout, rowsAfterDebuffs: rows, lockedLetterByRow: locks, maxGuesses: savedMax } = saved;
 
@@ -215,6 +200,8 @@ export default function Board({
       // }
 
       setBoardInitialized(true);
+
+      console.log('same run')
       return; // ✅ restored; stop here
     }
 
@@ -223,8 +210,6 @@ export default function Board({
     // ----- compute shortened first row
     const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
     let shortenedFirstRow = firstRowBase;
-    const hasNo3 = !!passiveDebuffs?.NoThreedom;
-    const hasNo4 = !!passiveDebuffs?.NoFoureedom;
     if (hasNo3) {
       shortenedFirstRow = firstRowBase.filter(i => i !== 1 && i !== 5);
     } else if (hasNo4) {
@@ -233,7 +218,6 @@ export default function Board({
     }
 
     // ----- choose shifted row + dir once
-    const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
     const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
     const shiftDir = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
 
@@ -271,14 +255,17 @@ export default function Board({
 
     // ---- persist the initial layout for this stage
     replaceBoardState(stage, {
+      runId,
       layout: layoutRef.current,
       rowsAfterDebuffs: rows,
       lockedLetterByRow: lockedLetterByRow.current,
       maxGuesses,
     }, 'board-initialized');
 
+    console.log('new run')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    runId,
     stage,
     passiveDebuffs?.NoThreedom,
     passiveDebuffs?.NoFoureedom,
@@ -289,8 +276,10 @@ export default function Board({
 
   useEffect(() => {
     const s = loadBoardState(stage);
-    setSavedGuessRecords(Array.isArray(s?.guesses) ? s.guesses : []);
-  }, [stage, guesses.length]);
+    setSavedGuessRecords(
+      s && (!runId || !s.runId || s.runId === runId) && Array.isArray(s.guesses) ? s.guesses : []
+    );
+  }, [runId, stage, guesses.length]);
 
   // Rebuild rows if borrowed time
   useEffect(() => {
@@ -693,6 +682,7 @@ export default function Board({
 
     return renderedRows;
   }, [
+    runId,
     guesses,
     currentGuess,
     isGameOver,
