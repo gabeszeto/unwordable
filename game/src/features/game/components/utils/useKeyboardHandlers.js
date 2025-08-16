@@ -7,6 +7,7 @@ import { useRunStats } from '../../../../contexts/RunStatsContext';
 
 import { shouldHideYellow } from '../../../engine/yellowless';
 import { shouldHideYellowDebug } from '../../../engine/yellowlessDebug';
+import { loadBoardState, patchBoardState } from '../../../save';
 
 export default function useKeyboardHandlers({
     guesses,
@@ -55,7 +56,14 @@ export default function useKeyboardHandlers({
     // Apply delayed feedback when threshold is passed
     useEffect(() => {
         if (feedbackShownUpToRow >= 1 && pendingUsedKeys) {
-            setUsedKeys(prev => ({ ...prev, ...pendingUsedKeys }));
+            // Merge locally
+            setUsedKeys(prev => {
+                const merged = { ...prev, ...pendingUsedKeys };
+                // Persist merged to save
+                const prevSaved = loadBoardState(stage)?.usedKeys || {};
+                patchBoardState(stage, { usedKeys: { ...prevSaved, ...pendingUsedKeys } });
+                return merged;
+            });
             setPendingUsedKeys(null);
         }
     }, [feedbackShownUpToRow, pendingUsedKeys, setUsedKeys]);
@@ -73,256 +81,239 @@ export default function useKeyboardHandlers({
         }
     };
 
-    // Grellow
-    const isGrellowActive = activeDebuffs.includes('Grellow');
+    // Final row statuses (Wordle 2-pass + Grellow + Yellowless RNG)
+    const computeFinalRowStatuses = (guessStr, rowActiveIndices, correctWord, guessIndex) => {
+        const len = rowActiveIndices.length;
+
+        // count target letters in the active slots only
+        const remaining = {};
+        for (let j = 0; j < len; j++) {
+            const idx = rowActiveIndices[j];
+            const t = paddedTargetWord[idx];
+            remaining[t] = (remaining[t] || 0) + 1;
+        }
+
+        const raw = new Array(len).fill('absent');
+
+        // pass 1: exacts (consume), blurred visual correct (no consume)
+        for (let j = 0; j < len; j++) {
+            const idx = rowActiveIndices[j];
+            const letter = guessStr[j];
+            if (!letter) continue;
+
+            const targetChar = paddedTargetWord[idx];
+            const isExact = letter === targetChar;
+            const isBlurredGreen =
+                activeDebuffs.includes('BlurredVision') &&
+                [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
+                    .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
+                    .includes(letter);
+
+            if (isExact) {
+                raw[j] = 'correct';
+                remaining[letter] = (remaining[letter] || 0) - 1;
+            } else if (isBlurredGreen) {
+                raw[j] = 'correct';
+            }
+        }
+
+        // pass 2: presents (only while copies remain)
+        for (let j = 0; j < len; j++) {
+            if (raw[j] !== 'absent') continue;
+            const letter = guessStr[j];
+            if (!letter) continue;
+            const left = remaining[letter] || 0;
+            if (left > 0) {
+                raw[j] = 'present';
+                remaining[letter] = left - 1;
+            }
+        }
+
+        // visual transforms
+        const grellow = activeDebuffs.includes('Grellow');
+        const yellowless = activeDebuffs.includes('Yellowless');
+
+        const finalStatuses = raw.map((s, j) => {
+            let v = s;
+            if (grellow && v === 'correct') v = 'present';
+            if (yellowless && s === 'present') {
+                const hide = shouldHideYellow(
+                    {
+                        stage,
+                        guessIndex,
+                        colAbs: rowActiveIndices[j],
+                        targetWord: correctWord,
+                        guess: guessStr,
+                    },
+                    1 / 3 // 66.7% show as yellow, 33.3% hide → tweak as desired
+                );
+                v = hide ? 'absent' : 'present';
+            }
+            return v;
+        });
+
+        return finalStatuses;
+    };
 
     const submitGuess = (guessStr, rowActiveIndices) => {
         const newGuesses = [...guesses, guessStr];
         setGuesses(newGuesses);
-
-        // Note in stats
+      
+        // stats
         noteGuess(1);
-
+      
+        // keep per-row ranges and clear current row
         setGuessRanges(prev => [...prev, rowActiveIndices]);
-        // Set current guess long way
         const cleared = [...currentGuess];
-        rowActiveIndices.forEach(i => {
-            cleared[i] = '';
-        });
+        rowActiveIndices.forEach(i => { cleared[i] = ''; });
         setCurrentGuess(cleared);
-
-        // Reveal previously delayed feedback now
+      
+        // delayed feedback threshold
         if (delayFeedback && newGuesses.length === FEEDBACK_DELAY_THRESHOLD) {
-            setFeedbackShownUpToRow(1); // reveal feedback for row 0 and 1
+          setFeedbackShownUpToRow(1);
         }
-
-        const newUsed = { ...usedKeys };
+      
         const correctWord = targetWord.toUpperCase();
         const isCorrect = guessStr === correctWord;
-
-        if (pendingWager) {
-            resolveWager(isCorrect);
-        }
-
-        let hasColor = false;
-
-        // Handle correct guess
-        if (isCorrect) {
-            guessStr.split('').forEach(letter => {
-                newUsed[letter] = 'correct';
-            });
-            hasColor = true;
-        } else {
-            // Apply key feedback unless suppressed
-            rowActiveIndices.forEach((idx, i) => {
-                const letter = guessStr[i];
-                const targetChar = paddedTargetWord[idx];
-
-                const isExact = letter === targetChar;
-                // 1. Blurred green first
-                const isBlurredGreen =
-                    activeDebuffs.includes('BlurredVision') &&
-                    [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
-                        .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
-                        .includes(letter);
-
-                let rawStatus;
-
-                // 2. Handle everything else
-                if (isExact || isBlurredGreen) {
-                    if (isExact) {
-                        console.log(`marking ${idx}`)
-                        markAsTrulyCorrect(idx);
-                    }
-                    rawStatus = 'correct';
-                    hasColor = true;
-                } else if (paddedTargetWord.includes(letter)) {
-                    rawStatus = 'present';
-                    hasColor = true;
-                } else {
-                    // --- Wordle-style 2-pass logic with debuffs ---
-                    const len = rowActiveIndices.length;
-
-                    // Count how many of each target letter exists in this row (5 slots)
-                    const remaining = {};
-                    for (let i = 0; i < len; i++) {
-                        const idx = rowActiveIndices[i];
-                        const t = paddedTargetWord[idx];
-                        remaining[t] = (remaining[t] || 0) + 1;
-                    }
-
-                    // Raw statuses before Grellow/Yellowless transforms
-                    const rawStatuses = new Array(len).fill('absent');
-
-                    // Pass 1: mark corrects (and blurred-correct for visuals), decrement remaining only for true exacts
-                    for (let i = 0; i < len; i++) {
-                        const idx = rowActiveIndices[i];
-                        const letter = guessStr[i];
-                        const targetChar = paddedTargetWord[idx];
-                        if (!letter) continue;
-
-                        const isExact = letter === targetChar;
-                        const isBlurredGreen =
-                            activeDebuffs.includes('BlurredVision') &&
-                            [targetChar.charCodeAt(0) - 1, targetChar.charCodeAt(0), targetChar.charCodeAt(0) + 1]
-                                .map(c => String.fromCharCode(Math.max(65, Math.min(90, c))))
-                                .includes(letter);
-
-                        if (isExact) {
-                            rawStatuses[i] = 'correct';
-                            remaining[letter] -= 1;   // consume a real target letter
-                            markAsTrulyCorrect(idx);
-                        } else if (isBlurredGreen) {
-                            // Visual green only; do NOT consume a target letter
-                            rawStatuses[i] = 'correct';
-                        }
-                    }
-
-                    // Pass 2: mark presents where target still has remaining of that letter
-                    for (let i = 0; i < len; i++) {
-                        if (rawStatuses[i] !== 'absent') continue;
-                        const letter = guessStr[i];
-                        if (!letter) continue;
-
-                        const left = remaining[letter] || 0;
-                        if (left > 0) {
-                            rawStatuses[i] = 'present';
-                            remaining[letter] = left - 1; // consume one
-                        }
-                        // else stays 'absent'
-                    }
-
-                    // Track “hasColor” BEFORE Grellow/Yellowless transforms (matches your GreyReaper behavior)
-                    if (rawStatuses.some(s => s === 'correct' || s === 'present')) {
-                        hasColor = true;
-                    }
-
-                    // Apply visual transforms + push to keyboard with priority
-                    for (let i = 0; i < len; i++) {
-                        const letter = guessStr[i];
-                        if (!letter) continue;
-
-                        const rawStatus = rawStatuses[i];
-                        let status = rawStatus;
-
-                        // Grellow: downgrade real greens to present (purely visual)
-                        if (isGrellowActive && rawStatus === 'correct') {
-                            status = 'present';
-                        }
-
-                        // Yellowless: hide raw presents (but not greens)
-                        // if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
-                        //     status = 'absent';
-                        // }
-
-                        // Yellowless with rng checker
-                        if (rawStatus === 'present' && activeDebuffs.includes('Yellowless')) {
-                            const hide = shouldHideYellow({
-                                stage,
-                                guessIndex: newGuesses.length - 1, 
-                                colAbs: rowActiveIndices[i],  
-                                targetWord: correctWord, 
-                                guess: guessStr,
-                            }, 1/3)
-                            status = hide ? 'absent' : 'present';
-                        }
-
-                        // Keyboard: keep the strongest state seen for this letter
-                        if (!newUsed[letter] || getPriority(status) > getPriority(newUsed[letter])) {
-                            newUsed[letter] = status;
-                        }
-                    }
-                }
-
-            });
-
-        }
-
-
-        // 6. Gray Reaper death
-        if (activeDebuffs.includes('GreyReaper') && !hasColor) {
-            setUsedKeys(newUsed);
-            setIsGameOver(true);
-            onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
-            return;
-        }
-
-        // 7. Golden Lie Janky logic
+        const guessIndex = newGuesses.length - 1;
+      
+        if (pendingWager) resolveWager(isCorrect);
+      
+        // start keyboard from prior state
+        let newUsed = { ...usedKeys };
+      
+        // -------- 1) GOLDEN LIE: decide BEFORE computing finalStatuses --------
         if (
-            activeDebuffs.includes('GoldenLie') &&
-            !goldenLieUsedPerRow.current.has(guesses.length)
+          activeDebuffs.includes('GoldenLie') &&
+          !goldenLieUsedPerRow.current.has(guesses.length) // current row index
         ) {
-            const rowIndex = guesses.length;
-            const eligibleIndices = [];
-
-            for (let i = 0; i < rowActiveIndices.length; i++) {
-                const idx = rowActiveIndices[i];
-                const letter = guessStr[i];
-                const targetChar = paddedTargetWord[idx];
-
-                const isCorrect = letter === targetChar;
-                const isPresent = paddedTargetWord.includes(letter);
-
-                if (letter && !isCorrect && !isPresent) {
-                    eligibleIndices.push(idx);
-                }
-            }
-
-            if (eligibleIndices.length > 0) {
-                const chosenIndex = eligibleIndices[Math.floor(Math.random() * eligibleIndices.length)];
-                const fakeLetter = guessStr[rowActiveIndices.indexOf(chosenIndex)];
-
-                newUsed[fakeLetter] = 'present'; // lie
-
-                goldenLieUsedPerRow.current.add(rowIndex);
-                goldenLieInjectedIndex.current[rowIndex] = chosenIndex; // 👈 Store exactly which index is the lie
-            }
-            console.log('golden lie injected:', JSON.stringify(goldenLieInjectedIndex.current));
-
+          const rowIndex = guesses.length;
+          const eligible = [];
+          for (let i = 0; i < rowActiveIndices.length; i++) {
+            const idx = rowActiveIndices[i];
+            const letter = guessStr[i];
+            const targetChar = paddedTargetWord[idx];
+            const isExact = letter === targetChar;
+            const isPresent = paddedTargetWord.includes(letter);
+            if (letter && !isExact && !isPresent) eligible.push(idx);
+          }
+          if (eligible.length > 0) {
+            const chosenIndexAbs = eligible[Math.floor(Math.random() * eligible.length)];
+            const fakeLetter = guessStr[rowActiveIndices.indexOf(chosenIndexAbs)];
+            // keyboard lie (visual)
+            newUsed[fakeLetter] = 'present';
+            goldenLieUsedPerRow.current.add(rowIndex);
+            goldenLieInjectedIndex.current[rowIndex] = chosenIndexAbs;
+          }
         }
-
-
-        // 8. Set key states or after feedback
-        if (feedbackSuppressed) {
-            setPendingUsedKeys(prev => {
-                const merged = { ...(prev || {}) };
-
-                for (const [letter, status] of Object.entries(newUsed)) {
-                    const existing = merged[letter];
-
-                    // If not set yet, or new status is stronger, update
-                    if (!existing || getPriority(status) > getPriority(existing)) {
-                        merged[letter] = status;
-                    }
-                }
-
-                return merged;
-            });
-        } else {
-            setUsedKeys(newUsed);
-        }
-
-        // 9. Handle win loss
+      
+        // -------- 2) TILE STATUSES for this row (single source of truth) --------
+        let finalStatuses;
         if (isCorrect) {
-            setBouncingIndices([...rowActiveIndices]);
-            setTimeout(() => setBouncingIndices([]), 1000);
-            setIsGameOver(true);
-            onRoundComplete(true, newGuesses);
-        } else if (newGuesses.length >= maxGuesses) {
-            setIsGameOver(true);
-            onRoundComplete(false, newGuesses, 'Out of guesses', targetWord);
-        }
-
-        if (sixerActiveIndices) {
-            setSixerMeta(prev => [
-                ...prev,
-                sixerActiveIndices ? { start: sixerActiveIndices[0], end: sixerActiveIndices[1] } : null
-            ]);
-            setSixerActiveIndices(null);
+          finalStatuses = rowActiveIndices.map(() => 'correct');
         } else {
-            setSixerMeta(prev => [...prev, null]);
+          finalStatuses = computeFinalRowStatuses(
+            guessStr,
+            rowActiveIndices,
+            correctWord,
+            guessIndex
+          );
+          // If Golden Lie injected, force that absolute tile to 'present' if it was 'absent'
+          if (
+            activeDebuffs.includes('GoldenLie') &&
+            goldenLieUsedPerRow.current.has(guesses.length)
+          ) {
+            const injectedAbs = goldenLieInjectedIndex.current?.[guesses.length];
+            const j = rowActiveIndices.indexOf(injectedAbs);
+            if (j !== -1 && finalStatuses[j] === 'absent') {
+              finalStatuses[j] = 'present';
+            }
+          }
         }
-    };
+      
+        // Does this row have any color at all? (for Grey Reaper)
+        const hasColor = finalStatuses.some(s => s === 'present' || s === 'correct');
+      
+        // -------- 3) KEYBOARD from tile statuses (with priority) --------
+        const priority = (s) => (s === 'correct' ? 3 : s === 'present' ? 2 : s === 'absent' ? 1 : 0);
+        for (let j = 0; j < rowActiveIndices.length; j++) {
+          const letter = guessStr[j];
+          if (!letter) continue;
+          const status = finalStatuses[j];
+          if (!newUsed[letter] || priority(status) > priority(newUsed[letter])) {
+            newUsed[letter] = status;
+          }
+        }
+      
+        // -------- 4) Persist the guess record --------
+        {
+          const prev = loadBoardState(stage);
+          const prevGuesses = prev?.guesses || [];
+          patchBoardState(stage, {
+            guesses: [
+              ...prevGuesses,
+              {
+                word: guessStr,
+                indices: rowActiveIndices.slice(),
+                statuses: finalStatuses,
+                lieIndexAbs:
+                  activeDebuffs.includes('GoldenLie') &&
+                  goldenLieUsedPerRow.current.has(guesses.length)
+                    ? goldenLieInjectedIndex.current?.[guesses.length]
+                    : undefined,
+              },
+            ],
+          });
+        }
+      
+        // -------- 5) Grey Reaper after we know hasColor ----------
+        if (activeDebuffs.includes('GreyReaper') && !hasColor) {
+          setUsedKeys(newUsed);
+          setIsGameOver(true);
+          onRoundComplete(false, newGuesses, 'GreyReaper', targetWord);
+          return;
+        }
+      
+        // -------- 6) usedKeys: delayed vs immediate ----------
+        if (feedbackSuppressed) {
+          setPendingUsedKeys(prev => {
+            const merged = { ...(prev || {}) };
+            for (const [letter, status] of Object.entries(newUsed)) {
+              const existing = merged[letter];
+              if (!existing || priority(status) > priority(existing)) {
+                merged[letter] = status;
+              }
+            }
+            return merged;
+          });
+        } else {
+          setUsedKeys(newUsed);
+          patchBoardState(stage, { usedKeys: newUsed });
+        }
+      
+        // -------- 7) Win/Loss ----------
+        if (isCorrect) {
+          setBouncingIndices([...rowActiveIndices]);
+          setTimeout(() => setBouncingIndices([]), 1000);
+          setIsGameOver(true);
+          onRoundComplete(true, newGuesses);
+        } else if (newGuesses.length >= maxGuesses) {
+          setIsGameOver(true);
+          onRoundComplete(false, newGuesses, 'Out of guesses', targetWord);
+        }
+      
+        // -------- 8) Sixer meta ----------
+        if (sixerActiveIndices) {
+          setSixerMeta(prev => [
+            ...prev,
+            { start: sixerActiveIndices[0], end: sixerActiveIndices[1] }
+          ]);
+          setSixerActiveIndices(null);
+        } else {
+          setSixerMeta(prev => [...prev, null]);
+        }
+      };
+      
 
     const handleKeyDown = useCallback(
         (e) => {

@@ -9,7 +9,7 @@ import {
   loadBoardState,
   replaceBoardState,
   patchBoardState,
-} from '../../save'; 
+} from '../../save';
 
 const WORD_LENGTH = 5;
 const MAX_ROW_LENGTH = 7;
@@ -58,10 +58,10 @@ export default function Board({
   const layoutRef = useRef(null);
   const [boardInitialized, setBoardInitialized] = useState(false);
 
+  const [savedGuessRecords, setSavedGuessRecords] = useState([]);
+
   // Local debuffs
   const { activeDebuffs, passiveDebuffs } = useDebuffs();
-  const isBlurredVisionActive = activeDebuffs.includes('BlurredVision');
-  const isGrellowActive = activeDebuffs.includes('Grellow');
 
   // GoldenLie
   const goldenLieUsedPerRow = useRef(new Set());
@@ -182,35 +182,44 @@ export default function Board({
     lockedLetterByRow.current = {};
     goldenLieUsedPerRow.current = new Set();
     goldenLieInjectedIndex.current = {};
-  
+
     // ---- 1) Try to restore from save for this stage
     const saved = loadBoardState(stage);
     if (saved) {
       // hydrate layout + rows
       const { layout, rowsAfterDebuffs: rows, lockedLetterByRow: locks, maxGuesses: savedMax } = saved;
-  
+
       layoutRef.current = layout || { shortenedFirstRow: [], shiftedRow: null, shiftDir: 0 };
       setRowsAfterDebuffs(Array.isArray(rows) ? rows : []);
-  
+
       lockedLetterByRow.current = locks || {};
-  
+
+      const savedRows = Array.isArray(saved.guesses) ? saved.guesses : [];
+      setSavedGuessRecords(savedRows);
+      if (savedRows.length) {
+        // fill the props from parent via setters
+        setGuesses(savedRows.map(g => g.word));
+        setGuessRanges(savedRows.map(g => g.indices));
+        setSixerMeta(new Array(savedRows.length).fill(null));
+      }
+
       // seed empty current row using the saved first row
       const firstRow = (rows && rows[0]) || [];
       const next = Array(MAX_ROW_LENGTH).fill('');
       firstRow.forEach(i => { next[i] = ''; });
       setCurrentGuess(next);
-  
+
       // (optional) align max guesses to save; if you prefer prop to win, delete this
       // if (typeof savedMax === 'number' && savedMax !== maxGuesses) {
       //   setMaxGuesses(savedMax); // only if you own this state here
       // }
-  
+
       setBoardInitialized(true);
       return; // ✅ restored; stop here
     }
-  
+
     // ---- 2) Otherwise compute fresh and persist
-  
+
     // ----- compute shortened first row
     const firstRowBase = baseIndices(WORD_LENGTH, MAX_ROW_LENGTH);
     let shortenedFirstRow = firstRowBase;
@@ -222,20 +231,20 @@ export default function Board({
       const block = Math.random() < 0.5 ? 1 : 5;
       shortenedFirstRow = firstRowBase.filter(i => i !== block);
     }
-  
+
     // ----- choose shifted row + dir once
     const hasShift = (passiveDebuffs?.ShiftedGuess || 0) > 0;
     const shiftedRow = hasShift ? (Math.random() < 0.5 ? 1 : 2) : null;
     const shiftDir = hasShift ? (Math.random() < 0.5 ? -1 : +1) : 0;
-  
+
     // stash params for this round
     layoutRef.current = { shortenedFirstRow, shiftedRow, shiftDir };
-  
+
     // build rows for current maxGuesses with the frozen params
     const rows = [];
     for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
     setRowsAfterDebuffs(rows);
-  
+
     // ----- seed LetterLock once (uses the frozen rows)
     if ((passiveDebuffs?.LetterLock ?? 0) > 0) {
       const topLetters = ['E', 'A', 'R', 'I', 'O', 'T', 'N', 'S', 'L', 'C'];
@@ -250,15 +259,16 @@ export default function Board({
         }
       }
     }
-  
+
     // seed current guess row using frozen first row
     const firstRow = rows[0] ?? [];
     const next = Array(MAX_ROW_LENGTH).fill('');
     firstRow.forEach(i => { next[i] = ''; });
     setCurrentGuess(next);
-  
+
+    setSavedGuessRecords([]);
     setBoardInitialized(true);
-  
+
     // ---- persist the initial layout for this stage
     replaceBoardState(stage, {
       layout: layoutRef.current,
@@ -266,7 +276,7 @@ export default function Board({
       lockedLetterByRow: lockedLetterByRow.current,
       maxGuesses,
     }, 'board-initialized');
-  
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     stage,
@@ -276,21 +286,26 @@ export default function Board({
     passiveDebuffs?.LetterLock,
   ]);
 
-  
+
+  useEffect(() => {
+    const s = loadBoardState(stage);
+    setSavedGuessRecords(Array.isArray(s?.guesses) ? s.guesses : []);
+  }, [stage, guesses.length]);
+
   // Rebuild rows if borrowed time
   useEffect(() => {
     if (!layoutRef.current) return;
     const rows = [];
     for (let r = 0; r < maxGuesses; r++) rows.push(buildRowIndices(r, layoutRef.current));
     setRowsAfterDebuffs(rows);
-  
+
     // keep save in sync
     patchBoardState(stage, {
       rowsAfterDebuffs: rows,
       maxGuesses,
     }, 'board-rebuild-maxGuesses');
   }, [maxGuesses, setRowsAfterDebuffs, stage]);
-  
+
 
 
   const paddedTargetWord = useMemo(() => {
@@ -414,7 +429,7 @@ export default function Board({
     const visual = raw.map((s, j) => {
       let v = s;
       if (grellow && v === 'correct') v = 'present';
-    
+
       if (yellowless && s === 'present') {
         const hide = shouldHideYellow({
           // Use the SAME field here as in submitGuess (round or stage)
@@ -423,7 +438,7 @@ export default function Board({
           colAbs: rowActiveIndices[j],
           targetWord: targetWord.toUpperCase(),
           guess: guessStr,           // this is already the row's guess letters
-        }, 1/3);
+        }, 1 / 3);
         v = hide ? 'absent' : 'present';
       }
       return v;
@@ -446,24 +461,35 @@ export default function Board({
     sixerThisRow = null
   ) => {
     const rowActiveIndices = forcedActiveIndices || getRowActiveIndices(rowIndex);
-  
+
+    let savedStatusesByBoardIndex = null;
+    if (isSubmitted) {
+      const rec = savedGuessRecords[rowIndex];
+      if (rec && Array.isArray(rec.indices) && Array.isArray(rec.statuses)) {
+        savedStatusesByBoardIndex = {};
+        for (let k = 0; k < rec.indices.length; k++) {
+          savedStatusesByBoardIndex[rec.indices[k]] = rec.statuses[k];
+        }
+      }
+    }
+
     // 🔒 use row-scoped revelations
     const rowReveals = getRevealedForRow(rowIndex);
-  
+
     // caret: first empty, non-revealed slot in THIS row
     const cursorIndex = rowActiveIndices.find(
       i => guessArray[i] === '' && !rowReveals.includes(i)
     );
-  
+
     // Sixer
     const isCurrentGuessRow = rowIndex === guesses.length;
     const isSixerSelectable =
       isCurrentGuessRow && sixerMode && sixerActiveIndices === null;
-  
+
     // Normal
     const guessStr = rowActiveIndices.map(i => guessArray[i]).join('');
     const overrideAllCorrect = isSubmitted && isCorrectGuess(guessStr);
-  
+
     // --- NEW: precompute this row's visual statuses (Wordle 2-pass + debuffs) ---
     const rowStatusesByBoardIndex = computeRowVisualStatuses(
       guessStr,
@@ -472,13 +498,13 @@ export default function Board({
       paddedTargetWord,
       rowIndex
     );
-  
+
     const letters = Array.from({ length: MAX_ROW_LENGTH }, (_, i) => {
       const letter = guessArray[i] || '';
       const isActive = rowActiveIndices.includes(i);
-  
+
       let displayLetter = letter;
-  
+
       // Show locked letter in correct position on the right row
       if (!isSubmitted) {
         if (rowReveals.includes(i)) {
@@ -489,48 +515,67 @@ export default function Board({
           displayLetter = lockedLetterByRow.current[rowIndex].letter;
         }
       }
-  
+
       const feedbackSuppressed =
         isFeedbackDelayActive &&
         rowIndex <= 1 &&
         rowIndex > feedbackShownUpToRow;
-  
+
       // 👇 consider revealed-for-this-row as “feedback should show”
       const isSuppressed = feedbackSuppressed && !overrideAllCorrect;
-  
+
       // ✅ show feedback if submitted, revealed-for-this-row, or override
       const shouldApplyFeedback =
         (isSubmitted || rowReveals.includes(i) || overrideAllCorrect) && !isSuppressed;
-  
+
       let letterClass = '';
-  
+
       if (shouldApplyFeedback && isActive) {
         if (overrideAllCorrect) {
           letterClass = 'correct'; // Boss override
         } else {
           // Use our computed statuses for this row
-          letterClass = rowStatusesByBoardIndex[i] || 'absent';
-  
+          // letterClass = rowStatusesByBoardIndex[i] || 'absent';
+
+          if (isSubmitted && savedStatusesByBoardIndex) {
+            letterClass = savedStatusesByBoardIndex[i] ?? 'absent';
+          } else {
+            letterClass = rowStatusesByBoardIndex[i] || 'absent';
+          }
+
+
           // If this tile was revealed for THIS row, force green when editing this row
           if (!isSubmitted && rowReveals.includes(i)) {
             letterClass = 'correct';
           }
-          
-          if (activeDebuffs.includes('GoldenLie') && goldenLieUsedPerRow.current.has(rowIndex)) {
+
+          // if (activeDebuffs.includes('GoldenLie') && goldenLieUsedPerRow.current.has(rowIndex)) {
+          //   const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
+          //   if (injectedIdx === i) {
+          //     letterClass = 'present';
+          //   }
+          // }
+          if (!savedStatusesByBoardIndex &&
+            activeDebuffs.includes('GoldenLie') &&
+            goldenLieUsedPerRow.current.has(rowIndex)) {
             const injectedIdx = goldenLieInjectedIndex.current?.[rowIndex];
-            if (injectedIdx === i) {
-              letterClass = 'present';
-            }
+            if (injectedIdx === i) letterClass = 'present';
           }
 
           // Grellow downgrade is already applied inside computeRowVisualStatuses,
           // but keep this in case you sometimes want to force it at render time.
-          if (activeDebuffs.includes('Grellow') && letterClass === 'correct') {
+          // if (activeDebuffs.includes('Grellow') && letterClass === 'correct') {
+          //   letterClass = 'present';
+          // }
+
+          if (!savedStatusesByBoardIndex &&
+            activeDebuffs.includes('Grellow') &&
+            letterClass === 'correct') {
             letterClass = 'present';
           }
         }
       }
-  
+
       if (
         bouncingIndices.includes(i) &&
         isSubmitted &&
@@ -538,14 +583,14 @@ export default function Board({
       ) {
         letterClass += ' bounce';
       }
-  
+
       const isCurrent = !isSubmitted && i === cursorIndex;
       const isSixerSelectableTile = isSixerSelectable && (i === 0 || i === 6);
       const sixerData = sixerMeta[rowIndex];
       const isSixerLockedVisual = sixerData
         ? i >= sixerData.start && i <= sixerData.end
         : false;
-  
+
       return (
         <div
           className={`
@@ -559,8 +604,8 @@ export default function Board({
           key={i}
           style={
             bouncingIndices.includes(i) &&
-            isSubmitted &&
-            rowIndex === guesses.length - 1
+              isSubmitted &&
+              rowIndex === guesses.length - 1
               ? { animationDelay: `${i * 0.1}s` }
               : {}
           }
@@ -577,7 +622,7 @@ export default function Board({
         </div>
       );
     });
-  
+
     return (
       <div
         className={`guess-row ${!isSubmitted && rowIndex === guesses.length && shakeRow ? 'shake' : ''}`}
@@ -587,7 +632,7 @@ export default function Board({
       </div>
     );
   };
-  
+
 
 
   const renderEmptyRow = (rowIndex, forceInactive = false) => {

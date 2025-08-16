@@ -13,7 +13,7 @@ import { useSkills } from '../../contexts/skills/SkillsContext.jsx';
 
 import PerkDisplay from './components/PerkDisplay.jsx';
 
-import { loadSave, persistSave } from '../save';
+import { loadSave, persistSave, loadBoardState } from '../save';
 
 
 import './gameScreenStyles.css';
@@ -27,7 +27,7 @@ import ItemDescriptionScreen from './popups/ItemDescriptionScreen.jsx';
 // ⬇️ NEW: pretty names for chips (emoji etc.)
 import { getItemMeta } from '../getItemMeta';
 
-export default function GameScreen({paused}) {
+export default function GameScreen({ paused }) {
   const { stage, setStage, advanceStage, isGameStage, bankGuess, consumeGuessBank } = useLevel();
   const [guesses, setGuesses] = useState([]);
   const { revealedIndices } = useCorrectness();
@@ -38,7 +38,7 @@ export default function GameScreen({paused}) {
 
   const BOSS_STAGES = [4, 10, 16, 18];
 
-  const [usedKeys, setUsedKeys] = useState({});
+  const [usedKeys, setUsedKeys] = useState(() => (loadBoardState(stage)?.usedKeys ?? {}));
   const [cashEarned, setCashEarned] = useState(0);
   const round = stage / 2 + 1;
 
@@ -108,7 +108,7 @@ export default function GameScreen({paused}) {
       // use saved list (normalize to uppercase just in case)
       return s.targets.map(t => String(t).toUpperCase());
     }
-  
+
     // generate once for the run and persist
     const generated = Array.from({ length: 10 }, () =>
       allWords[Math.floor(Math.random() * allWords.length)]
@@ -117,7 +117,18 @@ export default function GameScreen({paused}) {
     return generated;
   });
 
-  const targetWord = targetWords[(round - 1) % targetWords.length]; 
+  const targetWord = targetWords[(round - 1) % targetWords.length];
+
+  // Change setusedkeys on stage change
+  useEffect(() => {
+    // Only show keyboard in game stages; clear on non-game screens
+    if (!isGameStage(stage)) {
+      setUsedKeys({});
+      return;
+    }
+    const saved = loadBoardState(stage)?.usedKeys ?? {};
+    setUsedKeys(saved);
+  }, [stage, isGameStage]);
 
   // perk stuff
   const sharedProps = {
